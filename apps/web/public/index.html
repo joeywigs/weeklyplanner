@@ -11,353 +11,208 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #bbf7d0 100%);
+      background: #f3f4f6;
       min-height: 100vh;
       color: #1a1a1a;
     }
+
+    /* ---- Login Page ---- */
+    .login-bg {
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #bbf7d0 100%);
+      min-height: 100vh;
+    }
     .container { max-width: 480px; margin: 0 auto; padding: 24px 16px; }
-
-    /* Header */
-    .header {
-      text-align: center;
-      padding: 48px 0 32px;
-    }
-    .logo {
-      font-size: 48px;
-      margin-bottom: 8px;
-    }
-    .app-name {
-      font-size: 36px;
-      font-weight: 800;
-      color: #15803d;
-      letter-spacing: -1px;
-    }
-    .tagline {
-      font-size: 16px;
-      color: #4b5563;
-      margin-top: 8px;
-    }
-
-    /* Features */
-    .features {
-      display: grid;
-      gap: 12px;
-      margin: 32px 0;
-    }
-    .feature-card {
-      background: white;
-      border-radius: 16px;
-      padding: 20px;
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-      transition: transform 0.15s;
-    }
-    .feature-card:hover { transform: translateY(-2px); }
-    .feature-icon {
-      font-size: 32px;
-      flex-shrink: 0;
-      width: 48px;
-      text-align: center;
-    }
-    .feature-title {
-      font-size: 16px;
-      font-weight: 600;
-      color: #111;
-    }
-    .feature-desc {
-      font-size: 13px;
-      color: #6b7280;
-      margin-top: 2px;
-    }
-
-    /* Demo Navigation */
-    .nav-section {
-      margin-top: 32px;
-    }
-    .nav-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: #6b7280;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 12px;
-    }
-    .nav-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
+    .header { text-align: center; padding: 48px 0 32px; }
+    .logo { font-size: 48px; margin-bottom: 8px; }
+    .app-name { font-size: 36px; font-weight: 800; color: #15803d; letter-spacing: -1px; }
+    .tagline { font-size: 16px; color: #4b5563; margin-top: 8px; }
+    .feature-desc { font-size: 13px; color: #6b7280; margin-top: 2px; }
+    .nav-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .nav-card {
-      background: white;
-      border-radius: 16px;
-      padding: 24px 16px;
-      text-align: center;
-      text-decoration: none;
-      color: inherit;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      background: white; border-radius: 16px; padding: 24px 16px; text-align: center;
+      color: inherit; box-shadow: 0 1px 3px rgba(0,0,0,0.08); cursor: pointer;
       transition: transform 0.15s, box-shadow 0.15s;
-      cursor: pointer;
     }
-    .nav-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-    }
+    .nav-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
     .nav-card .icon { font-size: 32px; margin-bottom: 8px; }
-    .nav-card .label {
-      font-size: 14px;
-      font-weight: 600;
-      color: #111;
-    }
-
-    /* Sign In Button */
-    .signin-section {
-      margin-top: 32px;
-      text-align: center;
-    }
-    .signin-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      background: white;
-      border: 2px solid #e5e7eb;
-      border-radius: 12px;
-      padding: 14px 32px;
-      font-size: 16px;
-      font-weight: 600;
-      color: #374151;
-      cursor: pointer;
-      transition: all 0.15s;
-      text-decoration: none;
-    }
-    .signin-btn:hover {
-      border-color: #16a34a;
-      background: #f0fdf4;
-    }
-    .signin-btn svg {
-      width: 20px;
-      height: 20px;
-    }
-
-    /* Status */
+    .nav-card .label { font-size: 14px; font-weight: 600; color: #111; }
     .status-bar {
-      margin-top: 40px;
-      padding: 16px;
-      background: white;
-      border-radius: 12px;
-      text-align: center;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      margin-top: 40px; padding: 16px; background: white; border-radius: 12px;
+      text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
     .status-bar .badge {
-      display: inline-block;
-      background: #dcfce7;
-      color: #15803d;
-      padding: 4px 12px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 600;
-      margin-bottom: 8px;
+      display: inline-block; background: #dcfce7; color: #15803d;
+      padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; margin-bottom: 8px;
     }
-    .status-bar p {
-      font-size: 13px;
-      color: #6b7280;
-    }
+    .status-bar p { font-size: 13px; color: #6b7280; }
 
-    /* Pages (hidden by default) */
+    /* ---- Pages ---- */
     .page { display: none; }
     .page.active { display: block; }
 
-    /* Back button */
-    .back-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: none;
-      border: none;
-      font-size: 14px;
-      color: #16a34a;
-      font-weight: 600;
-      cursor: pointer;
-      padding: 8px 0;
-      margin-bottom: 16px;
+    /* ---- Top Bar ---- */
+    .top-bar {
+      background: white; border-bottom: 1px solid #e5e7eb; padding: 12px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 40;
     }
+    .top-bar-title { font-size: 18px; font-weight: 700; color: #111; }
+    .top-bar-week { font-size: 13px; color: #6b7280; }
 
-    /* Plan Page */
-    .week-grid { display: grid; gap: 8px; }
-    .day-card {
-      background: white;
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .day-name { font-weight: 600; font-size: 15px; }
-    .day-date { font-size: 12px; color: #9ca3af; }
-    .day-status {
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 500;
-    }
-    .status-free { background: #dcfce7; color: #15803d; }
-    .status-partial { background: #fef9c3; color: #a16207; }
-    .status-busy { background: #fee2e2; color: #dc2626; }
-    .day-meal {
-      font-size: 13px;
-      color: #6b7280;
-      font-style: italic;
-    }
-
-    /* Recipe List */
-    .search-bar {
-      background: white;
-      border-radius: 12px;
-      padding: 12px 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 16px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    }
-    .search-bar input {
-      border: none;
-      outline: none;
-      flex: 1;
-      font-size: 15px;
+    /* ---- Plan the Week Button ---- */
+    .plan-btn {
+      display: block; width: 100%; padding: 14px; border: none; border-radius: 12px;
+      font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s;
       font-family: inherit;
     }
+    .plan-btn.ready {
+      background: #16a34a; color: white;
+    }
+    .plan-btn.ready:hover { background: #15803d; }
+    .plan-btn.planning {
+      background: #fef9c3; color: #a16207; cursor: wait;
+    }
+    .plan-btn.complete {
+      background: #dcfce7; color: #15803d; cursor: default;
+    }
+
+    /* ---- Weekly Grid ---- */
+    .week-table { margin-top: 16px; }
+    .day-row {
+      background: white; border-radius: 12px; margin-bottom: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06); overflow: hidden;
+    }
+    .day-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 16px; border-bottom: 1px solid #f3f4f6;
+    }
+    .day-label { font-weight: 700; font-size: 15px; color: #111; }
+    .day-date { font-size: 12px; color: #9ca3af; }
+    .day-columns {
+      display: grid; grid-template-columns: 1fr 1fr; min-height: 72px;
+    }
+    .day-col {
+      padding: 10px 16px; display: flex; flex-direction: column; justify-content: center;
+    }
+    .day-col:first-child { border-right: 1px solid #f3f4f6; }
+    .col-label {
+      font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+      color: #9ca3af; margin-bottom: 4px;
+    }
+    .event-item { margin-bottom: 6px; }
+    .event-item:last-child { margin-bottom: 0; }
+    .event-title { font-size: 13px; font-weight: 600; color: #374151; }
+    .event-detail { font-size: 11px; color: #9ca3af; }
+    .no-events { font-size: 13px; color: #d1d5db; font-style: italic; }
+
+    /* Dinner column */
+    .dinner-name { font-size: 14px; font-weight: 600; color: #111; }
+    .dinner-meta { display: flex; gap: 8px; margin-top: 4px; align-items: center; }
+    .dinner-prep { font-size: 11px; color: #6b7280; }
+    .effort-dot {
+      width: 8px; height: 8px; border-radius: 50%; display: inline-block;
+    }
+    .effort-dot.easy { background: #22c55e; }
+    .effort-dot.medium { background: #eab308; }
+    .effort-dot.hard { background: #ef4444; }
+    .effort-label { font-size: 11px; color: #6b7280; }
+    .dinner-empty {
+      font-size: 13px; color: #d1d5db; font-style: italic;
+    }
+    .dinner-assigned {
+      background: #f0fdf4; border-radius: 8px; padding: 8px; margin: -4px;
+    }
+
+    /* ---- Column Headers ---- */
+    .col-headers {
+      display: grid; grid-template-columns: 1fr 1fr;
+      padding: 8px 16px; margin-top: 12px;
+    }
+    .col-headers span {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.5px; color: #6b7280;
+    }
+    .col-headers span:last-child { padding-left: 16px; }
+
+    /* ---- Back button ---- */
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: none; border: none; font-size: 14px; color: #16a34a;
+      font-weight: 600; cursor: pointer; padding: 8px 0; margin-bottom: 16px;
+    }
+
+    /* ---- Page title ---- */
+    .page-title { font-size: 24px; font-weight: 700; margin-bottom: 20px; color: #111; }
+
+    /* ---- Recipe List ---- */
+    .search-bar {
+      background: white; border-radius: 12px; padding: 12px 16px;
+      display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .search-bar input { border: none; outline: none; flex: 1; font-size: 15px; font-family: inherit; }
     .recipe-card {
-      background: white;
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 8px;
+      background: white; border-radius: 12px; padding: 16px; margin-bottom: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
     .recipe-name { font-weight: 600; font-size: 15px; }
-    .recipe-meta {
-      display: flex;
-      gap: 12px;
-      margin-top: 6px;
-      font-size: 12px;
-      color: #9ca3af;
-    }
-    .effort-badge {
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-size: 11px;
-      font-weight: 600;
-    }
+    .recipe-meta { display: flex; gap: 12px; margin-top: 6px; font-size: 12px; color: #9ca3af; }
+    .effort-badge { padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
     .effort-easy { background: #dcfce7; color: #15803d; }
     .effort-medium { background: #fef9c3; color: #a16207; }
     .effort-hard { background: #fee2e2; color: #dc2626; }
 
-    /* Shopping List */
+    /* ---- Shopping List ---- */
     .category-section { margin-bottom: 20px; }
     .category-title {
-      font-size: 13px;
-      font-weight: 600;
-      text-transform: uppercase;
-      color: #6b7280;
-      letter-spacing: 0.5px;
-      margin-bottom: 8px;
+      font-size: 13px; font-weight: 600; text-transform: uppercase;
+      color: #6b7280; letter-spacing: 0.5px; margin-bottom: 8px;
     }
     .shopping-item {
-      background: white;
-      border-radius: 10px;
-      padding: 12px 16px;
-      margin-bottom: 4px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-      cursor: pointer;
-      transition: opacity 0.15s;
+      background: white; border-radius: 10px; padding: 12px 16px; margin-bottom: 4px;
+      display: flex; align-items: center; gap: 12px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer; transition: opacity 0.15s;
     }
-    .shopping-item.checked {
-      opacity: 0.5;
-      text-decoration: line-through;
-    }
+    .shopping-item.checked { opacity: 0.5; text-decoration: line-through; }
     .checkbox {
-      width: 22px;
-      height: 22px;
-      border: 2px solid #d1d5db;
-      border-radius: 6px;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.15s;
+      width: 22px; height: 22px; border: 2px solid #d1d5db; border-radius: 6px;
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s; font-size: 13px;
     }
-    .shopping-item.checked .checkbox {
-      background: #16a34a;
-      border-color: #16a34a;
-      color: white;
-    }
+    .shopping-item.checked .checkbox { background: #16a34a; border-color: #16a34a; color: white; }
     .item-name { font-size: 14px; }
     .item-qty { font-size: 12px; color: #9ca3af; margin-left: auto; }
+    .progress-bar { background: #e5e7eb; border-radius: 999px; height: 8px; margin-bottom: 20px; overflow: hidden; }
+    .progress-fill { background: #16a34a; height: 100%; border-radius: 999px; transition: width 0.3s; }
 
-    /* Bottom Nav */
+    /* ---- Settings ---- */
+    .feature-card {
+      background: white; border-radius: 16px; padding: 20px; display: flex;
+      align-items: center; gap: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .feature-icon { font-size: 32px; flex-shrink: 0; width: 48px; text-align: center; }
+    .feature-title { font-size: 16px; font-weight: 600; color: #111; }
+
+    /* ---- Bottom Nav ---- */
     .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: white;
-      border-top: 1px solid #e5e7eb;
-      display: flex;
-      justify-content: space-around;
-      padding: 8px 0 env(safe-area-inset-bottom, 8px);
-      z-index: 50;
+      position: fixed; bottom: 0; left: 0; right: 0; background: white;
+      border-top: 1px solid #e5e7eb; display: flex; justify-content: space-around;
+      padding: 8px 0 env(safe-area-inset-bottom, 8px); z-index: 50;
     }
     .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      padding: 8px 16px;
-      cursor: pointer;
-      color: #9ca3af;
-      text-decoration: none;
-      background: none;
-      border: none;
-      font-family: inherit;
-      transition: color 0.15s;
+      display: flex; flex-direction: column; align-items: center; gap: 2px;
+      padding: 8px 16px; cursor: pointer; color: #9ca3af; background: none;
+      border: none; font-family: inherit; transition: color 0.15s;
     }
     .nav-item.active { color: #16a34a; }
     .nav-item .nav-label { font-size: 11px; font-weight: 500; }
     .nav-item svg { width: 24px; height: 24px; }
-
-    /* Page title */
-    .page-title {
-      font-size: 24px;
-      font-weight: 700;
-      margin-bottom: 20px;
-      color: #111;
-    }
-
-    /* Progress bar */
-    .progress-bar {
-      background: #e5e7eb;
-      border-radius: 999px;
-      height: 8px;
-      margin-bottom: 20px;
-      overflow: hidden;
-    }
-    .progress-fill {
-      background: #16a34a;
-      height: 100%;
-      border-radius: 999px;
-      transition: width 0.3s;
-    }
   </style>
 </head>
 <body>
 
-  <!-- HOME PAGE -->
-  <div id="page-home" class="page active">
+  <!-- ======== LOGIN PAGE ======== -->
+  <div id="page-home" class="page active login-bg">
     <div class="container">
       <div class="header">
         <div class="logo">🍽️</div>
@@ -384,7 +239,7 @@
         <div class="nav-card" onclick="showPage('settings')">
           <div class="icon">⚙️</div>
           <div class="label">Settings</div>
-          <div class="feature-desc" style="margin-top:4px;">Pantry staples & preferences</div>
+          <div class="feature-desc" style="margin-top:4px;">Pantry staples &amp; preferences</div>
         </div>
       </div>
 
@@ -395,16 +250,34 @@
     </div>
   </div>
 
-  <!-- PLAN PAGE -->
+  <!-- ======== PLAN PAGE (Main App Home) ======== -->
   <div id="page-plan" class="page">
-    <div class="container" style="padding-bottom: 80px;">
-      <button class="back-btn" onclick="showPage('home')">← Back</button>
-      <div class="page-title">This Week's Plan</div>
-      <div class="week-grid" id="week-grid"></div>
+    <div class="top-bar">
+      <div>
+        <div class="top-bar-title">MealFlow</div>
+        <div class="top-bar-week" id="week-range"></div>
+      </div>
+    </div>
+    <div class="container" style="padding-bottom: 90px;">
+      <!-- Plan the Week button -->
+      <div style="margin-bottom: 8px; margin-top: 4px;">
+        <button class="plan-btn ready" id="plan-btn" onclick="planTheWeek()">
+          Plan the Week
+        </button>
+      </div>
+
+      <!-- Column headers -->
+      <div class="col-headers">
+        <span>Calendar</span>
+        <span>Dinner</span>
+      </div>
+
+      <!-- Week rows -->
+      <div id="week-table" class="week-table"></div>
     </div>
   </div>
 
-  <!-- RECIPES PAGE -->
+  <!-- ======== RECIPES PAGE ======== -->
   <div id="page-recipes" class="page">
     <div class="container" style="padding-bottom: 80px;">
       <button class="back-btn" onclick="showPage('home')">← Back</button>
@@ -417,7 +290,7 @@
     </div>
   </div>
 
-  <!-- SHOPPING PAGE -->
+  <!-- ======== SHOPPING PAGE ======== -->
   <div id="page-shopping" class="page">
     <div class="container" style="padding-bottom: 80px;">
       <button class="back-btn" onclick="showPage('home')">← Back</button>
@@ -429,7 +302,7 @@
     </div>
   </div>
 
-  <!-- SETTINGS PAGE -->
+  <!-- ======== SETTINGS PAGE ======== -->
   <div id="page-settings" class="page">
     <div class="container" style="padding-bottom: 80px;">
       <button class="back-btn" onclick="showPage('home')">← Back</button>
@@ -465,7 +338,7 @@
     </div>
   </div>
 
-  <!-- BOTTOM NAV (visible on sub-pages) -->
+  <!-- ======== BOTTOM NAV ======== -->
   <div class="bottom-nav" id="bottom-nav" style="display: none;">
     <button class="nav-item" onclick="showPage('plan')" data-page="plan">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -486,20 +359,36 @@
   </div>
 
   <script>
-    // Sample data
+    // ---- Data ----
     const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     const today = new Date();
     const monday = new Date(today);
     monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
 
-    const weekData = [
-      { status: 'free', meal: 'Chicken Stir Fry' },
-      { status: 'partial', meal: 'Pasta Carbonara' },
-      { status: 'free', meal: 'Tacos' },
-      { status: 'busy', meal: 'Leftovers' },
-      { status: 'free', meal: null },
-      { status: 'free', meal: null },
-      { status: 'partial', meal: null },
+    const calendarEvents = [
+      [ // Monday
+        { title: 'Team standup', where: 'Zoom', duration: '30 min' },
+        { title: 'Dentist appt', where: 'Dr. Smith Office', duration: '1 hr' }
+      ],
+      [ // Tuesday
+        { title: 'Soccer practice', where: 'City Park', duration: '1.5 hr' }
+      ],
+      [ // Wednesday
+        { title: 'Work presentation', where: 'Office', duration: '2 hr' },
+        { title: 'Piano lesson', where: 'Music Academy', duration: '45 min' },
+        { title: 'Book club', where: 'Library', duration: '1.5 hr' }
+      ],
+      [ // Thursday
+      ],
+      [ // Friday
+        { title: 'Date night', where: 'Downtown', duration: '3 hr' }
+      ],
+      [ // Saturday
+        { title: 'Farmers market', where: 'Town Square', duration: '1 hr' }
+      ],
+      [ // Sunday
+        { title: 'Brunch with family', where: 'Mom\'s house', duration: '2 hr' }
+      ]
     ];
 
     const recipes = [
@@ -510,10 +399,20 @@
       { name: 'Homemade Pizza', effort: 'medium', time: '60 min', servings: 4 },
       { name: 'Thai Green Curry', effort: 'medium', time: '35 min', servings: 4 },
       { name: 'Beef Bourguignon', effort: 'hard', time: '180 min', servings: 6 },
-      { name: 'Grilled Cheese & Tomato Soup', effort: 'easy', time: '15 min', servings: 2 },
+      { name: 'Grilled Cheese and Tomato Soup', effort: 'easy', time: '15 min', servings: 2 },
       { name: 'Chicken Parmesan', effort: 'medium', time: '50 min', servings: 4 },
       { name: 'Shrimp Scampi', effort: 'easy', time: '20 min', servings: 2 },
     ];
+
+    // Dinner assignments — null means not yet planned
+    const dinners = [null, null, null, null, null, null, null];
+
+    // Smart meal suggestions based on how busy the evening is
+    const easyMeals = recipes.filter(r => r.effort === 'easy');
+    const mediumMeals = recipes.filter(r => r.effort === 'medium');
+    const hardMeals = recipes.filter(r => r.effort === 'hard');
+
+    let planState = 'ready'; // 'ready' | 'planning' | 'complete'
 
     const shoppingItems = {
       'Produce': [
@@ -542,58 +441,144 @@
       ],
     };
 
-    // Render functions
+    // ---- Plan the Week ----
+    function planTheWeek() {
+      if (planState !== 'ready') return;
+
+      const btn = document.getElementById('plan-btn');
+      planState = 'planning';
+      btn.className = 'plan-btn planning';
+      btn.textContent = 'Planning...';
+
+      // Simulate planning with a short delay, then assign meals
+      setTimeout(function() {
+        for (let i = 0; i < 7; i++) {
+          const eventCount = calendarEvents[i].length;
+          let pool;
+          if (eventCount >= 3) {
+            // Very busy — pick easy / leftovers
+            pool = easyMeals;
+          } else if (eventCount >= 1) {
+            // Somewhat busy — easy or medium
+            pool = easyMeals.concat(mediumMeals);
+          } else {
+            // Free evening — any difficulty
+            pool = recipes;
+          }
+          // Pick a random meal from the pool, avoid repeats
+          let pick;
+          let attempts = 0;
+          do {
+            pick = pool[Math.floor(Math.random() * pool.length)];
+            attempts++;
+          } while (dinners.includes(pick) && attempts < 20);
+          dinners[i] = pick;
+        }
+
+        planState = 'complete';
+        btn.className = 'plan-btn complete';
+        btn.textContent = 'Planning Complete';
+        renderWeek();
+      }, 1200);
+    }
+
+    // ---- Render Week ----
     function renderWeek() {
-      const grid = document.getElementById('week-grid');
-      grid.innerHTML = days.map((day, i) => {
+      // Set week range in header
+      const sun = new Date(monday);
+      sun.setDate(monday.getDate() + 6);
+      document.getElementById('week-range').textContent =
+        monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' – ' +
+        sun.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+      const table = document.getElementById('week-table');
+      table.innerHTML = days.map(function(day, i) {
         const date = new Date(monday);
         date.setDate(monday.getDate() + i);
-        const d = weekData[i];
         const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        return `
-          <div class="day-card">
-            <div>
-              <div class="day-name">${day}</div>
-              <div class="day-date">${dateStr}</div>
-              ${d.meal ? `<div class="day-meal">${d.meal}</div>` : '<div class="day-meal">Tap to assign</div>'}
-            </div>
-            <div class="day-status status-${d.status}">${d.status}</div>
-          </div>
-        `;
+        const events = calendarEvents[i];
+        const dinner = dinners[i];
+
+        // Calendar events column
+        let eventsHtml;
+        if (events.length === 0) {
+          eventsHtml = '<div class="no-events">No events</div>';
+        } else {
+          eventsHtml = events.map(function(e) {
+            return '<div class="event-item">' +
+              '<div class="event-title">' + e.title + '</div>' +
+              '<div class="event-detail">' + e.where + ' · ' + e.duration + '</div>' +
+            '</div>';
+          }).join('');
+        }
+
+        // Dinner column
+        let dinnerHtml;
+        if (dinner) {
+          dinnerHtml =
+            '<div class="dinner-assigned">' +
+              '<div class="dinner-name">' + dinner.name + '</div>' +
+              '<div class="dinner-meta">' +
+                '<span class="dinner-prep">' + dinner.time + '</span>' +
+                '<span class="effort-dot ' + dinner.effort + '"></span>' +
+                '<span class="effort-label">' + dinner.effort + '</span>' +
+              '</div>' +
+            '</div>';
+        } else {
+          dinnerHtml = '<div class="dinner-empty">Not planned</div>';
+        }
+
+        return '<div class="day-row">' +
+          '<div class="day-header">' +
+            '<span class="day-label">' + day + '</span>' +
+            '<span class="day-date">' + dateStr + '</span>' +
+          '</div>' +
+          '<div class="day-columns">' +
+            '<div class="day-col">' + eventsHtml + '</div>' +
+            '<div class="day-col">' + dinnerHtml + '</div>' +
+          '</div>' +
+        '</div>';
       }).join('');
     }
 
+    // ---- Render Recipes ----
     function renderRecipes(filter) {
-      const list = document.getElementById('recipe-list');
-      const filtered = filter
-        ? recipes.filter(r => r.name.toLowerCase().includes(filter.toLowerCase()))
+      var list = document.getElementById('recipe-list');
+      var filtered = filter
+        ? recipes.filter(function(r) { return r.name.toLowerCase().indexOf(filter.toLowerCase()) >= 0; })
         : recipes;
-      list.innerHTML = filtered.map(r => `
-        <div class="recipe-card">
-          <div class="recipe-name">${r.name}</div>
-          <div class="recipe-meta">
-            <span class="effort-badge effort-${r.effort}">${r.effort}</span>
-            <span>⏱ ${r.time}</span>
-            <span>🍽 ${r.servings} servings</span>
-          </div>
-        </div>
-      `).join('');
+      list.innerHTML = filtered.map(function(r) {
+        return '<div class="recipe-card">' +
+          '<div class="recipe-name">' + r.name + '</div>' +
+          '<div class="recipe-meta">' +
+            '<span class="effort-badge effort-' + r.effort + '">' + r.effort + '</span>' +
+            '<span>⏱ ' + r.time + '</span>' +
+            '<span>🍽 ' + r.servings + ' servings</span>' +
+          '</div>' +
+        '</div>';
+      }).join('');
     }
 
+    // ---- Render Shopping ----
     function renderShopping() {
-      const list = document.getElementById('shopping-list');
-      let html = '';
-      for (const [category, items] of Object.entries(shoppingItems)) {
-        html += `<div class="category-section">
-          <div class="category-title">${category}</div>
-          ${items.map((item, i) => `
-            <div class="shopping-item ${item.checked ? 'checked' : ''}" onclick="toggleItem(&quot;${category}&quot;, ${i})">
-              <div class="checkbox">${item.checked ? '✓' : ''}</div>
-              <span class="item-name">${item.name}</span>
-              <span class="item-qty">${item.qty}</span>
-            </div>
-          `).join('')}
-        </div>`;
+      var list = document.getElementById('shopping-list');
+      var html = '';
+      var categories = Object.keys(shoppingItems);
+      for (var c = 0; c < categories.length; c++) {
+        var category = categories[c];
+        var items = shoppingItems[category];
+        html += '<div class="category-section">' +
+          '<div class="category-title">' + category + '</div>';
+        for (var i = 0; i < items.length; i++) {
+          var item = items[i];
+          html += '<div class="shopping-item ' + (item.checked ? 'checked' : '') + '" ' +
+            'onclick="toggleItem(\'' + category.replace(/'/g, "\\'") + '\', ' + i + ')">' +
+            '<div class="checkbox">' + (item.checked ? '✓' : '') + '</div>' +
+            '<span class="item-name">' + item.name + '</span>' +
+            '<span class="item-qty">' + item.qty + '</span>' +
+          '</div>';
+        }
+        html += '</div>';
       }
       list.innerHTML = html;
       updateProgress();
@@ -605,27 +590,36 @@
     }
 
     function updateProgress() {
-      const all = Object.values(shoppingItems).flat();
-      const checked = all.filter(i => i.checked).length;
-      const pct = Math.round((checked / all.length) * 100);
+      var all = [];
+      var categories = Object.keys(shoppingItems);
+      for (var c = 0; c < categories.length; c++) {
+        var items = shoppingItems[categories[c]];
+        for (var i = 0; i < items.length; i++) { all.push(items[i]); }
+      }
+      var checked = all.filter(function(i) { return i.checked; }).length;
+      var pct = Math.round((checked / all.length) * 100);
       document.getElementById('shopping-progress').style.width = pct + '%';
     }
 
-    function filterRecipes(val) {
-      renderRecipes(val);
-    }
+    function filterRecipes(val) { renderRecipes(val); }
 
-    // Navigation
+    // ---- Navigation ----
     function showPage(page) {
-      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      var pages = document.querySelectorAll('.page');
+      for (var i = 0; i < pages.length; i++) { pages[i].classList.remove('active'); }
       document.getElementById('page-' + page).classList.add('active');
 
-      const nav = document.getElementById('bottom-nav');
-      nav.style.display = page === 'home' ? 'none' : 'flex';
+      var nav = document.getElementById('bottom-nav');
+      nav.style.display = (page === 'home') ? 'none' : 'flex';
 
-      document.querySelectorAll('.nav-item').forEach(item => {
-        item.classList.toggle('active', item.dataset.page === page);
-      });
+      var items = document.querySelectorAll('.nav-item');
+      for (var j = 0; j < items.length; j++) {
+        if (items[j].dataset.page === page) {
+          items[j].classList.add('active');
+        } else {
+          items[j].classList.remove('active');
+        }
+      }
 
       if (page === 'plan') renderWeek();
       if (page === 'recipes') renderRecipes();
@@ -634,7 +628,7 @@
       window.scrollTo(0, 0);
     }
 
-    // Initialize
+    // ---- Initialize ----
     document.addEventListener('DOMContentLoaded', function() {
       showPage('home');
     });
