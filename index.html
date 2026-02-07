@@ -560,7 +560,7 @@
         { name: 'Limes', qty: '3', checked: false },
         { name: 'Cilantro', qty: '1 bunch', checked: false },
       ],
-      'Meat & Seafood': [
+      'Meat and Seafood': [
         { name: 'Chicken breast', qty: '2 lbs', checked: false },
         { name: 'Ground beef', qty: '1.5 lbs', checked: false },
         { name: 'Bacon', qty: '8 oz', checked: true },
@@ -623,7 +623,7 @@
         html += `<div class="category-section">
           <div class="category-title">${category}</div>
           ${items.map((item, i) => `
-            <div class="shopping-item ${item.checked ? 'checked' : ''}" onclick="toggleItem('${category}', ${i})">
+            <div class="shopping-item ${item.checked ? 'checked' : ''}" onclick="toggleItem(&quot;${category}&quot;, ${i})">
               <div class="checkbox">${item.checked ? '✓' : ''}</div>
               <span class="item-name">${item.name}</span>
               <span class="item-qty">${item.qty}</span>
@@ -671,7 +671,9 @@
     }
 
     // Initialize
-    showPage('home');
+    document.addEventListener('DOMContentLoaded', function() {
+      showPage('home');
+    });
   </script>
 </body>
 </html>
