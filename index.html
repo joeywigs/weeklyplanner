@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MealFlow - Weekly Meal Planner</title>
+  <meta name="description" content="A smart weekly meal planning and shopping app for busy families">
+  <meta name="theme-color" content="#16a34a">
+  <link rel="manifest" href="/manifest.json">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #bbf7d0 100%);
+      min-height: 100vh;
+      color: #1a1a1a;
+    }
+    .container { max-width: 480px; margin: 0 auto; padding: 24px 16px; }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 48px 0 32px;
+    }
+    .logo {
+      font-size: 48px;
+      margin-bottom: 8px;
+    }
+    .app-name {
+      font-size: 36px;
+      font-weight: 800;
+      color: #15803d;
+      letter-spacing: -1px;
+    }
+    .tagline {
+      font-size: 16px;
+      color: #4b5563;
+      margin-top: 8px;
+    }
+
+    /* Features */
+    .features {
+      display: grid;
+      gap: 12px;
+      margin: 32px 0;
+    }
+    .feature-card {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      transition: transform 0.15s;
+    }
+    .feature-card:hover { transform: translateY(-2px); }
+    .feature-icon {
+      font-size: 32px;
+      flex-shrink: 0;
+      width: 48px;
+      text-align: center;
+    }
+    .feature-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #111;
+    }
+    .feature-desc {
+      font-size: 13px;
+      color: #6b7280;
+      margin-top: 2px;
+    }
+
+    /* Demo Navigation */
+    .nav-section {
+      margin-top: 32px;
+    }
+    .nav-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #6b7280;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+    .nav-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .nav-card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px 16px;
+      text-align: center;
+      text-decoration: none;
+      color: inherit;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      transition: transform 0.15s, box-shadow 0.15s;
+      cursor: pointer;
+    }
+    .nav-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+    .nav-card .icon { font-size: 32px; margin-bottom: 8px; }
+    .nav-card .label {
+      font-size: 14px;
+      font-weight: 600;
+      color: #111;
+    }
+
+    /* Sign In Button */
+    .signin-section {
+      margin-top: 32px;
+      text-align: center;
+    }
+    .signin-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: white;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 14px 32px;
+      font-size: 16px;
+      font-weight: 600;
+      color: #374151;
+      cursor: pointer;
+      transition: all 0.15s;
+      text-decoration: none;
+    }
+    .signin-btn:hover {
+      border-color: #16a34a;
+      background: #f0fdf4;
+    }
+    .signin-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Status */
+    .status-bar {
+      margin-top: 40px;
+      padding: 16px;
+      background: white;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .status-bar .badge {
+      display: inline-block;
+      background: #dcfce7;
+      color: #15803d;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .status-bar p {
+      font-size: 13px;
+      color: #6b7280;
+    }
+
+    /* Pages (hidden by default) */
+    .page { display: none; }
+    .page.active { display: block; }
+
+    /* Back button */
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: none;
+      font-size: 14px;
+      color: #16a34a;
+      font-weight: 600;
+      cursor: pointer;
+      padding: 8px 0;
+      margin-bottom: 16px;
+    }
+
+    /* Plan Page */
+    .week-grid { display: grid; gap: 8px; }
+    .day-card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .day-name { font-weight: 600; font-size: 15px; }
+    .day-date { font-size: 12px; color: #9ca3af; }
+    .day-status {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .status-free { background: #dcfce7; color: #15803d; }
+    .status-partial { background: #fef9c3; color: #a16207; }
+    .status-busy { background: #fee2e2; color: #dc2626; }
+    .day-meal {
+      font-size: 13px;
+      color: #6b7280;
+      font-style: italic;
+    }
+
+    /* Recipe List */
+    .search-bar {
+      background: white;
+      border-radius: 12px;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .search-bar input {
+      border: none;
+      outline: none;
+      flex: 1;
+      font-size: 15px;
+      font-family: inherit;
+    }
+    .recipe-card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .recipe-name { font-weight: 600; font-size: 15px; }
+    .recipe-meta {
+      display: flex;
+      gap: 12px;
+      margin-top: 6px;
+      font-size: 12px;
+      color: #9ca3af;
+    }
+    .effort-badge {
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .effort-easy { background: #dcfce7; color: #15803d; }
+    .effort-medium { background: #fef9c3; color: #a16207; }
+    .effort-hard { background: #fee2e2; color: #dc2626; }
+
+    /* Shopping List */
+    .category-section { margin-bottom: 20px; }
+    .category-title {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: #6b7280;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    .shopping-item {
+      background: white;
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .shopping-item.checked {
+      opacity: 0.5;
+      text-decoration: line-through;
+    }
+    .checkbox {
+      width: 22px;
+      height: 22px;
+      border: 2px solid #d1d5db;
+      border-radius: 6px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+    .shopping-item.checked .checkbox {
+      background: #16a34a;
+      border-color: #16a34a;
+      color: white;
+    }
+    .item-name { font-size: 14px; }
+    .item-qty { font-size: 12px; color: #9ca3af; margin-left: auto; }
+
+    /* Bottom Nav */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-around;
+      padding: 8px 0 env(safe-area-inset-bottom, 8px);
+      z-index: 50;
+    }
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding: 8px 16px;
+      cursor: pointer;
+      color: #9ca3af;
+      text-decoration: none;
+      background: none;
+      border: none;
+      font-family: inherit;
+      transition: color 0.15s;
+    }
+    .nav-item.active { color: #16a34a; }
+    .nav-item .nav-label { font-size: 11px; font-weight: 500; }
+    .nav-item svg { width: 24px; height: 24px; }
+
+    /* Page title */
+    .page-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: #111;
+    }
+
+    /* Progress bar */
+    .progress-bar {
+      background: #e5e7eb;
+      border-radius: 999px;
+      height: 8px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .progress-fill {
+      background: #16a34a;
+      height: 100%;
+      border-radius: 999px;
+      transition: width 0.3s;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HOME PAGE -->
+  <div id="page-home" class="page active">
+    <div class="container">
+      <div class="header">
+        <div class="logo">🍽️</div>
+        <div class="app-name">MealFlow</div>
+        <div class="tagline">Weekly meal planning made simple</div>
+      </div>
+
+      <div class="features">
+        <div class="feature-card">
+          <div class="feature-icon">📅</div>
+          <div>
+            <div class="feature-title">Smart Planning</div>
+            <div class="feature-desc">Plan meals around your calendar availability</div>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">📖</div>
+          <div>
+            <div class="feature-title">Recipe Library</div>
+            <div class="feature-desc">Import from Paprika or add your own recipes</div>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🛒</div>
+          <div>
+            <div class="feature-title">Shopping Lists</div>
+            <div class="feature-desc">Auto-generated, organized by store aisle</div>
+          </div>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">🥜</div>
+          <div>
+            <div class="feature-title">Allergy Safe</div>
+            <div class="feature-desc">Automatic tree nut detection on all recipes</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-title">Explore the App</div>
+        <div class="nav-grid">
+          <div class="nav-card" onclick="showPage('plan')">
+            <div class="icon">📅</div>
+            <div class="label">Meal Plan</div>
+          </div>
+          <div class="nav-card" onclick="showPage('recipes')">
+            <div class="icon">📖</div>
+            <div class="label">Recipes</div>
+          </div>
+          <div class="nav-card" onclick="showPage('shopping')">
+            <div class="icon">🛒</div>
+            <div class="label">Shopping</div>
+          </div>
+          <div class="nav-card" onclick="showPage('settings')">
+            <div class="icon">⚙️</div>
+            <div class="label">Settings</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="status-bar">
+        <div class="badge">Phase 1 MVP</div>
+        <p>Built with Next.js, Cloudflare Workers, and D1</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PLAN PAGE -->
+  <div id="page-plan" class="page">
+    <div class="container" style="padding-bottom: 80px;">
+      <button class="back-btn" onclick="showPage('home')">← Back</button>
+      <div class="page-title">This Week's Plan</div>
+      <div class="week-grid" id="week-grid"></div>
+    </div>
+  </div>
+
+  <!-- RECIPES PAGE -->
+  <div id="page-recipes" class="page">
+    <div class="container" style="padding-bottom: 80px;">
+      <button class="back-btn" onclick="showPage('home')">← Back</button>
+      <div class="page-title">Recipes</div>
+      <div class="search-bar">
+        <span>🔍</span>
+        <input type="text" placeholder="Search recipes..." oninput="filterRecipes(this.value)">
+      </div>
+      <div id="recipe-list"></div>
+    </div>
+  </div>
+
+  <!-- SHOPPING PAGE -->
+  <div id="page-shopping" class="page">
+    <div class="container" style="padding-bottom: 80px;">
+      <button class="back-btn" onclick="showPage('home')">← Back</button>
+      <div class="page-title">Shopping List</div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="shopping-progress" style="width: 0%"></div>
+      </div>
+      <div id="shopping-list"></div>
+    </div>
+  </div>
+
+  <!-- SETTINGS PAGE -->
+  <div id="page-settings" class="page">
+    <div class="container" style="padding-bottom: 80px;">
+      <button class="back-btn" onclick="showPage('home')">← Back</button>
+      <div class="page-title">Settings</div>
+      <div class="feature-card" style="margin-bottom: 12px;">
+        <div class="feature-icon">👤</div>
+        <div>
+          <div class="feature-title">Account</div>
+          <div class="feature-desc">Google OAuth sign-in required for full access</div>
+        </div>
+      </div>
+      <div class="feature-card" style="margin-bottom: 12px;">
+        <div class="feature-icon">🏪</div>
+        <div>
+          <div class="feature-title">Pantry Staples</div>
+          <div class="feature-desc">Salt, pepper, olive oil, butter, garlic, and 15 more</div>
+        </div>
+      </div>
+      <div class="feature-card" style="margin-bottom: 12px;">
+        <div class="feature-icon">🔄</div>
+        <div>
+          <div class="feature-title">Recurring Essentials</div>
+          <div class="feature-desc">Items you buy every week regardless of meal plan</div>
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🥜</div>
+        <div>
+          <div class="feature-title">Tree Nut Safety</div>
+          <div class="feature-desc">Enabled — all recipes scanned automatically</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV (visible on sub-pages) -->
+  <div class="bottom-nav" id="bottom-nav" style="display: none;">
+    <button class="nav-item" onclick="showPage('plan')" data-page="plan">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <span class="nav-label">Plan</span>
+    </button>
+    <button class="nav-item" onclick="showPage('recipes')" data-page="recipes">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+      <span class="nav-label">Recipes</span>
+    </button>
+    <button class="nav-item" onclick="showPage('shopping')" data-page="shopping">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 002 1.61h9.72a2 2 0 002-1.61L23 6H6"/></svg>
+      <span class="nav-label">Shopping</span>
+    </button>
+    <button class="nav-item" onclick="showPage('settings')" data-page="settings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      <span class="nav-label">Settings</span>
+    </button>
+  </div>
+
+  <script>
+    // Sample data
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const today = new Date();
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+
+    const weekData = [
+      { status: 'free', meal: 'Chicken Stir Fry' },
+      { status: 'partial', meal: 'Pasta Carbonara' },
+      { status: 'free', meal: 'Tacos' },
+      { status: 'busy', meal: 'Leftovers' },
+      { status: 'free', meal: null },
+      { status: 'free', meal: null },
+      { status: 'partial', meal: null },
+    ];
+
+    const recipes = [
+      { name: 'Chicken Stir Fry', effort: 'easy', time: '25 min', servings: 4 },
+      { name: 'Pasta Carbonara', effort: 'easy', time: '20 min', servings: 2 },
+      { name: 'Beef Tacos', effort: 'easy', time: '30 min', servings: 4 },
+      { name: 'Salmon with Roasted Vegetables', effort: 'medium', time: '45 min', servings: 2 },
+      { name: 'Homemade Pizza', effort: 'medium', time: '60 min', servings: 4 },
+      { name: 'Thai Green Curry', effort: 'medium', time: '35 min', servings: 4 },
+      { name: 'Beef Bourguignon', effort: 'hard', time: '180 min', servings: 6 },
+      { name: 'Grilled Cheese & Tomato Soup', effort: 'easy', time: '15 min', servings: 2 },
+      { name: 'Chicken Parmesan', effort: 'medium', time: '50 min', servings: 4 },
+      { name: 'Shrimp Scampi', effort: 'easy', time: '20 min', servings: 2 },
+    ];
+
+    const shoppingItems = {
+      'Produce': [
+        { name: 'Bell peppers', qty: '3', checked: false },
+        { name: 'Broccoli', qty: '2 heads', checked: false },
+        { name: 'Onions', qty: '4', checked: false },
+        { name: 'Garlic', qty: '1 head', checked: true },
+        { name: 'Limes', qty: '3', checked: false },
+        { name: 'Cilantro', qty: '1 bunch', checked: false },
+      ],
+      'Meat & Seafood': [
+        { name: 'Chicken breast', qty: '2 lbs', checked: false },
+        { name: 'Ground beef', qty: '1.5 lbs', checked: false },
+        { name: 'Bacon', qty: '8 oz', checked: true },
+      ],
+      'Dairy': [
+        { name: 'Parmesan cheese', qty: '4 oz', checked: false },
+        { name: 'Sour cream', qty: '8 oz', checked: false },
+        { name: 'Eggs', qty: '1 dozen', checked: true },
+      ],
+      'Pantry': [
+        { name: 'Soy sauce', qty: '1 bottle', checked: false },
+        { name: 'Spaghetti', qty: '1 lb', checked: false },
+        { name: 'Taco shells', qty: '12 ct', checked: false },
+        { name: 'Tortillas', qty: '10 ct', checked: true },
+      ],
+    };
+
+    // Render functions
+    function renderWeek() {
+      const grid = document.getElementById('week-grid');
+      grid.innerHTML = days.map((day, i) => {
+        const date = new Date(monday);
+        date.setDate(monday.getDate() + i);
+        const d = weekData[i];
+        const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        return `
+          <div class="day-card">
+            <div>
+              <div class="day-name">${day}</div>
+              <div class="day-date">${dateStr}</div>
+              ${d.meal ? `<div class="day-meal">${d.meal}</div>` : '<div class="day-meal">Tap to assign</div>'}
+            </div>
+            <div class="day-status status-${d.status}">${d.status}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderRecipes(filter) {
+      const list = document.getElementById('recipe-list');
+      const filtered = filter
+        ? recipes.filter(r => r.name.toLowerCase().includes(filter.toLowerCase()))
+        : recipes;
+      list.innerHTML = filtered.map(r => `
+        <div class="recipe-card">
+          <div class="recipe-name">${r.name}</div>
+          <div class="recipe-meta">
+            <span class="effort-badge effort-${r.effort}">${r.effort}</span>
+            <span>⏱ ${r.time}</span>
+            <span>🍽 ${r.servings} servings</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderShopping() {
+      const list = document.getElementById('shopping-list');
+      let html = '';
+      for (const [category, items] of Object.entries(shoppingItems)) {
+        html += `<div class="category-section">
+          <div class="category-title">${category}</div>
+          ${items.map((item, i) => `
+            <div class="shopping-item ${item.checked ? 'checked' : ''}" onclick="toggleItem('${category}', ${i})">
+              <div class="checkbox">${item.checked ? '✓' : ''}</div>
+              <span class="item-name">${item.name}</span>
+              <span class="item-qty">${item.qty}</span>
+            </div>
+          `).join('')}
+        </div>`;
+      }
+      list.innerHTML = html;
+      updateProgress();
+    }
+
+    function toggleItem(category, index) {
+      shoppingItems[category][index].checked = !shoppingItems[category][index].checked;
+      renderShopping();
+    }
+
+    function updateProgress() {
+      const all = Object.values(shoppingItems).flat();
+      const checked = all.filter(i => i.checked).length;
+      const pct = Math.round((checked / all.length) * 100);
+      document.getElementById('shopping-progress').style.width = pct + '%';
+    }
+
+    function filterRecipes(val) {
+      renderRecipes(val);
+    }
+
+    // Navigation
+    function showPage(page) {
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-' + page).classList.add('active');
+
+      const nav = document.getElementById('bottom-nav');
+      nav.style.display = page === 'home' ? 'none' : 'flex';
+
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.page === page);
+      });
+
+      if (page === 'plan') renderWeek();
+      if (page === 'recipes') renderRecipes();
+      if (page === 'shopping') renderShopping();
+
+      window.scrollTo(0, 0);
+    }
+
+    // Initialize
+    showPage('home');
+  </script>
+</body>
+</html>
