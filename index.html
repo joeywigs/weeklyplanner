@@ -6,7 +6,6 @@
   <title>MealFlow - Weekly Meal Planner</title>
   <meta name="description" content="A smart weekly meal planning and shopping app for busy families">
   <meta name="theme-color" content="#16a34a">
-  <!-- <link rel="manifest" href="/manifest.json"> -->
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -16,37 +15,8 @@
       color: #1a1a1a;
     }
 
-    /* ---- Login Page ---- */
-    .login-bg {
-      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #bbf7d0 100%);
-      min-height: 100vh;
-    }
-    .container { max-width: 480px; margin: 0 auto; padding: 24px 16px; }
-    .header { text-align: center; padding: 48px 0 32px; }
-    .logo { font-size: 48px; margin-bottom: 8px; }
-    .app-name { font-size: 36px; font-weight: 800; color: #15803d; letter-spacing: -1px; }
-    .tagline { font-size: 16px; color: #4b5563; margin-top: 8px; }
-    .feature-desc { font-size: 13px; color: #6b7280; margin-top: 2px; }
-    .nav-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    .nav-card {
-      background: white; border-radius: 16px; padding: 24px 16px; text-align: center;
-      color: inherit; box-shadow: 0 1px 3px rgba(0,0,0,0.08); cursor: pointer;
-      transition: transform 0.15s, box-shadow 0.15s;
-    }
-    .nav-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
-    .nav-card .icon { font-size: 32px; margin-bottom: 8px; }
-    .nav-card .label { font-size: 14px; font-weight: 600; color: #111; }
-    .status-bar {
-      margin-top: 40px; padding: 16px; background: white; border-radius: 12px;
-      text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-    }
-    .status-bar .badge {
-      display: inline-block; background: #dcfce7; color: #15803d;
-      padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; margin-bottom: 8px;
-    }
-    .status-bar p { font-size: 13px; color: #6b7280; }
-
     /* ---- Pages ---- */
+    .container { max-width: 480px; margin: 0 auto; padding: 24px 16px; }
     .page { display: none; }
     .page.active { display: block; }
 
@@ -65,15 +35,46 @@
       font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s;
       font-family: inherit;
     }
-    .plan-btn.ready {
-      background: #16a34a; color: white;
-    }
+    .plan-btn.ready { background: #16a34a; color: white; }
     .plan-btn.ready:hover { background: #15803d; }
-    .plan-btn.planning {
-      background: #fef9c3; color: #a16207; cursor: wait;
+    .plan-btn.planning { background: #fef9c3; color: #a16207; cursor: wait; }
+    .plan-btn.complete { background: #dcfce7; color: #15803d; cursor: default; }
+
+    /* ---- Calendar Setup Banner ---- */
+    .cal-setup {
+      background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px;
+      padding: 16px; margin-bottom: 12px; margin-top: 4px;
     }
-    .plan-btn.complete {
-      background: #dcfce7; color: #15803d; cursor: default;
+    .cal-setup-title { font-size: 14px; font-weight: 600; color: #1e40af; margin-bottom: 8px; }
+    .cal-setup-desc { font-size: 12px; color: #3b82f6; margin-bottom: 10px; line-height: 1.5; }
+    .cal-input-row { display: flex; gap: 8px; }
+    .cal-input {
+      flex: 1; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px;
+      font-size: 13px; font-family: inherit; outline: none;
+    }
+    .cal-input:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+    .cal-save-btn {
+      padding: 10px 16px; background: #2563eb; color: white; border: none;
+      border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+      font-family: inherit; white-space: nowrap;
+    }
+    .cal-save-btn:hover { background: #1d4ed8; }
+    .cal-status {
+      font-size: 12px; margin-top: 8px; padding: 6px 10px; border-radius: 6px;
+    }
+    .cal-status.success { background: #dcfce7; color: #15803d; }
+    .cal-status.error { background: #fee2e2; color: #dc2626; }
+    .cal-status.loading { background: #fef9c3; color: #a16207; }
+    .cal-connected {
+      background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px;
+      padding: 12px 16px; margin-bottom: 12px; margin-top: 4px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .cal-connected-text { font-size: 13px; color: #15803d; font-weight: 500; }
+    .cal-connected-count { font-size: 12px; color: #6b7280; }
+    .cal-disconnect {
+      background: none; border: none; color: #9ca3af; font-size: 12px;
+      cursor: pointer; text-decoration: underline; font-family: inherit;
     }
 
     /* ---- Weekly Grid ---- */
@@ -88,42 +89,15 @@
     }
     .day-label { font-weight: 700; font-size: 15px; color: #111; }
     .day-date { font-size: 12px; color: #9ca3af; }
-    .day-columns {
-      display: grid; grid-template-columns: 1fr 1fr; min-height: 72px;
-    }
-    .day-col {
-      padding: 10px 16px; display: flex; flex-direction: column; justify-content: center;
-    }
+    .day-columns { display: grid; grid-template-columns: 1fr 1fr; min-height: 72px; }
+    .day-col { padding: 10px 16px; display: flex; flex-direction: column; justify-content: center; }
     .day-col:first-child { border-right: 1px solid #f3f4f6; }
-    .col-label {
-      font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
-      color: #9ca3af; margin-bottom: 4px;
-    }
     .event-item { margin-bottom: 6px; }
     .event-item:last-child { margin-bottom: 0; }
     .event-title { font-size: 13px; font-weight: 600; color: #374151; }
     .event-detail { font-size: 11px; color: #9ca3af; }
+    .event-time { font-size: 11px; color: #6b7280; font-weight: 500; }
     .no-events { font-size: 13px; color: #d1d5db; font-style: italic; }
-
-    /* Dinner column */
-    .dinner-name { font-size: 14px; font-weight: 600; color: #111; }
-    .dinner-meta { display: flex; gap: 8px; margin-top: 4px; align-items: center; }
-    .dinner-prep { font-size: 11px; color: #6b7280; }
-    .effort-dot {
-      width: 8px; height: 8px; border-radius: 50%; display: inline-block;
-    }
-    .effort-dot.easy { background: #22c55e; }
-    .effort-dot.medium { background: #eab308; }
-    .effort-dot.hard { background: #ef4444; }
-    .effort-label { font-size: 11px; color: #6b7280; }
-    .dinner-empty {
-      font-size: 13px; color: #d1d5db; font-style: italic;
-    }
-    .dinner-assigned {
-      background: #f0fdf4; border-radius: 8px; padding: 8px; margin: -4px;
-    }
-
-    /* ---- Column Headers ---- */
     .col-headers {
       display: grid; grid-template-columns: 1fr 1fr;
       padding: 8px 16px; margin-top: 12px;
@@ -134,14 +108,24 @@
     }
     .col-headers span:last-child { padding-left: 16px; }
 
+    /* Dinner column */
+    .dinner-name { font-size: 14px; font-weight: 600; color: #111; }
+    .dinner-meta { display: flex; gap: 8px; margin-top: 4px; align-items: center; }
+    .dinner-prep { font-size: 11px; color: #6b7280; }
+    .effort-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+    .effort-dot.easy { background: #22c55e; }
+    .effort-dot.medium { background: #eab308; }
+    .effort-dot.hard { background: #ef4444; }
+    .effort-label { font-size: 11px; color: #6b7280; }
+    .dinner-empty { font-size: 13px; color: #d1d5db; font-style: italic; }
+    .dinner-assigned { background: #f0fdf4; border-radius: 8px; padding: 8px; margin: -4px; }
+
     /* ---- Back button ---- */
     .back-btn {
       display: inline-flex; align-items: center; gap: 6px;
       background: none; border: none; font-size: 14px; color: #16a34a;
       font-weight: 600; cursor: pointer; padding: 8px 0; margin-bottom: 16px;
     }
-
-    /* ---- Page title ---- */
     .page-title { font-size: 24px; font-weight: 700; margin-bottom: 20px; color: #111; }
 
     /* ---- Recipe List ---- */
@@ -192,6 +176,7 @@
     }
     .feature-icon { font-size: 32px; flex-shrink: 0; width: 48px; text-align: center; }
     .feature-title { font-size: 16px; font-weight: 600; color: #111; }
+    .feature-desc { font-size: 13px; color: #6b7280; margin-top: 2px; }
 
     /* ---- Bottom Nav ---- */
     .bottom-nav {
@@ -211,45 +196,6 @@
 </head>
 <body>
 
-  <!-- ======== LOGIN PAGE ======== -->
-  <div id="page-home" class="page active login-bg">
-    <div class="container">
-      <div class="header">
-        <div class="logo">🍽️</div>
-        <div class="app-name">MealFlow</div>
-        <div class="tagline">Weekly meal planning made simple</div>
-      </div>
-
-      <div class="nav-grid" style="margin-top: 32px;">
-        <div class="nav-card" onclick="showPage('plan')">
-          <div class="icon">📅</div>
-          <div class="label">Meal Plan</div>
-          <div class="feature-desc" style="margin-top:4px;">Plan around your calendar</div>
-        </div>
-        <div class="nav-card" onclick="showPage('recipes')">
-          <div class="icon">📖</div>
-          <div class="label">Recipes</div>
-          <div class="feature-desc" style="margin-top:4px;">Browse your recipe library</div>
-        </div>
-        <div class="nav-card" onclick="showPage('shopping')">
-          <div class="icon">🛒</div>
-          <div class="label">Shopping</div>
-          <div class="feature-desc" style="margin-top:4px;">Auto-generated grocery list</div>
-        </div>
-        <div class="nav-card" onclick="showPage('settings')">
-          <div class="icon">⚙️</div>
-          <div class="label">Settings</div>
-          <div class="feature-desc" style="margin-top:4px;">Pantry staples &amp; preferences</div>
-        </div>
-      </div>
-
-      <div class="status-bar">
-        <div class="badge">Phase 1 MVP</div>
-        <p>Built with Next.js, Cloudflare Workers, and D1</p>
-      </div>
-    </div>
-  </div>
-
   <!-- ======== PLAN PAGE (Main App Home) ======== -->
   <div id="page-plan" class="page">
     <div class="top-bar">
@@ -259,20 +205,21 @@
       </div>
     </div>
     <div class="container" style="padding-bottom: 90px;">
+      <!-- Calendar setup / status -->
+      <div id="cal-setup-area"></div>
+
       <!-- Plan the Week button -->
-      <div style="margin-bottom: 8px; margin-top: 4px;">
+      <div style="margin-bottom: 8px;">
         <button class="plan-btn ready" id="plan-btn" onclick="planTheWeek()">
           Plan the Week
         </button>
       </div>
 
-      <!-- Column headers -->
       <div class="col-headers">
         <span>Calendar</span>
         <span>Dinner</span>
       </div>
 
-      <!-- Week rows -->
       <div id="week-table" class="week-table"></div>
     </div>
   </div>
@@ -280,7 +227,6 @@
   <!-- ======== RECIPES PAGE ======== -->
   <div id="page-recipes" class="page">
     <div class="container" style="padding-bottom: 80px;">
-      <button class="back-btn" onclick="showPage('home')">← Back</button>
       <div class="page-title">Recipes</div>
       <div class="search-bar">
         <span>🔍</span>
@@ -293,7 +239,6 @@
   <!-- ======== SHOPPING PAGE ======== -->
   <div id="page-shopping" class="page">
     <div class="container" style="padding-bottom: 80px;">
-      <button class="back-btn" onclick="showPage('home')">← Back</button>
       <div class="page-title">Shopping List</div>
       <div class="progress-bar">
         <div class="progress-fill" id="shopping-progress" style="width: 0%"></div>
@@ -305,13 +250,14 @@
   <!-- ======== SETTINGS PAGE ======== -->
   <div id="page-settings" class="page">
     <div class="container" style="padding-bottom: 80px;">
-      <button class="back-btn" onclick="showPage('home')">← Back</button>
       <div class="page-title">Settings</div>
-      <div class="feature-card" style="margin-bottom: 12px;">
-        <div class="feature-icon">👤</div>
+
+      <!-- Calendar URL setting -->
+      <div class="feature-card" style="margin-bottom: 12px; cursor: pointer;" onclick="showPage('plan')">
+        <div class="feature-icon">📅</div>
         <div>
-          <div class="feature-title">Account</div>
-          <div class="feature-desc">Google OAuth sign-in required for full access</div>
+          <div class="feature-title">Calendar</div>
+          <div class="feature-desc" id="settings-cal-status">Not connected</div>
         </div>
       </div>
       <div class="feature-card" style="margin-bottom: 12px;">
@@ -359,39 +305,21 @@
   </div>
 
   <script>
-    // ---- Data ----
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    const today = new Date();
-    const monday = new Date(today);
+    // ---- Constants ----
+    var CORS_PROXY = 'https://corsproxy.io/?';
+    var days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    var today = new Date();
+    var monday = new Date(today);
     monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
+    monday.setHours(0, 0, 0, 0);
 
-    const calendarEvents = [
-      [ // Monday
-        { title: 'Team standup', where: 'Zoom', duration: '30 min' },
-        { title: 'Dentist appt', where: 'Dr. Smith Office', duration: '1 hr' }
-      ],
-      [ // Tuesday
-        { title: 'Soccer practice', where: 'City Park', duration: '1.5 hr' }
-      ],
-      [ // Wednesday
-        { title: 'Work presentation', where: 'Office', duration: '2 hr' },
-        { title: 'Piano lesson', where: 'Music Academy', duration: '45 min' },
-        { title: 'Book club', where: 'Library', duration: '1.5 hr' }
-      ],
-      [ // Thursday
-      ],
-      [ // Friday
-        { title: 'Date night', where: 'Downtown', duration: '3 hr' }
-      ],
-      [ // Saturday
-        { title: 'Farmers market', where: 'Town Square', duration: '1 hr' }
-      ],
-      [ // Sunday
-        { title: 'Brunch with family', where: 'Mom\'s house', duration: '2 hr' }
-      ]
-    ];
+    // ---- State ----
+    // calendarEvents[0..6] = arrays of {title, where, duration, startTime, endTime}
+    var calendarEvents = [[], [], [], [], [], [], []];
+    var calendarConnected = false;
+    var calendarEventCount = 0;
 
-    const recipes = [
+    var recipes = [
       { name: 'Chicken Stir Fry', effort: 'easy', time: '25 min', servings: 4 },
       { name: 'Pasta Carbonara', effort: 'easy', time: '20 min', servings: 2 },
       { name: 'Beef Tacos', effort: 'easy', time: '30 min', servings: 4 },
@@ -403,18 +331,12 @@
       { name: 'Chicken Parmesan', effort: 'medium', time: '50 min', servings: 4 },
       { name: 'Shrimp Scampi', effort: 'easy', time: '20 min', servings: 2 },
     ];
+    var dinners = [null, null, null, null, null, null, null];
+    var easyMeals = recipes.filter(function(r) { return r.effort === 'easy'; });
+    var mediumMeals = recipes.filter(function(r) { return r.effort === 'medium'; });
+    var planState = 'ready';
 
-    // Dinner assignments — null means not yet planned
-    const dinners = [null, null, null, null, null, null, null];
-
-    // Smart meal suggestions based on how busy the evening is
-    const easyMeals = recipes.filter(r => r.effort === 'easy');
-    const mediumMeals = recipes.filter(r => r.effort === 'medium');
-    const hardMeals = recipes.filter(r => r.effort === 'hard');
-
-    let planState = 'ready'; // 'ready' | 'planning' | 'complete'
-
-    const shoppingItems = {
+    var shoppingItems = {
       'Produce': [
         { name: 'Bell peppers', qty: '3', checked: false },
         { name: 'Broccoli', qty: '2 heads', checked: false },
@@ -441,37 +363,310 @@
       ],
     };
 
-    // ---- Plan the Week ----
+    // ========================================
+    // ICS PARSER
+    // ========================================
+    function parseICS(icsText) {
+      var events = [];
+      var lines = icsText.replace(/\r\n /g, '').replace(/\r\n\t/g, '').split(/\r\n|\n|\r/);
+      var inEvent = false;
+      var evt = {};
+
+      for (var i = 0; i < lines.length; i++) {
+        var line = lines[i];
+        if (line === 'BEGIN:VEVENT') {
+          inEvent = true;
+          evt = {};
+        } else if (line === 'END:VEVENT') {
+          inEvent = false;
+          if (evt.dtstart) {
+            events.push(evt);
+          }
+        } else if (inEvent) {
+          var colonIdx = line.indexOf(':');
+          if (colonIdx < 0) continue;
+          var key = line.substring(0, colonIdx);
+          var val = line.substring(colonIdx + 1);
+
+          // Strip parameters (e.g. DTSTART;TZID=America/New_York)
+          var baseKey = key.split(';')[0];
+
+          if (baseKey === 'SUMMARY') {
+            evt.summary = unescapeICS(val);
+          } else if (baseKey === 'LOCATION') {
+            evt.location = unescapeICS(val);
+          } else if (baseKey === 'DTSTART') {
+            evt.dtstart = parseICSDate(val, key);
+          } else if (baseKey === 'DTEND') {
+            evt.dtend = parseICSDate(val, key);
+          } else if (baseKey === 'DURATION') {
+            evt.duration = val;
+          }
+        }
+      }
+      return events;
+    }
+
+    function unescapeICS(s) {
+      return s.replace(/\\n/g, ' ').replace(/\\,/g, ',').replace(/\\\\/g, '\\').replace(/\\;/g, ';');
+    }
+
+    function parseICSDate(val, fullKey) {
+      // Handle TZID parameter
+      var tzid = null;
+      var parts = fullKey.split(';');
+      for (var i = 1; i < parts.length; i++) {
+        if (parts[i].indexOf('TZID=') === 0) {
+          tzid = parts[i].substring(5);
+        }
+      }
+
+      // All-day event: 20260207
+      if (val.length === 8) {
+        var y = parseInt(val.substring(0, 4));
+        var m = parseInt(val.substring(4, 6)) - 1;
+        var d = parseInt(val.substring(6, 8));
+        return { date: new Date(y, m, d), allDay: true };
+      }
+
+      // Date with time: 20260207T180000Z or 20260207T180000
+      var dateStr = val.replace('Z', '');
+      var yr = parseInt(dateStr.substring(0, 4));
+      var mo = parseInt(dateStr.substring(4, 6)) - 1;
+      var dy = parseInt(dateStr.substring(6, 8));
+      var hr = parseInt(dateStr.substring(9, 11));
+      var mi = parseInt(dateStr.substring(11, 13));
+      var sc = parseInt(dateStr.substring(13, 15)) || 0;
+
+      var dt;
+      if (val.indexOf('Z') >= 0) {
+        dt = new Date(Date.UTC(yr, mo, dy, hr, mi, sc));
+      } else {
+        // Local time (with or without TZID — treat as local for simplicity)
+        dt = new Date(yr, mo, dy, hr, mi, sc);
+      }
+      return { date: dt, allDay: false };
+    }
+
+    function formatTime(d) {
+      var h = d.getHours();
+      var m = d.getMinutes();
+      var ampm = h >= 12 ? 'pm' : 'am';
+      h = h % 12 || 12;
+      return h + (m > 0 ? ':' + (m < 10 ? '0' : '') + m : '') + ampm;
+    }
+
+    function durationMinutes(start, end) {
+      if (!start || !end) return '';
+      var mins = Math.round((end.date - start.date) / 60000);
+      if (mins < 60) return mins + ' min';
+      var hrs = Math.floor(mins / 60);
+      var rem = mins % 60;
+      return hrs + (rem > 0 ? '.' + Math.round(rem / 6) : '') + ' hr';
+    }
+
+    // ========================================
+    // FETCH & PROCESS CALENDAR
+    // ========================================
+    function fetchCalendar(url, callback) {
+      var proxyUrl = CORS_PROXY + encodeURIComponent(url);
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', proxyUrl, true);
+      xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          callback(null, xhr.responseText);
+        } else {
+          callback('Failed to fetch calendar (HTTP ' + xhr.status + ')');
+        }
+      };
+      xhr.onerror = function() {
+        callback('Network error fetching calendar');
+      };
+      xhr.send();
+    }
+
+    function processCalendarData(icsText) {
+      var allEvents = parseICS(icsText);
+      var sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 7);
+
+      // Reset
+      calendarEvents = [[], [], [], [], [], [], []];
+      calendarEventCount = 0;
+
+      for (var i = 0; i < allEvents.length; i++) {
+        var evt = allEvents[i];
+        if (!evt.dtstart) continue;
+        var start = evt.dtstart.date;
+        var end = evt.dtend ? evt.dtend.date : null;
+
+        // Check if event falls within this week
+        if (start >= sunday) continue;
+        if (end && end <= monday) continue;
+        if (!end && start < monday) continue;
+
+        // Determine which day(s) this event falls on
+        for (var d = 0; d < 7; d++) {
+          var dayStart = new Date(monday);
+          dayStart.setDate(monday.getDate() + d);
+          dayStart.setHours(0, 0, 0, 0);
+          var dayEnd = new Date(dayStart);
+          dayEnd.setDate(dayEnd.getDate() + 1);
+
+          // Event overlaps this day?
+          var eventStart = start;
+          var eventEnd = end || new Date(start.getTime() + 3600000);
+          if (eventStart < dayEnd && eventEnd > dayStart) {
+            var timeStr = '';
+            if (!evt.dtstart.allDay) {
+              timeStr = formatTime(start);
+              if (end) timeStr += ' - ' + formatTime(end);
+            }
+            calendarEvents[d].push({
+              title: evt.summary || 'Untitled',
+              where: evt.location || '',
+              duration: durationMinutes(evt.dtstart, evt.dtend),
+              timeStr: timeStr,
+              allDay: evt.dtstart.allDay
+            });
+            calendarEventCount++;
+          }
+        }
+      }
+
+      // Sort each day by time
+      for (var d = 0; d < 7; d++) {
+        calendarEvents[d].sort(function(a, b) {
+          if (a.allDay && !b.allDay) return -1;
+          if (!a.allDay && b.allDay) return 1;
+          return 0;
+        });
+      }
+    }
+
+    // ========================================
+    // CALENDAR SETUP UI
+    // ========================================
+    function renderCalSetup() {
+      var area = document.getElementById('cal-setup-area');
+      var savedUrl = localStorage.getItem('mealflow_ical_url');
+
+      if (calendarConnected) {
+        area.innerHTML =
+          '<div class="cal-connected">' +
+            '<div>' +
+              '<div class="cal-connected-text">Calendar connected</div>' +
+              '<div class="cal-connected-count">' + calendarEventCount + ' events this week</div>' +
+            '</div>' +
+            '<button class="cal-disconnect" onclick="disconnectCalendar()">Disconnect</button>' +
+          '</div>';
+        document.getElementById('settings-cal-status').textContent =
+          'Connected — ' + calendarEventCount + ' events this week';
+        return;
+      }
+
+      area.innerHTML =
+        '<div class="cal-setup">' +
+          '<div class="cal-setup-title">Connect Your Calendar</div>' +
+          '<div class="cal-setup-desc">' +
+            'Paste your Google Calendar secret iCal URL below.<br>' +
+            'Find it in Google Calendar Settings > your calendar > "Secret address in iCal format"' +
+          '</div>' +
+          '<div class="cal-input-row">' +
+            '<input class="cal-input" id="ical-url-input" type="text" ' +
+              'placeholder="https://calendar.google.com/calendar/ical/..." ' +
+              'value="' + (savedUrl || '') + '">' +
+            '<button class="cal-save-btn" onclick="connectCalendar()">Connect</button>' +
+          '</div>' +
+          '<div id="cal-status"></div>' +
+        '</div>';
+      document.getElementById('settings-cal-status').textContent = 'Not connected';
+    }
+
+    function connectCalendar() {
+      var input = document.getElementById('ical-url-input');
+      var url = input.value.trim();
+      if (!url) return;
+
+      // Basic validation
+      if (url.indexOf('calendar.google.com') < 0 && url.indexOf('.ics') < 0) {
+        showCalStatus('That doesn\'t look like an iCal URL. It should end in .ics', 'error');
+        return;
+      }
+
+      showCalStatus('Fetching calendar...', 'loading');
+
+      fetchCalendar(url, function(err, data) {
+        if (err) {
+          showCalStatus(err, 'error');
+          return;
+        }
+        if (data.indexOf('BEGIN:VCALENDAR') < 0) {
+          showCalStatus('Invalid calendar data received. Check the URL.', 'error');
+          return;
+        }
+
+        // Save URL and process
+        localStorage.setItem('mealflow_ical_url', url);
+        processCalendarData(data);
+        calendarConnected = true;
+
+        renderCalSetup();
+        renderWeek();
+      });
+    }
+
+    function disconnectCalendar() {
+      localStorage.removeItem('mealflow_ical_url');
+      calendarConnected = false;
+      calendarEvents = [[], [], [], [], [], [], []];
+      calendarEventCount = 0;
+      // Reset plan state so user can re-plan
+      planState = 'ready';
+      dinners = [null, null, null, null, null, null, null];
+      var btn = document.getElementById('plan-btn');
+      btn.className = 'plan-btn ready';
+      btn.textContent = 'Plan the Week';
+
+      renderCalSetup();
+      renderWeek();
+    }
+
+    function showCalStatus(msg, type) {
+      var el = document.getElementById('cal-status');
+      if (el) {
+        el.innerHTML = '<div class="cal-status ' + type + '">' + msg + '</div>';
+      }
+    }
+
+    // ========================================
+    // PLAN THE WEEK
+    // ========================================
     function planTheWeek() {
       if (planState !== 'ready') return;
 
-      const btn = document.getElementById('plan-btn');
+      var btn = document.getElementById('plan-btn');
       planState = 'planning';
       btn.className = 'plan-btn planning';
       btn.textContent = 'Planning...';
 
-      // Simulate planning with a short delay, then assign meals
       setTimeout(function() {
-        for (let i = 0; i < 7; i++) {
-          const eventCount = calendarEvents[i].length;
-          let pool;
+        for (var i = 0; i < 7; i++) {
+          var eventCount = calendarEvents[i].length;
+          var pool;
           if (eventCount >= 3) {
-            // Very busy — pick easy / leftovers
             pool = easyMeals;
           } else if (eventCount >= 1) {
-            // Somewhat busy — easy or medium
             pool = easyMeals.concat(mediumMeals);
           } else {
-            // Free evening — any difficulty
             pool = recipes;
           }
-          // Pick a random meal from the pool, avoid repeats
-          let pick;
-          let attempts = 0;
+          var pick;
+          var attempts = 0;
           do {
             pick = pool[Math.floor(Math.random() * pool.length)];
             attempts++;
-          } while (dinners.includes(pick) && attempts < 20);
+          } while (dinners.indexOf(pick) >= 0 && attempts < 20);
           dinners[i] = pick;
         }
 
@@ -482,38 +677,51 @@
       }, 1200);
     }
 
-    // ---- Render Week ----
+    // ========================================
+    // RENDER WEEK
+    // ========================================
     function renderWeek() {
-      // Set week range in header
-      const sun = new Date(monday);
+      var sun = new Date(monday);
       sun.setDate(monday.getDate() + 6);
       document.getElementById('week-range').textContent =
-        monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' – ' +
+        monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' - ' +
         sun.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
-      const table = document.getElementById('week-table');
+      var table = document.getElementById('week-table');
       table.innerHTML = days.map(function(day, i) {
-        const date = new Date(monday);
+        var date = new Date(monday);
         date.setDate(monday.getDate() + i);
-        const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        const events = calendarEvents[i];
-        const dinner = dinners[i];
+        var dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        var events = calendarEvents[i];
+        var dinner = dinners[i];
 
         // Calendar events column
-        let eventsHtml;
+        var eventsHtml;
         if (events.length === 0) {
           eventsHtml = '<div class="no-events">No events</div>';
         } else {
           eventsHtml = events.map(function(e) {
+            var detail = '';
+            if (e.allDay) {
+              detail = 'All day';
+            } else if (e.timeStr) {
+              detail = e.timeStr;
+            }
+            if (e.where) {
+              detail += (detail ? ' · ' : '') + e.where;
+            }
+            if (e.duration && !e.allDay) {
+              detail += (detail ? ' · ' : '') + e.duration;
+            }
             return '<div class="event-item">' +
-              '<div class="event-title">' + e.title + '</div>' +
-              '<div class="event-detail">' + e.where + ' · ' + e.duration + '</div>' +
+              '<div class="event-title">' + escapeHtml(e.title) + '</div>' +
+              (detail ? '<div class="event-detail">' + escapeHtml(detail) + '</div>' : '') +
             '</div>';
           }).join('');
         }
 
         // Dinner column
-        let dinnerHtml;
+        var dinnerHtml;
         if (dinner) {
           dinnerHtml =
             '<div class="dinner-assigned">' +
@@ -541,7 +749,15 @@
       }).join('');
     }
 
-    // ---- Render Recipes ----
+    function escapeHtml(s) {
+      var div = document.createElement('div');
+      div.appendChild(document.createTextNode(s));
+      return div.innerHTML;
+    }
+
+    // ========================================
+    // RENDER RECIPES
+    // ========================================
     function renderRecipes(filter) {
       var list = document.getElementById('recipe-list');
       var filtered = filter
@@ -559,7 +775,9 @@
       }).join('');
     }
 
-    // ---- Render Shopping ----
+    // ========================================
+    // RENDER SHOPPING
+    // ========================================
     function renderShopping() {
       var list = document.getElementById('shopping-list');
       var html = '';
@@ -567,8 +785,7 @@
       for (var c = 0; c < categories.length; c++) {
         var category = categories[c];
         var items = shoppingItems[category];
-        html += '<div class="category-section">' +
-          '<div class="category-title">' + category + '</div>';
+        html += '<div class="category-section"><div class="category-title">' + category + '</div>';
         for (var i = 0; i < items.length; i++) {
           var item = items[i];
           html += '<div class="shopping-item ' + (item.checked ? 'checked' : '') + '" ' +
@@ -603,14 +820,16 @@
 
     function filterRecipes(val) { renderRecipes(val); }
 
-    // ---- Navigation ----
+    // ========================================
+    // NAVIGATION
+    // ========================================
     function showPage(page) {
       var pages = document.querySelectorAll('.page');
       for (var i = 0; i < pages.length; i++) { pages[i].classList.remove('active'); }
       document.getElementById('page-' + page).classList.add('active');
 
       var nav = document.getElementById('bottom-nav');
-      nav.style.display = (page === 'home') ? 'none' : 'flex';
+      nav.style.display = 'flex';
 
       var items = document.querySelectorAll('.nav-item');
       for (var j = 0; j < items.length; j++) {
@@ -621,16 +840,31 @@
         }
       }
 
-      if (page === 'plan') renderWeek();
+      if (page === 'plan') { renderCalSetup(); renderWeek(); }
       if (page === 'recipes') renderRecipes();
       if (page === 'shopping') renderShopping();
 
       window.scrollTo(0, 0);
     }
 
-    // ---- Initialize ----
+    // ========================================
+    // INIT
+    // ========================================
     document.addEventListener('DOMContentLoaded', function() {
       showPage('plan');
+
+      // Auto-load saved calendar
+      var savedUrl = localStorage.getItem('mealflow_ical_url');
+      if (savedUrl) {
+        fetchCalendar(savedUrl, function(err, data) {
+          if (!err && data.indexOf('BEGIN:VCALENDAR') >= 0) {
+            processCalendarData(data);
+            calendarConnected = true;
+            renderCalSetup();
+            renderWeek();
+          }
+        });
+      }
     });
   </script>
 </body>
