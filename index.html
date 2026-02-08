@@ -178,6 +178,33 @@
     .feature-title { font-size: 16px; font-weight: 600; color: #111; }
     .feature-desc { font-size: 13px; color: #6b7280; margin-top: 2px; }
 
+    .import-section {
+      background: white; border-radius: 16px; padding: 20px; margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .import-section h3 { font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+    .import-section p { font-size: 13px; color: #6b7280; margin-bottom: 12px; }
+    .import-dropzone {
+      border: 2px dashed #d1d5db; border-radius: 12px; padding: 24px; text-align: center;
+      cursor: pointer; transition: border-color 0.15s, background 0.15s;
+    }
+    .import-dropzone:hover, .import-dropzone.dragover {
+      border-color: #16a34a; background: #f0fdf4;
+    }
+    .import-dropzone input[type="file"] { display: none; }
+    .import-dropzone .drop-label { font-size: 14px; color: #6b7280; }
+    .import-dropzone .drop-label strong { color: #16a34a; }
+    .import-status {
+      margin-top: 12px; padding: 10px 14px; border-radius: 10px; font-size: 13px; display: none;
+    }
+    .import-status.success { display: block; background: #dcfce7; color: #15803d; }
+    .import-status.error { display: block; background: #fee2e2; color: #dc2626; }
+    .import-status.loading { display: block; background: #f3f4f6; color: #6b7280; }
+    .nut-warning {
+      background: #fef3c7; color: #92400e; font-size: 12px; padding: 6px 10px;
+      border-radius: 8px; margin-top: 4px;
+    }
+
     /* ---- Bottom Nav ---- */
     .bottom-nav {
       position: fixed; bottom: 0; left: 0; right: 0; background: white;
@@ -252,6 +279,17 @@
     <div class="container" style="padding-bottom: 80px;">
       <div class="page-title">Settings</div>
 
+      <!-- Paprika import -->
+      <div class="import-section">
+        <h3>Import Paprika Recipes</h3>
+        <p>Export from Paprika 3 and upload your <strong>.paprikarecipes</strong> file here.</p>
+        <div class="import-dropzone" id="import-dropzone" onclick="document.getElementById('paprika-file').click()">
+          <input type="file" id="paprika-file" accept=".paprikarecipes" onchange="handlePaprikaFile(this.files)">
+          <div class="drop-label"><strong>Choose file</strong> or drag & drop</div>
+        </div>
+        <div class="import-status" id="import-status"></div>
+      </div>
+
       <!-- Calendar URL setting -->
       <div class="feature-card" style="margin-bottom: 12px; cursor: pointer;" onclick="showPage('plan')">
         <div class="feature-icon">📅</div>
@@ -322,7 +360,7 @@
     var calendarConnected = false;
     var calendarEventCount = 0;
 
-    var recipes = [
+    var DEFAULT_RECIPES = [
       { name: 'Chicken Stir Fry', effort: 'easy', time: '25 min', servings: 4 },
       { name: 'Pasta Carbonara', effort: 'easy', time: '20 min', servings: 2 },
       { name: 'Beef Tacos', effort: 'easy', time: '30 min', servings: 4 },
@@ -334,9 +372,27 @@
       { name: 'Chicken Parmesan', effort: 'medium', time: '50 min', servings: 4 },
       { name: 'Shrimp Scampi', effort: 'easy', time: '20 min', servings: 2 },
     ];
+    var recipes = loadRecipes();
     var dinners = [null, null, null, null, null, null, null];
-    var easyMeals = recipes.filter(function(r) { return r.effort === 'easy'; });
-    var mediumMeals = recipes.filter(function(r) { return r.effort === 'medium'; });
+    var easyMeals, mediumMeals;
+    rebuildEffortPools();
+
+    function rebuildEffortPools() {
+      easyMeals = recipes.filter(function(r) { return r.effort === 'easy'; });
+      mediumMeals = recipes.filter(function(r) { return r.effort === 'medium'; });
+    }
+
+    function loadRecipes() {
+      try {
+        var saved = localStorage.getItem('mealflow_recipes');
+        if (saved) return JSON.parse(saved);
+      } catch (e) { /* ignore */ }
+      return DEFAULT_RECIPES.slice();
+    }
+
+    function saveRecipes() {
+      localStorage.setItem('mealflow_recipes', JSON.stringify(recipes));
+    }
     var planState = 'ready';
 
     var shoppingItems = {
@@ -770,6 +826,221 @@
     }
 
     // ========================================
+    // PAPRIKA IMPORT
+    // ========================================
+
+    var TREE_NUT_KEYWORDS = [
+      'almond', 'walnut', 'pecan', 'cashew', 'pistachio', 'macadamia',
+      'brazil nut', 'hazelnut', 'filbert', 'pine nut', 'praline', 'marzipan',
+      'nougat', 'gianduja', 'almond flour', 'almond milk', 'almond butter',
+      'almond extract', 'walnut oil', 'pecan pie', 'cashew cream',
+      'cashew butter', 'pistachio cream', 'hazelnut spread', 'pine nuts',
+      'marcona', 'frangipane', 'amaretti', 'nutella'
+    ];
+
+    function scanForTreeNuts(text) {
+      var lower = text.toLowerCase();
+      var matched = [];
+      for (var i = 0; i < TREE_NUT_KEYWORDS.length; i++) {
+        if (lower.indexOf(TREE_NUT_KEYWORDS[i]) >= 0) matched.push(TREE_NUT_KEYWORDS[i]);
+      }
+      return matched;
+    }
+
+    function parseTimeToMinutes(str) {
+      if (!str || !str.trim()) return null;
+      var lower = str.toLowerCase().trim();
+      var total = 0; var found = false;
+      var hm = lower.match(/(\d+)\s*(?:h(?:ours?)?)/);
+      if (hm) { total += parseInt(hm[1], 10) * 60; found = true; }
+      var mm = lower.match(/(\d+)\s*(?:m(?:in(?:utes?)?)?)/);
+      if (mm) { total += parseInt(mm[1], 10); found = true; }
+      if (found) return total;
+      var n = parseInt(lower, 10);
+      return isNaN(n) ? null : n;
+    }
+
+    function mapDifficulty(d) {
+      var lower = (d || '').toLowerCase();
+      if (lower.indexOf('easy') >= 0 || lower.indexOf('simple') >= 0 || lower.indexOf('quick') >= 0) return 'easy';
+      if (lower.indexOf('hard') >= 0 || lower.indexOf('difficult') >= 0 || lower.indexOf('complex') >= 0) return 'hard';
+      return 'medium';
+    }
+
+    function formatMinutes(min) {
+      if (!min) return '? min';
+      if (min >= 60) return Math.floor(min / 60) + ' hr ' + (min % 60 > 0 ? min % 60 + ' min' : '');
+      return min + ' min';
+    }
+
+    async function decompressGzip(buffer) {
+      var ds = new DecompressionStream('gzip');
+      var writer = ds.writable.getWriter();
+      writer.write(buffer);
+      writer.close();
+      var reader = ds.readable.getReader();
+      var chunks = [];
+      while (true) {
+        var result = await reader.read();
+        if (result.done) break;
+        chunks.push(result.value);
+      }
+      var totalLen = 0;
+      for (var i = 0; i < chunks.length; i++) totalLen += chunks[i].length;
+      var out = new Uint8Array(totalLen);
+      var offset = 0;
+      for (var j = 0; j < chunks.length; j++) {
+        out.set(chunks[j], offset);
+        offset += chunks[j].length;
+      }
+      return out.buffer;
+    }
+
+    async function extractPaprikaArchive(buffer) {
+      var bytes = new Uint8Array(buffer);
+      var results = [];
+
+      // Check for ZIP magic number (PK\x03\x04)
+      if (bytes[0] === 0x50 && bytes[1] === 0x4b) {
+        var pos = 0;
+        while (pos < bytes.length - 30) {
+          if (bytes[pos] !== 0x50 || bytes[pos+1] !== 0x4b || bytes[pos+2] !== 0x03 || bytes[pos+3] !== 0x04) break;
+          var view = new DataView(buffer, pos);
+          var compSize = view.getUint32(18, true);
+          var nameLen = view.getUint16(26, true);
+          var extraLen = view.getUint16(28, true);
+          var nameBytes = bytes.slice(pos + 30, pos + 30 + nameLen);
+          var fileName = new TextDecoder().decode(nameBytes);
+          var dataStart = pos + 30 + nameLen + extraLen;
+          var fileData = buffer.slice(dataStart, dataStart + compSize);
+
+          if (fileName.indexOf('.paprikarecipe') >= 0) {
+            try {
+              var decompressed = await decompressGzip(fileData);
+              var jsonStr = new TextDecoder().decode(decompressed);
+              results.push(JSON.parse(jsonStr));
+            } catch (e) {
+              console.error('Failed to parse recipe: ' + fileName, e);
+            }
+          }
+          pos = dataStart + compSize;
+        }
+      } else {
+        // Try as single gzip JSON
+        try {
+          var dec = await decompressGzip(buffer);
+          var parsed = JSON.parse(new TextDecoder().decode(dec));
+          if (Array.isArray(parsed)) results = parsed;
+          else results.push(parsed);
+        } catch (e) {
+          throw new Error('Unable to parse .paprikarecipes file');
+        }
+      }
+      return results;
+    }
+
+    function showImportStatus(msg, type) {
+      var el = document.getElementById('import-status');
+      el.className = 'import-status ' + type;
+      el.innerHTML = msg;
+    }
+
+    async function handlePaprikaFile(files) {
+      if (!files || !files.length) return;
+      var file = files[0];
+      if (file.name.indexOf('.paprikarecipes') < 0) {
+        showImportStatus('Please select a .paprikarecipes file.', 'error');
+        return;
+      }
+
+      showImportStatus('Reading file...', 'loading');
+
+      try {
+        var buffer = await file.arrayBuffer();
+        showImportStatus('Extracting recipes...', 'loading');
+        var paprikaRecipes = await extractPaprikaArchive(buffer);
+
+        if (paprikaRecipes.length === 0) {
+          showImportStatus('No recipes found in this file.', 'error');
+          return;
+        }
+
+        var imported = 0;
+        var skippedNuts = 0;
+        var nutWarnings = [];
+        // Track existing recipe names to avoid duplicates
+        var existingNames = {};
+        for (var e = 0; e < recipes.length; e++) existingNames[recipes[e].name.toLowerCase()] = true;
+
+        for (var i = 0; i < paprikaRecipes.length; i++) {
+          var pr = paprikaRecipes[i];
+          var name = pr.name || 'Untitled Recipe';
+
+          // Tree nut check across title, ingredients, directions, notes
+          var allText = [name, pr.ingredients || '', pr.directions || '', pr.notes || ''].join(' ');
+          var nutMatches = scanForTreeNuts(allText);
+          if (nutMatches.length > 0) {
+            skippedNuts++;
+            nutWarnings.push(name + ' (' + nutMatches[0] + ')');
+            continue;
+          }
+
+          // Skip duplicates
+          if (existingNames[name.toLowerCase()]) continue;
+
+          var totalMin = parseTimeToMinutes(pr.total_time) || parseTimeToMinutes(pr.cook_time) || parseTimeToMinutes(pr.prep_time);
+          var servings = 4;
+          if (pr.servings) {
+            var sm = pr.servings.match(/(\d+)/);
+            if (sm) servings = parseInt(sm[1], 10);
+          }
+
+          recipes.push({
+            name: name,
+            effort: mapDifficulty(pr.difficulty),
+            time: formatMinutes(totalMin),
+            servings: servings,
+            ingredients: pr.ingredients || '',
+            directions: pr.directions || '',
+            source: pr.source_url || pr.source || ''
+          });
+          existingNames[name.toLowerCase()] = true;
+          imported++;
+        }
+
+        saveRecipes();
+        rebuildEffortPools();
+        renderRecipes();
+
+        var msg = 'Imported ' + imported + ' recipe' + (imported !== 1 ? 's' : '') + ' from ' + paprikaRecipes.length + ' total.';
+        if (skippedNuts > 0) {
+          msg += '<div class="nut-warning" style="margin-top:8px;">🥜 Skipped ' + skippedNuts +
+            ' recipe' + (skippedNuts !== 1 ? 's' : '') + ' containing tree nuts:<br>' +
+            nutWarnings.map(function(w) { return '&bull; ' + escapeHtml(w); }).join('<br>') + '</div>';
+        }
+        showImportStatus(msg, 'success');
+
+        // Reset the file input
+        document.getElementById('paprika-file').value = '';
+      } catch (err) {
+        console.error('Paprika import error:', err);
+        showImportStatus('Failed to import: ' + err.message, 'error');
+      }
+    }
+
+    function initDragDrop() {
+      var zone = document.getElementById('import-dropzone');
+      if (!zone) return;
+      zone.addEventListener('dragover', function(e) { e.preventDefault(); zone.classList.add('dragover'); });
+      zone.addEventListener('dragleave', function() { zone.classList.remove('dragover'); });
+      zone.addEventListener('drop', function(e) {
+        e.preventDefault();
+        zone.classList.remove('dragover');
+        handlePaprikaFile(e.dataTransfer.files);
+      });
+    }
+
+    // ========================================
     // RENDER RECIPES
     // ========================================
     function renderRecipes(filter) {
@@ -777,9 +1048,12 @@
       var filtered = filter
         ? recipes.filter(function(r) { return r.name.toLowerCase().indexOf(filter.toLowerCase()) >= 0; })
         : recipes;
-      list.innerHTML = filtered.map(function(r) {
+      var countHtml = '<div style="font-size:13px;color:#6b7280;margin-bottom:12px;">' +
+        filtered.length + ' recipe' + (filtered.length !== 1 ? 's' : '') +
+        (filter ? ' matching "' + escapeHtml(filter) + '"' : '') + '</div>';
+      list.innerHTML = countHtml + filtered.map(function(r) {
         return '<div class="recipe-card">' +
-          '<div class="recipe-name">' + r.name + '</div>' +
+          '<div class="recipe-name">' + escapeHtml(r.name) + '</div>' +
           '<div class="recipe-meta">' +
             '<span class="effort-badge effort-' + r.effort + '">' + r.effort + '</span>' +
             '<span>⏱ ' + r.time + '</span>' +
@@ -866,6 +1140,7 @@
     // ========================================
     document.addEventListener('DOMContentLoaded', function() {
       showPage('plan');
+      initDragDrop();
 
       // Auto-load saved calendar
       var savedUrl = localStorage.getItem('mealflow_ical_url');
