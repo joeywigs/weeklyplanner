@@ -228,6 +228,7 @@
     <div class="top-bar">
       <div>
         <div class="top-bar-title">MealFlow</div>
+        <div style="font-size:11px;color:#9ca3af;" id="build-stamp"></div>
         <div class="top-bar-week" id="week-range"></div>
       </div>
     </div>
@@ -1138,7 +1139,10 @@
     // ========================================
     // INIT
     // ========================================
+    var BUILD_TIMESTAMP = '2026-02-08 21:47 UTC';
+
     document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('build-stamp').textContent = 'Updated ' + BUILD_TIMESTAMP;
       showPage('plan');
       initDragDrop();
 
