@@ -145,6 +145,21 @@
     .effort-easy { background: #dcfce7; color: #15803d; }
     .effort-medium { background: #fef9c3; color: #a16207; }
     .effort-hard { background: #fee2e2; color: #dc2626; }
+    .cat-badge { padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
+    .cat-entree { background: #dbeafe; color: #1d4ed8; }
+    .cat-dessert { background: #fce7f3; color: #be185d; }
+    .cat-appetizer { background: #ede9fe; color: #6d28d9; }
+    .cat-side { background: #d1fae5; color: #047857; }
+    .filter-pills {
+      display: flex; gap: 8px; margin-bottom: 12px; overflow-x: auto;
+      -webkit-overflow-scrolling: touch; padding-bottom: 4px;
+    }
+    .filter-pill {
+      padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 500;
+      border: 1.5px solid #d1d5db; background: white; color: #374151;
+      cursor: pointer; white-space: nowrap; transition: all 0.15s;
+    }
+    .filter-pill.active { background: #111; color: white; border-color: #111; }
 
     /* ---- Shopping List ---- */
     .category-section { margin-bottom: 20px; }
@@ -258,7 +273,14 @@
       <div class="page-title">Recipes</div>
       <div class="search-bar">
         <span>🔍</span>
-        <input type="text" placeholder="Search recipes..." oninput="filterRecipes(this.value)">
+        <input type="text" id="recipe-search" placeholder="Search recipes..." oninput="applyRecipeFilters()">
+      </div>
+      <div class="filter-pills" id="category-filters">
+        <button class="filter-pill active" data-cat="all" onclick="setCategoryFilter('all')">All</button>
+        <button class="filter-pill" data-cat="entree" onclick="setCategoryFilter('entree')">Entrees</button>
+        <button class="filter-pill" data-cat="side" onclick="setCategoryFilter('side')">Sides</button>
+        <button class="filter-pill" data-cat="appetizer" onclick="setCategoryFilter('appetizer')">Appetizers</button>
+        <button class="filter-pill" data-cat="dessert" onclick="setCategoryFilter('dessert')">Desserts</button>
       </div>
       <div id="recipe-list"></div>
     </div>
@@ -362,25 +384,27 @@
     var calendarEventCount = 0;
 
     var DEFAULT_RECIPES = [
-      { name: 'Chicken Stir Fry', effort: 'easy', time: '25 min', servings: 4 },
-      { name: 'Pasta Carbonara', effort: 'easy', time: '20 min', servings: 2 },
-      { name: 'Beef Tacos', effort: 'easy', time: '30 min', servings: 4 },
-      { name: 'Salmon with Roasted Vegetables', effort: 'medium', time: '45 min', servings: 2 },
-      { name: 'Homemade Pizza', effort: 'medium', time: '60 min', servings: 4 },
-      { name: 'Thai Green Curry', effort: 'medium', time: '35 min', servings: 4 },
-      { name: 'Beef Bourguignon', effort: 'hard', time: '180 min', servings: 6 },
-      { name: 'Grilled Cheese and Tomato Soup', effort: 'easy', time: '15 min', servings: 2 },
-      { name: 'Chicken Parmesan', effort: 'medium', time: '50 min', servings: 4 },
-      { name: 'Shrimp Scampi', effort: 'easy', time: '20 min', servings: 2 },
+      { name: 'Chicken Stir Fry', effort: 'easy', time: '25 min', servings: 4, category: 'entree' },
+      { name: 'Pasta Carbonara', effort: 'easy', time: '20 min', servings: 2, category: 'entree' },
+      { name: 'Beef Tacos', effort: 'easy', time: '30 min', servings: 4, category: 'entree' },
+      { name: 'Salmon with Roasted Vegetables', effort: 'medium', time: '45 min', servings: 2, category: 'entree' },
+      { name: 'Homemade Pizza', effort: 'medium', time: '60 min', servings: 4, category: 'entree' },
+      { name: 'Thai Green Curry', effort: 'medium', time: '35 min', servings: 4, category: 'entree' },
+      { name: 'Beef Bourguignon', effort: 'hard', time: '180 min', servings: 6, category: 'entree' },
+      { name: 'Grilled Cheese and Tomato Soup', effort: 'easy', time: '15 min', servings: 2, category: 'entree' },
+      { name: 'Chicken Parmesan', effort: 'medium', time: '50 min', servings: 4, category: 'entree' },
+      { name: 'Shrimp Scampi', effort: 'easy', time: '20 min', servings: 2, category: 'entree' },
     ];
     var recipes = loadRecipes();
     var dinners = [null, null, null, null, null, null, null];
+    var activeCategoryFilter = 'all';
     var easyMeals, mediumMeals;
     rebuildEffortPools();
 
     function rebuildEffortPools() {
-      easyMeals = recipes.filter(function(r) { return r.effort === 'easy'; });
-      mediumMeals = recipes.filter(function(r) { return r.effort === 'medium'; });
+      var entrees = recipes.filter(function(r) { return (r.category || 'entree') === 'entree'; });
+      easyMeals = entrees.filter(function(r) { return r.effort === 'easy'; });
+      mediumMeals = entrees.filter(function(r) { return r.effort === 'medium'; });
     }
 
     function loadRecipes() {
@@ -725,12 +749,13 @@
         for (var i = 0; i < 7; i++) {
           var eventCount = calendarEvents[i].length;
           var pool;
+          var allEntrees = recipes.filter(function(r) { return (r.category || 'entree') === 'entree'; });
           if (eventCount >= 3) {
             pool = easyMeals;
           } else if (eventCount >= 1) {
             pool = easyMeals.concat(mediumMeals);
           } else {
-            pool = recipes;
+            pool = allEntrees;
           }
           var pick;
           var attempts = 0;
@@ -870,6 +895,17 @@
       if (lower.indexOf('easy') >= 0 || lower.indexOf('simple') >= 0 || lower.indexOf('quick') >= 0) return 'easy';
       if (lower.indexOf('hard') >= 0 || lower.indexOf('difficult') >= 0 || lower.indexOf('complex') >= 0) return 'hard';
       return 'medium';
+    }
+
+    function detectCategory(paprikaCategories, name) {
+      var text = ((paprikaCategories || []).join(' ') + ' ' + (name || '')).toLowerCase();
+      var dessertWords = ['dessert', 'cake', 'cookie', 'pie', 'brownie', 'pudding', 'crisp', 'crumble', 'sweet', 'ice cream', 'fudge', 'tart', 'cupcake', 'pastry', 'frosting', 'candy'];
+      var sideWords = ['side', 'salad', 'bread', 'cornbread', 'focaccia', 'crouton', 'rice', 'potato', 'corn on', 'roasted vegetable', 'coleslaw', 'dressing', 'vinaigrette'];
+      var appWords = ['appetizer', 'appetiser', 'starter', 'dip', 'snack', 'finger food', 'bruschetta', 'caviar', 'chex mix', 'energy bite', 'hors d'];
+      for (var i = 0; i < dessertWords.length; i++) { if (text.indexOf(dessertWords[i]) >= 0) return 'dessert'; }
+      for (var i = 0; i < appWords.length; i++) { if (text.indexOf(appWords[i]) >= 0) return 'appetizer'; }
+      for (var i = 0; i < sideWords.length; i++) { if (text.indexOf(sideWords[i]) >= 0) return 'side'; }
+      return 'entree';
     }
 
     function formatMinutes(min) {
@@ -1022,7 +1058,8 @@
             ingredients: pr.ingredients || '',
             directions: pr.directions || '',
             source: pr.source_url || pr.source || '',
-            hasTreeNuts: hasTreeNuts
+            hasTreeNuts: hasTreeNuts,
+            category: detectCategory(pr.categories, name)
           };
 
           // Check for duplicate
@@ -1090,29 +1127,50 @@
     // ========================================
     // RENDER RECIPES
     // ========================================
-    function renderRecipes(filter) {
+    var CAT_LABELS = { entree: 'Entree', dessert: 'Dessert', appetizer: 'Appetizer', side: 'Side' };
+
+    function renderRecipes() {
       var list = document.getElementById('recipe-list');
-      var filtered = filter
-        ? recipes.filter(function(r) { return r.name.toLowerCase().indexOf(filter.toLowerCase()) >= 0; })
-        : recipes;
+      var searchEl = document.getElementById('recipe-search');
+      var search = searchEl ? searchEl.value.trim().toLowerCase() : '';
+
+      var filtered = recipes.filter(function(r) {
+        var cat = r.category || 'entree';
+        if (activeCategoryFilter !== 'all' && cat !== activeCategoryFilter) return false;
+        if (search && r.name.toLowerCase().indexOf(search) < 0) return false;
+        return true;
+      });
+
       var countHtml = '<div style="font-size:13px;color:#6b7280;margin-bottom:12px;">' +
-        filtered.length + ' recipe' + (filtered.length !== 1 ? 's' : '') +
-        (filter ? ' matching "' + escapeHtml(filter) + '"' : '') + '</div>';
+        filtered.length + ' recipe' + (filtered.length !== 1 ? 's' : '') + '</div>';
       list.innerHTML = countHtml + filtered.map(function(r) {
+        var cat = r.category || 'entree';
         var nutBadge = r.hasTreeNuts
           ? '<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;">🥜 tree nuts</span>'
           : '';
         return '<div class="recipe-card">' +
           '<div class="recipe-name">' + escapeHtml(r.name) + '</div>' +
           '<div class="recipe-meta">' +
+            '<span class="cat-badge cat-' + cat + '">' + (CAT_LABELS[cat] || cat) + '</span>' +
             '<span class="effort-badge effort-' + r.effort + '">' + r.effort + '</span>' +
             '<span>⏱ ' + r.time + '</span>' +
-            '<span>🍽 ' + r.servings + ' servings</span>' +
+            '<span>🍽 ' + r.servings + '</span>' +
             nutBadge +
           '</div>' +
         '</div>';
       }).join('');
     }
+
+    function setCategoryFilter(cat) {
+      activeCategoryFilter = cat;
+      var pills = document.querySelectorAll('#category-filters .filter-pill');
+      for (var i = 0; i < pills.length; i++) {
+        pills[i].classList.toggle('active', pills[i].getAttribute('data-cat') === cat);
+      }
+      renderRecipes();
+    }
+
+    function applyRecipeFilters() { renderRecipes(); }
 
     // ========================================
     // RENDER SHOPPING
@@ -1157,7 +1215,7 @@
       document.getElementById('shopping-progress').style.width = pct + '%';
     }
 
-    function filterRecipes(val) { renderRecipes(val); }
+    function filterRecipes(val) { renderRecipes(); }
 
     // ========================================
     // NAVIGATION
@@ -1189,7 +1247,7 @@
     // ========================================
     // INIT
     // ========================================
-    var BUILD_TIMESTAMP = '2026-02-08 04:01 PM CST';
+    var BUILD_TIMESTAMP = '2026-02-08 04:11 PM CST';
 
     document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('build-stamp').textContent = 'Updated ' + BUILD_TIMESTAMP;
