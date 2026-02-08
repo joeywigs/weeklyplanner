@@ -10,8 +10,11 @@ import {
   createMealPlanEntry,
   updateMealPlanEntry,
   listRecipes,
+  getUser,
 } from '../db/queries';
 import type { EveningClassification } from '@mealflow/shared';
+import { classifyWeekEvenings } from '../services/calendar-classifier';
+import { fetchGoogleCalendarEvents } from '../services/google-calendar';
 
 export const mealPlanRoutes = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -123,6 +126,55 @@ mealPlanRoutes.get('/:id', async (c) => {
     data: { ...plan, entries },
     error: null,
   });
+});
+
+/**
+ * POST /meal-plans/:id/sync-calendar
+ * Fetch Google Calendar events for the plan's week, classify each evening,
+ * and update the meal plan entries' classification field.
+ */
+mealPlanRoutes.post('/:id/sync-calendar', async (c) => {
+  const planId = c.req.param('id');
+  const { id: userId } = getUserFromContext(c);
+
+  const plan = await getMealPlanById(c.env.DB, planId);
+  if (!plan) {
+    return c.json({ data: null, error: 'Meal plan not found' }, 404);
+  }
+
+  const user = await getUser(c.env.DB, userId);
+  if (!user || !user.google_access_token) {
+    return c.json({ data: null, error: 'Google Calendar not connected. Please log out and log back in to grant calendar access.' }, 400);
+  }
+
+  // Build time range for the full week (Monday through Sunday)
+  const timeMin = `${plan.week_start}T00:00:00Z`;
+  const endDate = new Date(plan.week_start);
+  endDate.setDate(endDate.getDate() + 7);
+  const timeMax = `${endDate.toISOString().split('T')[0]}T23:59:59Z`;
+
+  try {
+    const events = await fetchGoogleCalendarEvents(user.google_access_token, timeMin, timeMax);
+    const classifications = classifyWeekEvenings(events, plan.week_start);
+
+    // Update each entry's classification
+    const entries = await getMealPlanEntries(c.env.DB, plan.id);
+    for (const dayResult of classifications) {
+      const entry = entries.find((e) => e.date === dayResult.date);
+      if (entry) {
+        await c.env.DB
+          .prepare('UPDATE meal_plan_entries SET classification = ? WHERE id = ? AND meal_plan_id = ?')
+          .bind(dayResult.classification, entry.id, plan.id)
+          .run();
+      }
+    }
+
+    const updatedEntries = await getMealPlanEntries(c.env.DB, plan.id);
+    return c.json({ data: { ...plan, entries: updatedEntries }, error: null });
+  } catch (err) {
+    console.error('Calendar sync error:', err);
+    return c.json({ data: null, error: 'Failed to sync calendar' }, 502);
+  }
 });
 
 /**
