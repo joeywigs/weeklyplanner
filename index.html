@@ -306,7 +306,10 @@
 
   <script>
     // ---- Constants ----
-    var CORS_PROXY = 'https://corsproxy.io/?';
+    var CORS_PROXIES = [
+      { prefix: 'https://api.allorigins.win/raw?url=', encode: true },
+      { prefix: 'https://corsproxy.io/?', encode: true }
+    ];
     var days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     var today = new Date();
     var monday = new Date(today);
@@ -469,20 +472,31 @@
     // FETCH & PROCESS CALENDAR
     // ========================================
     function fetchCalendar(url, callback) {
-      var proxyUrl = CORS_PROXY + encodeURIComponent(url);
-      var xhr = new XMLHttpRequest();
-      xhr.open('GET', proxyUrl, true);
-      xhr.onload = function() {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          callback(null, xhr.responseText);
-        } else {
-          callback('Failed to fetch calendar (HTTP ' + xhr.status + ')');
+      // Normalize URL: decode first to prevent double-encoding (%40 -> %2540)
+      try { url = decodeURIComponent(url); } catch (e) { /* already decoded */ }
+
+      function tryProxy(index) {
+        if (index >= CORS_PROXIES.length) {
+          callback('All calendar proxies failed. The iCal URL may be invalid or expired — try generating a new one from Google Calendar settings.');
+          return;
         }
-      };
-      xhr.onerror = function() {
-        callback('Network error fetching calendar');
-      };
-      xhr.send();
+        var proxy = CORS_PROXIES[index];
+        var proxyUrl = proxy.prefix + (proxy.encode ? encodeURIComponent(url) : url);
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', proxyUrl, true);
+        xhr.onload = function() {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            callback(null, xhr.responseText);
+          } else {
+            tryProxy(index + 1);
+          }
+        };
+        xhr.onerror = function() {
+          tryProxy(index + 1);
+        };
+        xhr.send();
+      }
+      tryProxy(0);
     }
 
     function processCalendarData(icsText) {
