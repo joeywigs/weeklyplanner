@@ -29,16 +29,21 @@
     .top-bar-title { font-size: 18px; font-weight: 700; color: #111; }
     .top-bar-week { font-size: 13px; color: #6b7280; }
 
-    /* ---- Plan the Week Button ---- */
-    .plan-btn {
-      display: block; width: 100%; padding: 14px; border: none; border-radius: 12px;
-      font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s;
-      font-family: inherit;
+    /* ---- Week Nav ---- */
+    .week-nav {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
     }
-    .plan-btn.ready { background: #16a34a; color: white; }
-    .plan-btn.ready:hover { background: #15803d; }
-    .plan-btn.planning { background: #fef9c3; color: #a16207; cursor: wait; }
-    .plan-btn.complete { background: #dcfce7; color: #15803d; cursor: default; }
+    .week-nav-btn {
+      width: 36px; height: 36px; border-radius: 50%; border: 1.5px solid #d1d5db;
+      background: white; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 18px; color: #374151; transition: all 0.15s;
+    }
+    .week-nav-btn:hover { background: #f3f4f6; border-color: #9ca3af; }
+    .week-nav-label { flex: 1; text-align: center; font-size: 15px; font-weight: 600; color: #111; }
+    .week-nav-today {
+      font-size: 12px; color: #16a34a; font-weight: 600; cursor: pointer;
+      background: none; border: none; font-family: inherit;
+    }
 
     /* ---- Calendar Setup Banner ---- */
     .cal-setup {
@@ -47,7 +52,8 @@
     }
     .cal-setup-title { font-size: 14px; font-weight: 600; color: #1e40af; margin-bottom: 8px; }
     .cal-setup-desc { font-size: 12px; color: #3b82f6; margin-bottom: 10px; line-height: 1.5; }
-    .cal-input-row { display: flex; gap: 8px; }
+    .cal-input-row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .cal-input-row:last-of-type { margin-bottom: 0; }
     .cal-input {
       flex: 1; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px;
       font-size: 13px; font-family: inherit; outline: none;
@@ -78,7 +84,7 @@
     }
 
     /* ---- Weekly Grid ---- */
-    .week-table { margin-top: 16px; }
+    .week-table { margin-top: 8px; }
     .day-row {
       background: white; border-radius: 12px; margin-bottom: 8px;
       box-shadow: 0 1px 3px rgba(0,0,0,0.06); overflow: hidden;
@@ -100,7 +106,7 @@
     .no-events { font-size: 13px; color: #d1d5db; font-style: italic; }
     .col-headers {
       display: grid; grid-template-columns: 1fr 1fr;
-      padding: 8px 16px; margin-top: 12px;
+      padding: 8px 16px;
     }
     .col-headers span {
       font-size: 11px; font-weight: 700; text-transform: uppercase;
@@ -109,7 +115,15 @@
     .col-headers span:last-child { padding-left: 16px; }
 
     /* Dinner column */
-    .dinner-name { font-size: 14px; font-weight: 600; color: #111; }
+    .dinner-select {
+      width: 100%; padding: 8px 6px; border: 1.5px solid #d1d5db; border-radius: 8px;
+      font-size: 13px; font-family: inherit; background: white; color: #111;
+      cursor: pointer; outline: none; appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236b7280' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 8px center;
+    }
+    .dinner-select:focus { border-color: #16a34a; box-shadow: 0 0 0 2px rgba(22,163,74,0.15); }
+    .dinner-select.has-nuts { border-color: #f59e0b; background-color: #fffbeb; }
     .dinner-meta { display: flex; gap: 8px; margin-top: 4px; align-items: center; }
     .dinner-prep { font-size: 11px; color: #6b7280; }
     .effort-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
@@ -118,7 +132,6 @@
     .effort-dot.hard { background: #ef4444; }
     .effort-label { font-size: 11px; color: #6b7280; }
     .dinner-empty { font-size: 13px; color: #d1d5db; font-style: italic; }
-    .dinner-assigned { background: #f0fdf4; border-radius: 8px; padding: 8px; margin: -4px; }
 
     /* ---- Back button ---- */
     .back-btn {
@@ -140,7 +153,7 @@
       box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
     .recipe-name { font-weight: 600; font-size: 15px; }
-    .recipe-meta { display: flex; gap: 12px; margin-top: 6px; font-size: 12px; color: #9ca3af; }
+    .recipe-meta { display: flex; gap: 8px; margin-top: 6px; font-size: 12px; color: #9ca3af; flex-wrap: wrap; }
     .effort-badge { padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 600; }
     .effort-easy { background: #dcfce7; color: #15803d; }
     .effort-medium { background: #fef9c3; color: #a16207; }
@@ -219,6 +232,12 @@
       background: #fef3c7; color: #92400e; font-size: 12px; padding: 6px 10px;
       border-radius: 8px; margin-top: 4px;
     }
+    .clear-btn {
+      display: block; width: 100%; padding: 10px; border: 1.5px solid #fca5a5; border-radius: 10px;
+      background: white; color: #dc2626; font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: inherit; margin-top: 12px; transition: all 0.15s;
+    }
+    .clear-btn:hover { background: #fef2f2; }
 
     /* ---- Bottom Nav ---- */
     .bottom-nav {
@@ -238,24 +257,24 @@
 </head>
 <body>
 
-  <!-- ======== PLAN PAGE (Main App Home) ======== -->
+  <!-- ======== PLAN PAGE ======== -->
   <div id="page-plan" class="page">
     <div class="top-bar">
       <div>
         <div class="top-bar-title">MealFlow</div>
         <div style="font-size:11px;color:#9ca3af;" id="build-stamp"></div>
-        <div class="top-bar-week" id="week-range"></div>
       </div>
     </div>
     <div class="container" style="padding-bottom: 90px;">
-      <!-- Calendar setup / status -->
       <div id="cal-setup-area"></div>
 
-      <!-- Plan the Week button -->
-      <div style="margin-bottom: 8px;">
-        <button class="plan-btn ready" id="plan-btn" onclick="planTheWeek()">
-          Plan the Week
-        </button>
+      <div class="week-nav">
+        <button class="week-nav-btn" onclick="changeWeek(-1)">&#8249;</button>
+        <div>
+          <div class="week-nav-label" id="week-range"></div>
+          <div style="text-align:center;"><button class="week-nav-today" onclick="goToday()">Today</button></div>
+        </div>
+        <button class="week-nav-btn" onclick="changeWeek(1)">&#8250;</button>
       </div>
 
       <div class="col-headers">
@@ -311,13 +330,14 @@
           <div class="drop-label"><strong>Choose file</strong> or drag & drop</div>
         </div>
         <div class="import-status" id="import-status"></div>
+        <button class="clear-btn" onclick="clearAllRecipes()">Clear All Recipes &amp; Re-import</button>
       </div>
 
       <!-- Calendar URL setting -->
       <div class="feature-card" style="margin-bottom: 12px; cursor: pointer;" onclick="showPage('plan')">
         <div class="feature-icon">📅</div>
         <div>
-          <div class="feature-title">Calendar</div>
+          <div class="feature-title">Calendars</div>
           <div class="feature-desc" id="settings-cal-status">Not connected</div>
         </div>
       </div>
@@ -372,17 +392,42 @@
       { prefix: 'https://corsproxy.io/?', encode: true }
     ];
     var days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+
+    // ---- Week state ----
     var today = new Date();
     var monday = new Date(today);
     monday.setDate(today.getDate() - ((today.getDay() + 6) % 7));
     monday.setHours(0, 0, 0, 0);
 
-    // ---- State ----
-    // calendarEvents[0..6] = arrays of {title, where, duration, startTime, endTime}
+    function mondayKey() {
+      return monday.toISOString().split('T')[0];
+    }
+
+    function changeWeek(delta) {
+      monday.setDate(monday.getDate() + delta * 7);
+      monday.setHours(0, 0, 0, 0);
+      dinners = loadDinners();
+      loadAllCalendars();
+      renderWeek();
+    }
+
+    function goToday() {
+      var t = new Date();
+      monday = new Date(t);
+      monday.setDate(t.getDate() - ((t.getDay() + 6) % 7));
+      monday.setHours(0, 0, 0, 0);
+      dinners = loadDinners();
+      loadAllCalendars();
+      renderWeek();
+    }
+
+    // ---- Calendar state ----
     var calendarEvents = [[], [], [], [], [], [], []];
     var calendarConnected = false;
     var calendarEventCount = 0;
+    var calendarIcsData = []; // raw ICS text per URL
 
+    // ---- Recipe state ----
     var DEFAULT_RECIPES = [
       { name: 'Chicken Stir Fry', effort: 'easy', time: '25 min', servings: 4, category: 'entree' },
       { name: 'Pasta Carbonara', effort: 'easy', time: '20 min', servings: 2, category: 'entree' },
@@ -396,16 +441,7 @@
       { name: 'Shrimp Scampi', effort: 'easy', time: '20 min', servings: 2, category: 'entree' },
     ];
     var recipes = loadRecipes();
-    var dinners = [null, null, null, null, null, null, null];
     var activeCategoryFilter = 'all';
-    var easyMeals, mediumMeals;
-    rebuildEffortPools();
-
-    function rebuildEffortPools() {
-      var entrees = recipes.filter(function(r) { return (r.category || 'entree') === 'entree'; });
-      easyMeals = entrees.filter(function(r) { return r.effort === 'easy'; });
-      mediumMeals = entrees.filter(function(r) { return r.effort === 'medium'; });
-    }
 
     function loadRecipes() {
       try {
@@ -418,8 +454,37 @@
     function saveRecipes() {
       localStorage.setItem('mealflow_recipes', JSON.stringify(recipes));
     }
-    var planState = 'ready';
 
+    function clearAllRecipes() {
+      if (!confirm('This will delete all recipes so you can re-import. Continue?')) return;
+      recipes = [];
+      saveRecipes();
+      renderRecipes();
+      showImportStatus('All recipes cleared. Upload a .paprikarecipes file to re-import.', 'success');
+    }
+
+    // ---- Dinner selections (per week) ----
+    var dinners = loadDinners(); // array of recipe names or null, length 7
+
+    function loadDinners() {
+      try {
+        var saved = localStorage.getItem('mealflow_dinners_' + mondayKey());
+        if (saved) return JSON.parse(saved);
+      } catch (e) { /* ignore */ }
+      return [null, null, null, null, null, null, null];
+    }
+
+    function saveDinners() {
+      localStorage.setItem('mealflow_dinners_' + mondayKey(), JSON.stringify(dinners));
+    }
+
+    function setDinner(dayIndex, recipeName) {
+      dinners[dayIndex] = recipeName || null;
+      saveDinners();
+      renderWeek();
+    }
+
+    // ---- Shopping ----
     var shoppingItems = {
       'Produce': [
         { name: 'Bell peppers', qty: '3', checked: false },
@@ -463,29 +528,19 @@
           evt = {};
         } else if (line === 'END:VEVENT') {
           inEvent = false;
-          if (evt.dtstart) {
-            events.push(evt);
-          }
+          if (evt.dtstart) events.push(evt);
         } else if (inEvent) {
           var colonIdx = line.indexOf(':');
           if (colonIdx < 0) continue;
           var key = line.substring(0, colonIdx);
           var val = line.substring(colonIdx + 1);
-
-          // Strip parameters (e.g. DTSTART;TZID=America/New_York)
           var baseKey = key.split(';')[0];
 
-          if (baseKey === 'SUMMARY') {
-            evt.summary = unescapeICS(val);
-          } else if (baseKey === 'LOCATION') {
-            evt.location = unescapeICS(val);
-          } else if (baseKey === 'DTSTART') {
-            evt.dtstart = parseICSDate(val, key);
-          } else if (baseKey === 'DTEND') {
-            evt.dtend = parseICSDate(val, key);
-          } else if (baseKey === 'DURATION') {
-            evt.duration = val;
-          }
+          if (baseKey === 'SUMMARY') evt.summary = unescapeICS(val);
+          else if (baseKey === 'LOCATION') evt.location = unescapeICS(val);
+          else if (baseKey === 'DTSTART') evt.dtstart = parseICSDate(val, key);
+          else if (baseKey === 'DTEND') evt.dtend = parseICSDate(val, key);
+          else if (baseKey === 'DURATION') evt.duration = val;
         }
       }
       return events;
@@ -496,24 +551,12 @@
     }
 
     function parseICSDate(val, fullKey) {
-      // Handle TZID parameter
-      var tzid = null;
-      var parts = fullKey.split(';');
-      for (var i = 1; i < parts.length; i++) {
-        if (parts[i].indexOf('TZID=') === 0) {
-          tzid = parts[i].substring(5);
-        }
-      }
-
-      // All-day event: 20260207
       if (val.length === 8) {
         var y = parseInt(val.substring(0, 4));
         var m = parseInt(val.substring(4, 6)) - 1;
         var d = parseInt(val.substring(6, 8));
         return { date: new Date(y, m, d), allDay: true };
       }
-
-      // Date with time: 20260207T180000Z or 20260207T180000
       var dateStr = val.replace('Z', '');
       var yr = parseInt(dateStr.substring(0, 4));
       var mo = parseInt(dateStr.substring(4, 6)) - 1;
@@ -521,12 +564,10 @@
       var hr = parseInt(dateStr.substring(9, 11));
       var mi = parseInt(dateStr.substring(11, 13));
       var sc = parseInt(dateStr.substring(13, 15)) || 0;
-
       var dt;
       if (val.indexOf('Z') >= 0) {
         dt = new Date(Date.UTC(yr, mo, dy, hr, mi, sc));
       } else {
-        // Local time (with or without TZID — treat as local for simplicity)
         dt = new Date(yr, mo, dy, hr, mi, sc);
       }
       return { date: dt, allDay: false };
@@ -553,12 +594,11 @@
     // FETCH & PROCESS CALENDAR
     // ========================================
     function fetchCalendar(url, callback) {
-      // Normalize URL: decode first to prevent double-encoding (%40 -> %2540)
       try { url = decodeURIComponent(url); } catch (e) { /* already decoded */ }
 
       function tryProxy(index) {
         if (index >= CORS_PROXIES.length) {
-          callback('All calendar proxies failed. The iCal URL may be invalid or expired — try generating a new one from Google Calendar settings.');
+          callback('All calendar proxies failed. The iCal URL may be invalid or expired.');
           return;
         }
         var proxy = CORS_PROXIES[index];
@@ -572,64 +612,60 @@
             tryProxy(index + 1);
           }
         };
-        xhr.onerror = function() {
-          tryProxy(index + 1);
-        };
+        xhr.onerror = function() { tryProxy(index + 1); };
         xhr.send();
       }
       tryProxy(0);
     }
 
-    function processCalendarData(icsText) {
-      var allEvents = parseICS(icsText);
+    function processAllCalendarData() {
       var sunday = new Date(monday);
       sunday.setDate(monday.getDate() + 7);
 
-      // Reset
       calendarEvents = [[], [], [], [], [], [], []];
       calendarEventCount = 0;
 
-      for (var i = 0; i < allEvents.length; i++) {
-        var evt = allEvents[i];
-        if (!evt.dtstart) continue;
-        var start = evt.dtstart.date;
-        var end = evt.dtend ? evt.dtend.date : null;
+      for (var c = 0; c < calendarIcsData.length; c++) {
+        var allEvents = parseICS(calendarIcsData[c]);
 
-        // Check if event falls within this week
-        if (start >= sunday) continue;
-        if (end && end <= monday) continue;
-        if (!end && start < monday) continue;
+        for (var i = 0; i < allEvents.length; i++) {
+          var evt = allEvents[i];
+          if (!evt.dtstart) continue;
+          var start = evt.dtstart.date;
+          var end = evt.dtend ? evt.dtend.date : null;
 
-        // Determine which day(s) this event falls on
-        for (var d = 0; d < 7; d++) {
-          var dayStart = new Date(monday);
-          dayStart.setDate(monday.getDate() + d);
-          dayStart.setHours(0, 0, 0, 0);
-          var dayEnd = new Date(dayStart);
-          dayEnd.setDate(dayEnd.getDate() + 1);
+          if (start >= sunday) continue;
+          if (end && end <= monday) continue;
+          if (!end && start < monday) continue;
 
-          // Event overlaps this day?
-          var eventStart = start;
-          var eventEnd = end || new Date(start.getTime() + 3600000);
-          if (eventStart < dayEnd && eventEnd > dayStart) {
-            var timeStr = '';
-            if (!evt.dtstart.allDay) {
-              timeStr = formatTime(start);
-              if (end) timeStr += ' - ' + formatTime(end);
+          for (var d = 0; d < 7; d++) {
+            var dayStart = new Date(monday);
+            dayStart.setDate(monday.getDate() + d);
+            dayStart.setHours(0, 0, 0, 0);
+            var dayEnd = new Date(dayStart);
+            dayEnd.setDate(dayEnd.getDate() + 1);
+
+            var eventStart = start;
+            var eventEnd = end || new Date(start.getTime() + 3600000);
+            if (eventStart < dayEnd && eventEnd > dayStart) {
+              var timeStr = '';
+              if (!evt.dtstart.allDay) {
+                timeStr = formatTime(start);
+                if (end) timeStr += ' - ' + formatTime(end);
+              }
+              calendarEvents[d].push({
+                title: evt.summary || 'Untitled',
+                where: evt.location || '',
+                duration: durationMinutes(evt.dtstart, evt.dtend),
+                timeStr: timeStr,
+                allDay: evt.dtstart.allDay
+              });
+              calendarEventCount++;
             }
-            calendarEvents[d].push({
-              title: evt.summary || 'Untitled',
-              where: evt.location || '',
-              duration: durationMinutes(evt.dtstart, evt.dtend),
-              timeStr: timeStr,
-              allDay: evt.dtstart.allDay
-            });
-            calendarEventCount++;
           }
         }
       }
 
-      // Sort each day by time
       for (var d = 0; d < 7; d++) {
         calendarEvents[d].sort(function(a, b) {
           if (a.allDay && !b.allDay) return -1;
@@ -639,21 +675,78 @@
       }
     }
 
+    function getCalendarUrls() {
+      try {
+        var saved = localStorage.getItem('mealflow_ical_urls');
+        if (saved) return JSON.parse(saved);
+      } catch (e) { /* ignore */ }
+      // Migrate from old single-URL key
+      var old = localStorage.getItem('mealflow_ical_url');
+      if (old) return [old, ''];
+      return ['', ''];
+    }
+
+    function saveCalendarUrls(urls) {
+      localStorage.setItem('mealflow_ical_urls', JSON.stringify(urls));
+      // Clean up old key
+      localStorage.removeItem('mealflow_ical_url');
+    }
+
+    function loadAllCalendars() {
+      var urls = getCalendarUrls();
+      var validUrls = urls.filter(function(u) { return u && u.trim(); });
+      if (validUrls.length === 0) {
+        calendarIcsData = [];
+        calendarConnected = false;
+        calendarEventCount = 0;
+        calendarEvents = [[], [], [], [], [], [], []];
+        renderCalSetup();
+        renderWeek();
+        return;
+      }
+
+      calendarIcsData = [];
+      var loaded = 0;
+      var total = validUrls.length;
+
+      for (var i = 0; i < validUrls.length; i++) {
+        (function(url) {
+          fetchCalendar(url, function(err, data) {
+            loaded++;
+            if (!err && data && data.indexOf('BEGIN:VCALENDAR') >= 0) {
+              calendarIcsData.push(data);
+            }
+            if (loaded === total) {
+              if (calendarIcsData.length > 0) {
+                processAllCalendarData();
+                calendarConnected = true;
+              } else {
+                calendarConnected = false;
+                calendarEventCount = 0;
+              }
+              renderCalSetup();
+              renderWeek();
+            }
+          });
+        })(validUrls[i]);
+      }
+    }
+
     // ========================================
     // CALENDAR SETUP UI
     // ========================================
     function renderCalSetup() {
       var area = document.getElementById('cal-setup-area');
-      var savedUrl = localStorage.getItem('mealflow_ical_url');
+      var urls = getCalendarUrls();
 
       if (calendarConnected) {
         area.innerHTML =
           '<div class="cal-connected">' +
             '<div>' +
-              '<div class="cal-connected-text">Calendar connected</div>' +
+              '<div class="cal-connected-text">Calendar connected (' + calendarIcsData.length + ' calendar' + (calendarIcsData.length !== 1 ? 's' : '') + ')</div>' +
               '<div class="cal-connected-count">' + calendarEventCount + ' events this week</div>' +
             '</div>' +
-            '<button class="cal-disconnect" onclick="disconnectCalendar()">Disconnect</button>' +
+            '<button class="cal-disconnect" onclick="disconnectCalendar()">Edit</button>' +
           '</div>';
         document.getElementById('settings-cal-status').textContent =
           'Connected — ' + calendarEventCount + ' events this week';
@@ -662,67 +755,49 @@
 
       area.innerHTML =
         '<div class="cal-setup">' +
-          '<div class="cal-setup-title">Connect Your Calendar</div>' +
+          '<div class="cal-setup-title">Connect Your Calendars</div>' +
           '<div class="cal-setup-desc">' +
-            'Paste your Google Calendar secret iCal URL below.<br>' +
-            'Find it in Google Calendar Settings > your calendar > "Secret address in iCal format"' +
+            'Paste your Google Calendar secret iCal URLs below (up to 2).<br>' +
+            'Find in Google Calendar Settings > your calendar > "Secret address in iCal format"' +
           '</div>' +
           '<div class="cal-input-row">' +
-            '<input class="cal-input" id="ical-url-input" type="text" ' +
-              'placeholder="https://calendar.google.com/calendar/ical/..." ' +
-              'value="' + (savedUrl || '') + '">' +
-            '<button class="cal-save-btn" onclick="connectCalendar()">Connect</button>' +
+            '<input class="cal-input" id="ical-url-1" type="text" placeholder="Calendar 1 iCal URL..." value="' + escapeAttr(urls[0] || '') + '">' +
+          '</div>' +
+          '<div class="cal-input-row">' +
+            '<input class="cal-input" id="ical-url-2" type="text" placeholder="Calendar 2 iCal URL (optional)..." value="' + escapeAttr(urls[1] || '') + '">' +
+          '</div>' +
+          '<div style="margin-top:8px;">' +
+            '<button class="cal-save-btn" onclick="connectCalendars()">Connect</button>' +
           '</div>' +
           '<div id="cal-status"></div>' +
         '</div>';
-      document.getElementById('settings-cal-status').textContent = 'Not connected';
+      document.getElementById('settings-cal-status').textContent =
+        urls.filter(function(u) { return u && u.trim(); }).length > 0 ? 'Saved — tap to reconnect' : 'Not connected';
     }
 
-    function connectCalendar() {
-      var input = document.getElementById('ical-url-input');
-      var url = input.value.trim();
-      if (!url) return;
+    function escapeAttr(s) {
+      return s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+    }
 
-      // Basic validation
-      if (url.indexOf('calendar.google.com') < 0 && url.indexOf('.ics') < 0) {
-        showCalStatus('That doesn\'t look like an iCal URL. It should end in .ics', 'error');
+    function connectCalendars() {
+      var url1 = document.getElementById('ical-url-1').value.trim();
+      var url2 = document.getElementById('ical-url-2').value.trim();
+
+      if (!url1 && !url2) {
+        showCalStatus('Enter at least one iCal URL.', 'error');
         return;
       }
 
-      showCalStatus('Fetching calendar...', 'loading');
-
-      fetchCalendar(url, function(err, data) {
-        if (err) {
-          showCalStatus(err, 'error');
-          return;
-        }
-        if (data.indexOf('BEGIN:VCALENDAR') < 0) {
-          showCalStatus('Invalid calendar data received. Check the URL.', 'error');
-          return;
-        }
-
-        // Save URL and process
-        localStorage.setItem('mealflow_ical_url', url);
-        processCalendarData(data);
-        calendarConnected = true;
-
-        renderCalSetup();
-        renderWeek();
-      });
+      saveCalendarUrls([url1, url2]);
+      showCalStatus('Fetching calendars...', 'loading');
+      loadAllCalendars();
     }
 
     function disconnectCalendar() {
-      localStorage.removeItem('mealflow_ical_url');
       calendarConnected = false;
+      calendarIcsData = [];
       calendarEvents = [[], [], [], [], [], [], []];
       calendarEventCount = 0;
-      // Reset plan state so user can re-plan
-      planState = 'ready';
-      dinners = [null, null, null, null, null, null, null];
-      var btn = document.getElementById('plan-btn');
-      btn.className = 'plan-btn ready';
-      btn.textContent = 'Plan the Week';
-
       renderCalSetup();
       renderWeek();
     }
@@ -735,45 +810,6 @@
     }
 
     // ========================================
-    // PLAN THE WEEK
-    // ========================================
-    function planTheWeek() {
-      if (planState !== 'ready') return;
-
-      var btn = document.getElementById('plan-btn');
-      planState = 'planning';
-      btn.className = 'plan-btn planning';
-      btn.textContent = 'Planning...';
-
-      setTimeout(function() {
-        for (var i = 0; i < 7; i++) {
-          var eventCount = calendarEvents[i].length;
-          var pool;
-          var allEntrees = recipes.filter(function(r) { return (r.category || 'entree') === 'entree'; });
-          if (eventCount >= 3) {
-            pool = easyMeals;
-          } else if (eventCount >= 1) {
-            pool = easyMeals.concat(mediumMeals);
-          } else {
-            pool = allEntrees;
-          }
-          var pick;
-          var attempts = 0;
-          do {
-            pick = pool[Math.floor(Math.random() * pool.length)];
-            attempts++;
-          } while (dinners.indexOf(pick) >= 0 && attempts < 20);
-          dinners[i] = pick;
-        }
-
-        planState = 'complete';
-        btn.className = 'plan-btn complete';
-        btn.textContent = 'Planning Complete';
-        renderWeek();
-      }, 1200);
-    }
-
-    // ========================================
     // RENDER WEEK
     // ========================================
     function renderWeek() {
@@ -783,13 +819,18 @@
         monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' - ' +
         sun.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
+      // Build sorted entree list for dropdown
+      var entrees = recipes.filter(function(r) { return (r.category || 'entree') === 'entree'; });
+      entrees.sort(function(a, b) { return a.name.localeCompare(b.name); });
+
       var table = document.getElementById('week-table');
       table.innerHTML = days.map(function(day, i) {
         var date = new Date(monday);
         date.setDate(monday.getDate() + i);
         var dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
         var events = calendarEvents[i];
-        var dinner = dinners[i];
+        var selectedName = dinners[i];
+        var selectedRecipe = selectedName ? recipes.find(function(r) { return r.name === selectedName; }) : null;
 
         // Calendar events column
         var eventsHtml;
@@ -798,17 +839,10 @@
         } else {
           eventsHtml = events.map(function(e) {
             var detail = '';
-            if (e.allDay) {
-              detail = 'All day';
-            } else if (e.timeStr) {
-              detail = e.timeStr;
-            }
-            if (e.where) {
-              detail += (detail ? ' · ' : '') + e.where;
-            }
-            if (e.duration && !e.allDay) {
-              detail += (detail ? ' · ' : '') + e.duration;
-            }
+            if (e.allDay) { detail = 'All day'; }
+            else if (e.timeStr) { detail = e.timeStr; }
+            if (e.where) { detail += (detail ? ' · ' : '') + e.where; }
+            if (e.duration && !e.allDay) { detail += (detail ? ' · ' : '') + e.duration; }
             return '<div class="event-item">' +
               '<div class="event-title">' + escapeHtml(e.title) + '</div>' +
               (detail ? '<div class="event-detail">' + escapeHtml(detail) + '</div>' : '') +
@@ -816,24 +850,26 @@
           }).join('');
         }
 
-        // Dinner column
-        var dinnerHtml;
-        if (dinner) {
-          var nutFlag = dinner.hasTreeNuts
-            ? '<div style="background:#fef3c7;color:#92400e;font-size:11px;padding:3px 8px;border-radius:8px;margin-top:4px;">🥜 Contains tree nuts</div>'
-            : '';
-          dinnerHtml =
-            '<div class="dinner-assigned">' +
-              '<div class="dinner-name">' + escapeHtml(dinner.name) + '</div>' +
-              '<div class="dinner-meta">' +
-                '<span class="dinner-prep">' + dinner.time + '</span>' +
-                '<span class="effort-dot ' + dinner.effort + '"></span>' +
-                '<span class="effort-label">' + dinner.effort + '</span>' +
-              '</div>' +
-              nutFlag +
-            '</div>';
-        } else {
-          dinnerHtml = '<div class="dinner-empty">Not planned</div>';
+        // Dinner dropdown
+        var hasNuts = selectedRecipe && selectedRecipe.hasTreeNuts;
+        var selectClass = 'dinner-select' + (hasNuts ? ' has-nuts' : '');
+        var options = '<option value="">-- Pick a recipe --</option>';
+        for (var j = 0; j < entrees.length; j++) {
+          var r = entrees[j];
+          var sel = (r.name === selectedName) ? ' selected' : '';
+          var nutIcon = r.hasTreeNuts ? ' 🥜' : '';
+          options += '<option value="' + escapeAttr(r.name) + '"' + sel + '>' + escapeHtml(r.name) + nutIcon + '</option>';
+        }
+        var dinnerHtml = '<select class="' + selectClass + '" onchange="setDinner(' + i + ', this.value)">' + options + '</select>';
+        if (selectedRecipe) {
+          dinnerHtml += '<div class="dinner-meta">' +
+            '<span class="dinner-prep">' + selectedRecipe.time + '</span>' +
+            '<span class="effort-dot ' + selectedRecipe.effort + '"></span>' +
+            '<span class="effort-label">' + selectedRecipe.effort + '</span>' +
+          '</div>';
+          if (hasNuts) {
+            dinnerHtml += '<div style="background:#fef3c7;color:#92400e;font-size:11px;padding:3px 8px;border-radius:8px;margin-top:4px;">🥜 Contains tree nuts</div>';
+          }
         }
 
         return '<div class="day-row">' +
@@ -945,13 +981,12 @@
       var bytes = new Uint8Array(buffer);
       var results = [];
 
-      // Check for ZIP magic number (PK\x03\x04)
       if (bytes[0] === 0x50 && bytes[1] === 0x4b) {
         var pos = 0;
         while (pos < bytes.length - 30) {
           if (bytes[pos] !== 0x50 || bytes[pos+1] !== 0x4b || bytes[pos+2] !== 0x03 || bytes[pos+3] !== 0x04) break;
           var view = new DataView(buffer, pos);
-          var compressionMethod = view.getUint16(8, true); // 0=stored, 8=deflate
+          var compressionMethod = view.getUint16(8, true);
           var compSize = view.getUint32(18, true);
           var nameLen = view.getUint16(26, true);
           var extraLen = view.getUint16(28, true);
@@ -962,24 +997,19 @@
 
           if (fileName.indexOf('.paprikarecipe') >= 0) {
             try {
-              // Step 1: undo ZIP compression (deflate-raw or stored)
               var innerData;
               if (compressionMethod === 8) {
                 innerData = await decompressStream(fileData, 'deflate-raw');
               } else {
-                innerData = fileData; // stored (method 0)
+                innerData = fileData;
               }
-
-              // Step 2: each .paprikarecipe is gzip-compressed JSON — try to decompress
               var jsonStr;
               try {
                 var decompressed = await decompressGzip(innerData);
                 jsonStr = new TextDecoder().decode(decompressed);
               } catch (gzErr) {
-                // Not gzip — might be plain JSON already
                 jsonStr = new TextDecoder().decode(innerData);
               }
-
               results.push(JSON.parse(jsonStr));
             } catch (e) {
               console.error('Failed to parse recipe: ' + fileName, e);
@@ -988,7 +1018,6 @@
           pos = dataStart + compSize;
         }
       } else {
-        // Try as single gzip JSON
         try {
           var dec = await decompressGzip(buffer);
           var parsed = JSON.parse(new TextDecoder().decode(dec));
@@ -1030,7 +1059,6 @@
         var imported = 0;
         var updated = 0;
         var flaggedNuts = 0;
-        // Index existing recipes by lowercase name for duplicate detection
         var existingByName = {};
         for (var e = 0; e < recipes.length; e++) existingByName[recipes[e].name.toLowerCase()] = e;
 
@@ -1038,7 +1066,6 @@
           var pr = paprikaRecipes[i];
           var name = pr.name || 'Untitled Recipe';
 
-          // Tree nut check across title, ingredients, directions, notes
           var allText = [name, pr.ingredients || '', pr.directions || '', pr.notes || ''].join(' ');
           var nutMatches = scanForTreeNuts(allText);
           var hasTreeNuts = nutMatches.length > 0;
@@ -1062,17 +1089,14 @@
             category: detectCategory(pr.categories, name)
           };
 
-          // Check for duplicate
           var existingIdx = existingByName[name.toLowerCase()];
           if (existingIdx !== undefined) {
             var existing = recipes[existingIdx];
-            // Compare content to see if they differ
             var same = (existing.ingredients || '') === newRecipe.ingredients &&
                        (existing.directions || '') === newRecipe.directions &&
                        existing.servings === newRecipe.servings;
-            if (same) continue; // exact duplicate, skip silently
+            if (same) continue;
 
-            // Different content — ask which to keep
             var keep = confirm(
               'Recipe "' + name + '" already exists but differs from the imported version.\n\n' +
               'Click OK to replace with the imported version, or Cancel to keep the existing one.'
@@ -1091,7 +1115,6 @@
         }
 
         saveRecipes();
-        rebuildEffortPools();
         renderRecipes();
 
         var parts = [];
@@ -1104,7 +1127,6 @@
         }
         showImportStatus(msg, 'success');
 
-        // Reset the file input
         document.getElementById('paprika-file').value = '';
       } catch (err) {
         console.error('Paprika import error:', err);
@@ -1215,8 +1237,6 @@
       document.getElementById('shopping-progress').style.width = pct + '%';
     }
 
-    function filterRecipes(val) { renderRecipes(); }
-
     // ========================================
     // NAVIGATION
     // ========================================
@@ -1247,25 +1267,13 @@
     // ========================================
     // INIT
     // ========================================
-    var BUILD_TIMESTAMP = '2026-02-08 04:11 PM CST';
+    var BUILD_TIMESTAMP = '2026-02-08 04:23 PM CST';
 
     document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('build-stamp').textContent = 'Updated ' + BUILD_TIMESTAMP;
       showPage('plan');
       initDragDrop();
-
-      // Auto-load saved calendar
-      var savedUrl = localStorage.getItem('mealflow_ical_url');
-      if (savedUrl) {
-        fetchCalendar(savedUrl, function(err, data) {
-          if (!err && data.indexOf('BEGIN:VCALENDAR') >= 0) {
-            processCalendarData(data);
-            calendarConnected = true;
-            renderCalSetup();
-            renderWeek();
-          }
-        });
-      }
+      loadAllCalendars();
     });
   </script>
 </body>
