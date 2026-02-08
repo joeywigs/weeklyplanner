@@ -115,15 +115,33 @@
     .col-headers span:last-child { padding-left: 16px; }
 
     /* Dinner column */
-    .dinner-select {
-      width: 100%; padding: 8px 6px; border: 1.5px solid #d1d5db; border-radius: 8px;
+    .dinner-picker { position: relative; }
+    .dinner-search {
+      width: 100%; padding: 8px 28px 8px 8px; border: 1.5px solid #d1d5db; border-radius: 8px;
       font-size: 13px; font-family: inherit; background: white; color: #111;
-      cursor: pointer; outline: none; appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%236b7280' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
-      background-repeat: no-repeat; background-position: right 8px center;
+      outline: none;
     }
-    .dinner-select:focus { border-color: #16a34a; box-shadow: 0 0 0 2px rgba(22,163,74,0.15); }
-    .dinner-select.has-nuts { border-color: #f59e0b; background-color: #fffbeb; }
+    .dinner-search:focus { border-color: #16a34a; box-shadow: 0 0 0 2px rgba(22,163,74,0.15); }
+    .dinner-search.has-nuts { border-color: #f59e0b; background-color: #fffbeb; }
+    .dinner-clear {
+      position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; font-size: 16px; color: #9ca3af; cursor: pointer;
+      padding: 0 4px; line-height: 1; display: none;
+    }
+    .dinner-clear.visible { display: block; }
+    .dinner-results {
+      position: absolute; top: 100%; left: 0; right: 0; background: white;
+      border: 1.5px solid #d1d5db; border-top: none; border-radius: 0 0 8px 8px;
+      max-height: 200px; overflow-y: auto; z-index: 30; display: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .dinner-results.open { display: block; }
+    .dinner-result-item {
+      padding: 8px 10px; font-size: 13px; cursor: pointer; display: flex;
+      justify-content: space-between; align-items: center;
+    }
+    .dinner-result-item:hover { background: #f0fdf4; }
+    .dinner-result-item .nut-icon { color: #92400e; font-size: 12px; }
     .dinner-meta { display: flex; gap: 8px; margin-top: 4px; align-items: center; }
     .dinner-prep { font-size: 11px; color: #6b7280; }
     .effort-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
@@ -140,6 +158,49 @@
       font-weight: 600; cursor: pointer; padding: 8px 0; margin-bottom: 16px;
     }
     .page-title { font-size: 24px; font-weight: 700; margin-bottom: 20px; color: #111; }
+
+    /* ---- Recipe Detail ---- */
+    .recipe-detail-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.4); z-index: 100; display: flex;
+      align-items: flex-end; justify-content: center;
+    }
+    .recipe-detail-panel {
+      background: white; border-radius: 20px 20px 0 0; width: 100%; max-width: 480px;
+      max-height: 85vh; overflow-y: auto; padding: 20px 16px 32px;
+      animation: slideUp 0.25s ease-out;
+    }
+    @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    .recipe-detail-header {
+      display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px;
+    }
+    .recipe-detail-title { font-size: 20px; font-weight: 700; color: #111; flex: 1; }
+    .recipe-detail-close {
+      width: 32px; height: 32px; border-radius: 50%; border: none; background: #f3f4f6;
+      font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-left: 12px;
+    }
+    .recipe-detail-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .recipe-detail-section { margin-bottom: 16px; }
+    .recipe-detail-section-title {
+      font-size: 13px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.5px; color: #6b7280; margin-bottom: 6px;
+    }
+    .recipe-detail-section pre {
+      font-family: inherit; white-space: pre-wrap; font-size: 14px; color: #374151;
+      line-height: 1.6; margin: 0;
+    }
+    .tag-editor-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+    .tag-editor-label { font-size: 13px; font-weight: 600; color: #374151; min-width: 70px; }
+    .tag-editor-select {
+      flex: 1; padding: 6px 10px; border: 1.5px solid #d1d5db; border-radius: 8px;
+      font-size: 13px; font-family: inherit; background: white; outline: none;
+    }
+    .tag-editor-select:focus { border-color: #16a34a; }
+    .recipe-source-link {
+      color: #2563eb; font-size: 13px; text-decoration: none; word-break: break-all;
+    }
+    .recipe-source-link:hover { text-decoration: underline; }
 
     /* ---- Recipe List ---- */
     .search-bar {
@@ -266,7 +327,7 @@
       </div>
     </div>
     <div class="container" style="padding-bottom: 90px;">
-      <div id="cal-setup-area"></div>
+      <div id="cal-plan-status"></div>
 
       <div class="week-nav">
         <button class="week-nav-btn" onclick="changeWeek(-1)">&#8249;</button>
@@ -305,6 +366,13 @@
     </div>
   </div>
 
+  <!-- Recipe detail overlay -->
+  <div id="recipe-detail-overlay" class="recipe-detail-overlay" style="display:none;" onclick="closeRecipeDetail(event)">
+    <div class="recipe-detail-panel" onclick="event.stopPropagation()">
+      <div id="recipe-detail-content"></div>
+    </div>
+  </div>
+
   <!-- ======== SHOPPING PAGE ======== -->
   <div id="page-shopping" class="page">
     <div class="container" style="padding-bottom: 80px;">
@@ -333,13 +401,21 @@
         <button class="clear-btn" onclick="clearAllRecipes()">Clear All Recipes &amp; Re-import</button>
       </div>
 
-      <!-- Calendar URL setting -->
-      <div class="feature-card" style="margin-bottom: 12px; cursor: pointer;" onclick="showPage('plan')">
-        <div class="feature-icon">📅</div>
-        <div>
-          <div class="feature-title">Calendars</div>
-          <div class="feature-desc" id="settings-cal-status">Not connected</div>
+      <!-- Calendar setup -->
+      <div class="import-section" id="cal-settings-area">
+        <h3>Google Calendars</h3>
+        <p>Paste your Google Calendar secret iCal URLs below (up to 2).<br>
+          Find in Google Calendar Settings &gt; your calendar &gt; "Secret address in iCal format"</p>
+        <div class="cal-input-row">
+          <input class="cal-input" id="ical-url-1" type="text" placeholder="Calendar 1 iCal URL...">
         </div>
+        <div class="cal-input-row">
+          <input class="cal-input" id="ical-url-2" type="text" placeholder="Calendar 2 iCal URL (optional)...">
+        </div>
+        <div style="margin-top:8px;">
+          <button class="cal-save-btn" onclick="connectCalendars()">Save &amp; Connect</button>
+        </div>
+        <div id="cal-status"></div>
       </div>
       <div class="feature-card" style="margin-bottom: 12px;">
         <div class="feature-icon">🏪</div>
@@ -476,12 +552,6 @@
 
     function saveDinners() {
       localStorage.setItem('mealflow_dinners_' + mondayKey(), JSON.stringify(dinners));
-    }
-
-    function setDinner(dayIndex, recipeName) {
-      dinners[dayIndex] = recipeName || null;
-      saveDinners();
-      renderWeek();
     }
 
     // ---- Shopping ----
@@ -720,9 +790,11 @@
               if (calendarIcsData.length > 0) {
                 processAllCalendarData();
                 calendarConnected = true;
+                showCalStatus('Connected! ' + calendarIcsData.length + ' calendar' + (calendarIcsData.length !== 1 ? 's' : '') + ' loaded, ' + calendarEventCount + ' events this week.', 'success');
               } else {
                 calendarConnected = false;
                 calendarEventCount = 0;
+                showCalStatus('Failed to load calendars. Check that the URLs are correct iCal secret addresses.', 'error');
               }
               renderCalSetup();
               renderWeek();
@@ -733,46 +805,37 @@
     }
 
     // ========================================
-    // CALENDAR SETUP UI
+    // CALENDAR SETUP UI (in settings)
     // ========================================
     function renderCalSetup() {
-      var area = document.getElementById('cal-setup-area');
-      var urls = getCalendarUrls();
-
-      if (calendarConnected) {
-        area.innerHTML =
-          '<div class="cal-connected">' +
-            '<div>' +
-              '<div class="cal-connected-text">Calendar connected (' + calendarIcsData.length + ' calendar' + (calendarIcsData.length !== 1 ? 's' : '') + ')</div>' +
-              '<div class="cal-connected-count">' + calendarEventCount + ' events this week</div>' +
-            '</div>' +
-            '<button class="cal-disconnect" onclick="disconnectCalendar()">Edit</button>' +
-          '</div>';
-        document.getElementById('settings-cal-status').textContent =
-          'Connected — ' + calendarEventCount + ' events this week';
-        return;
+      // Update plan page status bar
+      var planStatus = document.getElementById('cal-plan-status');
+      if (planStatus) {
+        if (calendarConnected) {
+          planStatus.innerHTML =
+            '<div class="cal-connected">' +
+              '<div>' +
+                '<div class="cal-connected-text">' + calendarIcsData.length + ' calendar' + (calendarIcsData.length !== 1 ? 's' : '') + ' connected</div>' +
+                '<div class="cal-connected-count">' + calendarEventCount + ' events this week</div>' +
+              '</div>' +
+            '</div>';
+        } else {
+          planStatus.innerHTML =
+            '<div style="background:#fef9c3;border:1px solid #fde68a;border-radius:12px;padding:12px 16px;margin-bottom:8px;font-size:13px;color:#a16207;">' +
+              'No calendars connected. Go to <button style="background:none;border:none;color:#2563eb;font-weight:600;cursor:pointer;font-size:13px;font-family:inherit;text-decoration:underline;padding:0;" onclick="showPage(\'settings\')">Settings</button> to add your Google Calendar URLs.' +
+            '</div>';
+        }
       }
 
-      area.innerHTML =
-        '<div class="cal-setup">' +
-          '<div class="cal-setup-title">Connect Your Calendars</div>' +
-          '<div class="cal-setup-desc">' +
-            'Paste your Google Calendar secret iCal URLs below (up to 2).<br>' +
-            'Find in Google Calendar Settings > your calendar > "Secret address in iCal format"' +
-          '</div>' +
-          '<div class="cal-input-row">' +
-            '<input class="cal-input" id="ical-url-1" type="text" placeholder="Calendar 1 iCal URL..." value="' + escapeAttr(urls[0] || '') + '">' +
-          '</div>' +
-          '<div class="cal-input-row">' +
-            '<input class="cal-input" id="ical-url-2" type="text" placeholder="Calendar 2 iCal URL (optional)..." value="' + escapeAttr(urls[1] || '') + '">' +
-          '</div>' +
-          '<div style="margin-top:8px;">' +
-            '<button class="cal-save-btn" onclick="connectCalendars()">Connect</button>' +
-          '</div>' +
-          '<div id="cal-status"></div>' +
-        '</div>';
-      document.getElementById('settings-cal-status').textContent =
-        urls.filter(function(u) { return u && u.trim(); }).length > 0 ? 'Saved — tap to reconnect' : 'Not connected';
+      // nothing else — settings inputs populated via populateCalendarInputs()
+    }
+
+    function populateCalendarInputs() {
+      var urls = getCalendarUrls();
+      var url1El = document.getElementById('ical-url-1');
+      var url2El = document.getElementById('ical-url-2');
+      if (url1El) url1El.value = urls[0] || '';
+      if (url2El) url2El.value = urls[1] || '';
     }
 
     function escapeAttr(s) {
@@ -793,15 +856,6 @@
       loadAllCalendars();
     }
 
-    function disconnectCalendar() {
-      calendarConnected = false;
-      calendarIcsData = [];
-      calendarEvents = [[], [], [], [], [], [], []];
-      calendarEventCount = 0;
-      renderCalSetup();
-      renderWeek();
-    }
-
     function showCalStatus(msg, type) {
       var el = document.getElementById('cal-status');
       if (el) {
@@ -818,10 +872,6 @@
       document.getElementById('week-range').textContent =
         monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' - ' +
         sun.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-
-      // Build sorted entree list for dropdown
-      var entrees = recipes.filter(function(r) { return (r.category || 'entree') === 'entree'; });
-      entrees.sort(function(a, b) { return a.name.localeCompare(b.name); });
 
       var table = document.getElementById('week-table');
       table.innerHTML = days.map(function(day, i) {
@@ -850,17 +900,20 @@
           }).join('');
         }
 
-        // Dinner dropdown
+        // Dinner search picker
         var hasNuts = selectedRecipe && selectedRecipe.hasTreeNuts;
-        var selectClass = 'dinner-select' + (hasNuts ? ' has-nuts' : '');
-        var options = '<option value="">-- Pick a recipe --</option>';
-        for (var j = 0; j < entrees.length; j++) {
-          var r = entrees[j];
-          var sel = (r.name === selectedName) ? ' selected' : '';
-          var nutIcon = r.hasTreeNuts ? ' 🥜' : '';
-          options += '<option value="' + escapeAttr(r.name) + '"' + sel + '>' + escapeHtml(r.name) + nutIcon + '</option>';
-        }
-        var dinnerHtml = '<select class="' + selectClass + '" onchange="setDinner(' + i + ', this.value)">' + options + '</select>';
+        var searchClass = 'dinner-search' + (hasNuts ? ' has-nuts' : '');
+        var searchVal = selectedName ? escapeAttr(selectedName) : '';
+        var clearVisible = selectedName ? ' visible' : '';
+        var dinnerHtml =
+          '<div class="dinner-picker">' +
+            '<input class="' + searchClass + '" type="text" placeholder="Search recipes..." ' +
+              'value="' + searchVal + '" ' +
+              'onfocus="openDinnerSearch(' + i + ', this)" ' +
+              'oninput="filterDinnerSearch(' + i + ', this)">' +
+            '<button class="dinner-clear' + clearVisible + '" onclick="clearDinner(' + i + ')">×</button>' +
+            '<div class="dinner-results" id="dinner-results-' + i + '"></div>' +
+          '</div>';
         if (selectedRecipe) {
           dinnerHtml += '<div class="dinner-meta">' +
             '<span class="dinner-prep">' + selectedRecipe.time + '</span>' +
@@ -884,6 +937,81 @@
         '</div>';
       }).join('');
     }
+
+    // ========================================
+    // DINNER SEARCH PICKER
+    // ========================================
+    var activeDinnerSearch = -1;
+
+    function getEntrees() {
+      var entrees = recipes.filter(function(r) { return (r.category || 'entree') === 'entree'; });
+      entrees.sort(function(a, b) { return a.name.localeCompare(b.name); });
+      return entrees;
+    }
+
+    function openDinnerSearch(dayIndex, input) {
+      activeDinnerSearch = dayIndex;
+      // If it shows the selected recipe name, clear it for searching
+      if (dinners[dayIndex] && input.value === dinners[dayIndex]) {
+        input.value = '';
+      }
+      filterDinnerSearch(dayIndex, input);
+    }
+
+    function filterDinnerSearch(dayIndex, input) {
+      var query = input.value.trim().toLowerCase();
+      var entrees = getEntrees();
+      var filtered = entrees.filter(function(r) {
+        return !query || r.name.toLowerCase().indexOf(query) >= 0;
+      });
+
+      var resultsEl = document.getElementById('dinner-results-' + dayIndex);
+      if (!resultsEl) return;
+
+      if (filtered.length === 0) {
+        resultsEl.innerHTML = '<div style="padding:8px 10px;font-size:13px;color:#9ca3af;">No matches</div>';
+      } else {
+        resultsEl.innerHTML = filtered.map(function(r) {
+          var nutIcon = r.hasTreeNuts ? '<span class="nut-icon">🥜</span>' : '';
+          return '<div class="dinner-result-item" onmousedown="selectDinner(' + dayIndex + ', \'' + escapeAttr(r.name).replace(/'/g, "\\'") + '\')">' +
+            '<span>' + escapeHtml(r.name) + '</span>' + nutIcon +
+          '</div>';
+        }).join('');
+      }
+      resultsEl.classList.add('open');
+    }
+
+    function selectDinner(dayIndex, recipeName) {
+      dinners[dayIndex] = recipeName;
+      saveDinners();
+      closeDinnerSearch();
+      renderWeek();
+    }
+
+    function clearDinner(dayIndex) {
+      dinners[dayIndex] = null;
+      saveDinners();
+      renderWeek();
+    }
+
+    function closeDinnerSearch() {
+      var all = document.querySelectorAll('.dinner-results');
+      for (var i = 0; i < all.length; i++) all[i].classList.remove('open');
+      activeDinnerSearch = -1;
+    }
+
+    // Close dinner search when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.dinner-picker')) {
+        closeDinnerSearch();
+        // If search was open, restore the selected value
+        var inputs = document.querySelectorAll('.dinner-search');
+        for (var i = 0; i < inputs.length; i++) {
+          var dayIdx = parseInt(inputs[i].closest('.day-col').querySelector('.dinner-picker .dinner-results').id.split('-').pop());
+          if (dinners[dayIdx]) inputs[i].value = dinners[dayIdx];
+        }
+      }
+    });
 
     function escapeHtml(s) {
       var div = document.createElement('div');
@@ -1165,12 +1293,13 @@
 
       var countHtml = '<div style="font-size:13px;color:#6b7280;margin-bottom:12px;">' +
         filtered.length + ' recipe' + (filtered.length !== 1 ? 's' : '') + '</div>';
-      list.innerHTML = countHtml + filtered.map(function(r) {
+      list.innerHTML = countHtml + filtered.map(function(r, idx) {
         var cat = r.category || 'entree';
         var nutBadge = r.hasTreeNuts
           ? '<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;">🥜 tree nuts</span>'
           : '';
-        return '<div class="recipe-card">' +
+        var realIdx = recipes.indexOf(r);
+        return '<div class="recipe-card" style="cursor:pointer;" onclick="openRecipeDetail(' + realIdx + ')">' +
           '<div class="recipe-name">' + escapeHtml(r.name) + '</div>' +
           '<div class="recipe-meta">' +
             '<span class="cat-badge cat-' + cat + '">' + (CAT_LABELS[cat] || cat) + '</span>' +
@@ -1193,6 +1322,104 @@
     }
 
     function applyRecipeFilters() { renderRecipes(); }
+
+    // ========================================
+    // RECIPE DETAIL VIEW
+    // ========================================
+    var openRecipeIdx = -1;
+
+    function openRecipeDetail(idx) {
+      openRecipeIdx = idx;
+      var r = recipes[idx];
+      if (!r) return;
+      var cat = r.category || 'entree';
+
+      var html = '<div class="recipe-detail-header">' +
+        '<div class="recipe-detail-title">' + escapeHtml(r.name) + '</div>' +
+        '<button class="recipe-detail-close" onclick="closeRecipeDetail()">×</button>' +
+      '</div>';
+
+      // Nut warning
+      if (r.hasTreeNuts) {
+        html += '<div style="background:#fef3c7;color:#92400e;font-size:13px;padding:8px 12px;border-radius:10px;margin-bottom:12px;">🥜 This recipe contains tree nuts</div>';
+      }
+
+      // Tags (editable)
+      html += '<div class="recipe-detail-section">' +
+        '<div class="recipe-detail-section-title">Tags</div>' +
+        '<div class="tag-editor-row">' +
+          '<span class="tag-editor-label">Category</span>' +
+          '<select class="tag-editor-select" onchange="updateRecipeTag(' + idx + ', \'category\', this.value)">' +
+            '<option value="entree"' + (cat === 'entree' ? ' selected' : '') + '>Entree</option>' +
+            '<option value="side"' + (cat === 'side' ? ' selected' : '') + '>Side</option>' +
+            '<option value="appetizer"' + (cat === 'appetizer' ? ' selected' : '') + '>Appetizer</option>' +
+            '<option value="dessert"' + (cat === 'dessert' ? ' selected' : '') + '>Dessert</option>' +
+          '</select>' +
+        '</div>' +
+        '<div class="tag-editor-row">' +
+          '<span class="tag-editor-label">Effort</span>' +
+          '<select class="tag-editor-select" onchange="updateRecipeTag(' + idx + ', \'effort\', this.value)">' +
+            '<option value="easy"' + (r.effort === 'easy' ? ' selected' : '') + '>Easy</option>' +
+            '<option value="medium"' + (r.effort === 'medium' ? ' selected' : '') + '>Medium</option>' +
+            '<option value="hard"' + (r.effort === 'hard' ? ' selected' : '') + '>Hard</option>' +
+          '</select>' +
+        '</div>' +
+      '</div>';
+
+      // Ingredients
+      if (r.ingredients) {
+        html += '<div class="recipe-detail-section">' +
+          '<div class="recipe-detail-section-title">Ingredients</div>' +
+          '<pre>' + escapeHtml(r.ingredients) + '</pre>' +
+        '</div>';
+      }
+
+      // Directions
+      if (r.directions) {
+        html += '<div class="recipe-detail-section">' +
+          '<div class="recipe-detail-section-title">Directions</div>' +
+          '<pre>' + escapeHtml(r.directions) + '</pre>' +
+        '</div>';
+      }
+
+      // Source
+      if (r.source) {
+        var sourceHtml;
+        if (r.source.indexOf('http') === 0) {
+          sourceHtml = '<a class="recipe-source-link" href="' + escapeAttr(r.source) + '" target="_blank" rel="noopener">' + escapeHtml(r.source) + '</a>';
+        } else {
+          sourceHtml = '<span style="font-size:13px;color:#374151;">' + escapeHtml(r.source) + '</span>';
+        }
+        html += '<div class="recipe-detail-section">' +
+          '<div class="recipe-detail-section-title">Source</div>' +
+          sourceHtml +
+        '</div>';
+      }
+
+      // Meta
+      html += '<div style="display:flex;gap:12px;font-size:13px;color:#6b7280;margin-top:4px;">' +
+        '<span>⏱ ' + escapeHtml(r.time) + '</span>' +
+        '<span>🍽 ' + r.servings + ' servings</span>' +
+      '</div>';
+
+      document.getElementById('recipe-detail-content').innerHTML = html;
+      document.getElementById('recipe-detail-overlay').style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeRecipeDetail(event) {
+      // If called from overlay click, only close if clicking backdrop itself
+      if (event && event.target && event.target !== document.getElementById('recipe-detail-overlay')) return;
+      document.getElementById('recipe-detail-overlay').style.display = 'none';
+      document.body.style.overflow = '';
+      openRecipeIdx = -1;
+      renderRecipes();
+    }
+
+    function updateRecipeTag(idx, field, value) {
+      recipes[idx][field] = value;
+      saveRecipes();
+    }
 
     // ========================================
     // RENDER SHOPPING
@@ -1260,6 +1487,7 @@
       if (page === 'plan') { renderCalSetup(); renderWeek(); }
       if (page === 'recipes') renderRecipes();
       if (page === 'shopping') renderShopping();
+      if (page === 'settings') populateCalendarInputs();
 
       window.scrollTo(0, 0);
     }
@@ -1267,10 +1495,11 @@
     // ========================================
     // INIT
     // ========================================
-    var BUILD_TIMESTAMP = '2026-02-08 04:23 PM CST';
+    var BUILD_TIMESTAMP = '2026-02-08 05:08 PM CST';
 
     document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('build-stamp').textContent = 'Updated ' + BUILD_TIMESTAMP;
+      populateCalendarInputs();
       showPage('plan');
       initDragDrop();
       loadAllCalendars();
