@@ -794,14 +794,18 @@
         // Dinner column
         var dinnerHtml;
         if (dinner) {
+          var nutFlag = dinner.hasTreeNuts
+            ? '<div style="background:#fef3c7;color:#92400e;font-size:11px;padding:3px 8px;border-radius:8px;margin-top:4px;">🥜 Contains tree nuts</div>'
+            : '';
           dinnerHtml =
             '<div class="dinner-assigned">' +
-              '<div class="dinner-name">' + dinner.name + '</div>' +
+              '<div class="dinner-name">' + escapeHtml(dinner.name) + '</div>' +
               '<div class="dinner-meta">' +
                 '<span class="dinner-prep">' + dinner.time + '</span>' +
                 '<span class="effort-dot ' + dinner.effort + '"></span>' +
                 '<span class="effort-label">' + dinner.effort + '</span>' +
               '</div>' +
+              nutFlag +
             '</div>';
         } else {
           dinnerHtml = '<div class="dinner-empty">Not planned</div>';
@@ -988,11 +992,11 @@
         }
 
         var imported = 0;
-        var skippedNuts = 0;
-        var nutWarnings = [];
-        // Track existing recipe names to avoid duplicates
-        var existingNames = {};
-        for (var e = 0; e < recipes.length; e++) existingNames[recipes[e].name.toLowerCase()] = true;
+        var updated = 0;
+        var flaggedNuts = 0;
+        // Index existing recipes by lowercase name for duplicate detection
+        var existingByName = {};
+        for (var e = 0; e < recipes.length; e++) existingByName[recipes[e].name.toLowerCase()] = e;
 
         for (var i = 0; i < paprikaRecipes.length; i++) {
           var pr = paprikaRecipes[i];
@@ -1001,14 +1005,7 @@
           // Tree nut check across title, ingredients, directions, notes
           var allText = [name, pr.ingredients || '', pr.directions || '', pr.notes || ''].join(' ');
           var nutMatches = scanForTreeNuts(allText);
-          if (nutMatches.length > 0) {
-            skippedNuts++;
-            nutWarnings.push(name + ' (' + nutMatches[0] + ')');
-            continue;
-          }
-
-          // Skip duplicates
-          if (existingNames[name.toLowerCase()]) continue;
+          var hasTreeNuts = nutMatches.length > 0;
 
           var totalMin = parseTimeToMinutes(pr.total_time) || parseTimeToMinutes(pr.cook_time) || parseTimeToMinutes(pr.prep_time);
           var servings = 4;
@@ -1017,16 +1014,42 @@
             if (sm) servings = parseInt(sm[1], 10);
           }
 
-          recipes.push({
+          var newRecipe = {
             name: name,
             effort: mapDifficulty(pr.difficulty),
             time: formatMinutes(totalMin),
             servings: servings,
             ingredients: pr.ingredients || '',
             directions: pr.directions || '',
-            source: pr.source_url || pr.source || ''
-          });
-          existingNames[name.toLowerCase()] = true;
+            source: pr.source_url || pr.source || '',
+            hasTreeNuts: hasTreeNuts
+          };
+
+          // Check for duplicate
+          var existingIdx = existingByName[name.toLowerCase()];
+          if (existingIdx !== undefined) {
+            var existing = recipes[existingIdx];
+            // Compare content to see if they differ
+            var same = (existing.ingredients || '') === newRecipe.ingredients &&
+                       (existing.directions || '') === newRecipe.directions &&
+                       existing.servings === newRecipe.servings;
+            if (same) continue; // exact duplicate, skip silently
+
+            // Different content — ask which to keep
+            var keep = confirm(
+              'Recipe "' + name + '" already exists but differs from the imported version.\n\n' +
+              'Click OK to replace with the imported version, or Cancel to keep the existing one.'
+            );
+            if (keep) {
+              recipes[existingIdx] = newRecipe;
+              updated++;
+            }
+            continue;
+          }
+
+          if (hasTreeNuts) flaggedNuts++;
+          recipes.push(newRecipe);
+          existingByName[name.toLowerCase()] = recipes.length - 1;
           imported++;
         }
 
@@ -1034,11 +1057,13 @@
         rebuildEffortPools();
         renderRecipes();
 
-        var msg = 'Imported ' + imported + ' recipe' + (imported !== 1 ? 's' : '') + ' from ' + paprikaRecipes.length + ' total.';
-        if (skippedNuts > 0) {
-          msg += '<div class="nut-warning" style="margin-top:8px;">🥜 Skipped ' + skippedNuts +
-            ' recipe' + (skippedNuts !== 1 ? 's' : '') + ' containing tree nuts:<br>' +
-            nutWarnings.map(function(w) { return '&bull; ' + escapeHtml(w); }).join('<br>') + '</div>';
+        var parts = [];
+        if (imported > 0) parts.push('Imported ' + imported + ' new recipe' + (imported !== 1 ? 's' : ''));
+        if (updated > 0) parts.push('updated ' + updated);
+        var msg = parts.length > 0 ? parts.join(', ') + '.' : 'No new recipes to import.';
+        if (flaggedNuts > 0) {
+          msg += '<div class="nut-warning" style="margin-top:8px;">🥜 ' + flaggedNuts +
+            ' recipe' + (flaggedNuts !== 1 ? 's' : '') + ' flagged as containing tree nuts.</div>';
         }
         showImportStatus(msg, 'success');
 
@@ -1074,12 +1099,16 @@
         filtered.length + ' recipe' + (filtered.length !== 1 ? 's' : '') +
         (filter ? ' matching "' + escapeHtml(filter) + '"' : '') + '</div>';
       list.innerHTML = countHtml + filtered.map(function(r) {
+        var nutBadge = r.hasTreeNuts
+          ? '<span style="background:#fef3c7;color:#92400e;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600;">🥜 tree nuts</span>'
+          : '';
         return '<div class="recipe-card">' +
           '<div class="recipe-name">' + escapeHtml(r.name) + '</div>' +
           '<div class="recipe-meta">' +
             '<span class="effort-badge effort-' + r.effort + '">' + r.effort + '</span>' +
             '<span>⏱ ' + r.time + '</span>' +
             '<span>🍽 ' + r.servings + ' servings</span>' +
+            nutBadge +
           '</div>' +
         '</div>';
       }).join('');
@@ -1160,7 +1189,7 @@
     // ========================================
     // INIT
     // ========================================
-    var BUILD_TIMESTAMP = '2026-02-08 03:57 PM CST';
+    var BUILD_TIMESTAMP = '2026-02-08 04:01 PM CST';
 
     document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('build-stamp').textContent = 'Updated ' + BUILD_TIMESTAMP;
