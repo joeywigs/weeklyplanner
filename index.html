@@ -875,7 +875,11 @@
     }
 
     async function decompressGzip(buffer) {
-      var ds = new DecompressionStream('gzip');
+      return decompressStream(buffer, 'gzip');
+    }
+
+    async function decompressStream(buffer, format) {
+      var ds = new DecompressionStream(format);
       var writer = ds.writable.getWriter();
       writer.write(buffer);
       writer.close();
@@ -907,6 +911,7 @@
         while (pos < bytes.length - 30) {
           if (bytes[pos] !== 0x50 || bytes[pos+1] !== 0x4b || bytes[pos+2] !== 0x03 || bytes[pos+3] !== 0x04) break;
           var view = new DataView(buffer, pos);
+          var compressionMethod = view.getUint16(8, true); // 0=stored, 8=deflate
           var compSize = view.getUint32(18, true);
           var nameLen = view.getUint16(26, true);
           var extraLen = view.getUint16(28, true);
@@ -917,8 +922,24 @@
 
           if (fileName.indexOf('.paprikarecipe') >= 0) {
             try {
-              var decompressed = await decompressGzip(fileData);
-              var jsonStr = new TextDecoder().decode(decompressed);
+              // Step 1: undo ZIP compression (deflate-raw or stored)
+              var innerData;
+              if (compressionMethod === 8) {
+                innerData = await decompressStream(fileData, 'deflate-raw');
+              } else {
+                innerData = fileData; // stored (method 0)
+              }
+
+              // Step 2: each .paprikarecipe is gzip-compressed JSON — try to decompress
+              var jsonStr;
+              try {
+                var decompressed = await decompressGzip(innerData);
+                jsonStr = new TextDecoder().decode(decompressed);
+              } catch (gzErr) {
+                // Not gzip — might be plain JSON already
+                jsonStr = new TextDecoder().decode(innerData);
+              }
+
               results.push(JSON.parse(jsonStr));
             } catch (e) {
               console.error('Failed to parse recipe: ' + fileName, e);
@@ -1139,7 +1160,7 @@
     // ========================================
     // INIT
     // ========================================
-    var BUILD_TIMESTAMP = '2026-02-08 21:47 UTC';
+    var BUILD_TIMESTAMP = '2026-02-08 21:55 UTC';
 
     document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('build-stamp').textContent = 'Updated ' + BUILD_TIMESTAMP;
