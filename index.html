@@ -487,8 +487,9 @@
   <script>
     // ---- Constants ----
     var CORS_PROXIES = [
-      { prefix: 'https://api.allorigins.win/raw?url=', encode: true },
-      { prefix: 'https://corsproxy.io/?', encode: true }
+      { prefix: 'https://api.allorigins.win/get?url=', encode: true, json: true },
+      { prefix: 'https://api.codetabs.com/v1/proxy?quest=', encode: true, json: false },
+      { prefix: 'https://corsproxy.io/?', encode: true, json: false }
     ];
     var days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 
@@ -696,17 +697,27 @@
         }
         var proxy = CORS_PROXIES[index];
         var proxyUrl = proxy.prefix + (proxy.encode ? encodeURIComponent(url) : url);
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', proxyUrl, true);
-        xhr.onload = function() {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            callback(null, xhr.responseText);
-          } else {
-            tryProxy(index + 1);
-          }
-        };
-        xhr.onerror = function() { tryProxy(index + 1); };
-        xhr.send();
+
+        fetch(proxyUrl)
+          .then(function(resp) {
+            if (!resp.ok) throw new Error('HTTP ' + resp.status);
+            return resp.text();
+          })
+          .then(function(text) {
+            // allorigins /get endpoint wraps response in JSON {contents: "..."}
+            if (proxy.json) {
+              try {
+                var parsed = JSON.parse(text);
+                text = parsed.contents || text;
+              } catch (e) { /* use raw text */ }
+            }
+            if (text && text.indexOf('BEGIN:VCALENDAR') >= 0) {
+              callback(null, text);
+            } else {
+              tryProxy(index + 1);
+            }
+          })
+          .catch(function() { tryProxy(index + 1); });
       }
       tryProxy(0);
     }
@@ -1546,7 +1557,7 @@
     // ========================================
     // INIT
     // ========================================
-    var BUILD_TIMESTAMP = '2026-02-09 06:05 PM CST';
+    var BUILD_TIMESTAMP = '2026-02-09 08:49 PM CST';
 
     document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('build-stamp').textContent = 'Updated ' + BUILD_TIMESTAMP;
