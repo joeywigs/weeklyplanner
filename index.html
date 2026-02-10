@@ -263,6 +263,19 @@
       background: white; border-radius: 16px; padding: 20px; display: flex;
       align-items: center; gap: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
+    .feature-card.expandable { cursor: pointer; }
+    .feature-card .expand-arrow {
+      margin-left: auto; font-size: 18px; color: #9ca3af; transition: transform 0.2s;
+    }
+    .feature-card.expanded .expand-arrow { transform: rotate(90deg); }
+    .feature-expand-body {
+      background: white; border-radius: 0 0 16px 16px; padding: 0 20px;
+      max-height: 0; overflow: hidden; transition: max-height 0.3s ease, padding 0.3s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08); margin-top: -12px;
+    }
+    .feature-expand-body.open {
+      max-height: 400px; padding: 0 20px 20px;
+    }
     .feature-icon { font-size: 32px; flex-shrink: 0; width: 48px; text-align: center; }
     .feature-title { font-size: 16px; font-weight: 600; color: #111; }
     .feature-desc { font-size: 13px; color: #6b7280; margin-top: 2px; }
@@ -401,22 +414,32 @@
         <button class="clear-btn" onclick="clearAllRecipes()">Clear All Recipes &amp; Re-import</button>
       </div>
 
-      <!-- Calendar setup -->
-      <div class="import-section" id="cal-settings-area">
-        <h3>Google Calendars</h3>
-        <p>Paste your Google Calendar secret iCal URLs below (up to 2).<br>
-          Find in Google Calendar Settings &gt; your calendar &gt; "Secret address in iCal format"</p>
+      <!-- Calendar setup (expandable card) -->
+      <div class="feature-card expandable" style="margin-bottom: 0; border-radius: 16px;" id="cal-card" onclick="toggleCalendarCard()">
+        <div class="feature-icon">📅</div>
+        <div style="flex:1;">
+          <div class="feature-title">Google Calendars</div>
+          <div class="feature-desc" id="cal-card-status">Not connected</div>
+        </div>
+        <span class="expand-arrow">&#8250;</span>
+      </div>
+      <div class="feature-expand-body" id="cal-card-body">
+        <p style="font-size:12px;color:#6b7280;margin-bottom:10px;line-height:1.5;">
+          Paste your Google Calendar secret iCal URLs below.<br>
+          Find in Google Calendar Settings &gt; your calendar &gt; "Secret address in iCal format"
+        </p>
         <div class="cal-input-row">
-          <input class="cal-input" id="ical-url-1" type="text" placeholder="Calendar 1 iCal URL...">
+          <input class="cal-input" id="ical-url-1" type="text" placeholder="Calendar 1 iCal URL..." onclick="event.stopPropagation()">
         </div>
         <div class="cal-input-row">
-          <input class="cal-input" id="ical-url-2" type="text" placeholder="Calendar 2 iCal URL (optional)...">
+          <input class="cal-input" id="ical-url-2" type="text" placeholder="Calendar 2 iCal URL (optional)..." onclick="event.stopPropagation()">
         </div>
         <div style="margin-top:8px;">
-          <button class="cal-save-btn" onclick="connectCalendars()">Save &amp; Connect</button>
+          <button class="cal-save-btn" onclick="event.stopPropagation(); connectCalendars()">Save &amp; Connect</button>
         </div>
         <div id="cal-status"></div>
       </div>
+      <div style="margin-bottom: 12px;"></div>
       <div class="feature-card" style="margin-bottom: 12px;">
         <div class="feature-icon">🏪</div>
         <div>
@@ -805,8 +828,24 @@
     }
 
     // ========================================
-    // CALENDAR SETUP UI (in settings)
+    // CALENDAR SETUP UI (in settings card)
     // ========================================
+    function toggleCalendarCard() {
+      var card = document.getElementById('cal-card');
+      var body = document.getElementById('cal-card-body');
+      var isOpen = body.classList.contains('open');
+      if (isOpen) {
+        body.classList.remove('open');
+        card.classList.remove('expanded');
+        card.style.borderRadius = '16px';
+      } else {
+        body.classList.add('open');
+        card.classList.add('expanded');
+        card.style.borderRadius = '16px 16px 0 0';
+        populateCalendarInputs();
+      }
+    }
+
     function renderCalSetup() {
       // Update plan page status bar
       var planStatus = document.getElementById('cal-plan-status');
@@ -827,7 +866,19 @@
         }
       }
 
-      // nothing else — settings inputs populated via populateCalendarInputs()
+      // Update settings card subtitle
+      var cardStatus = document.getElementById('cal-card-status');
+      if (cardStatus) {
+        if (calendarConnected) {
+          cardStatus.textContent = 'Connected — ' + calendarEventCount + ' events this week';
+          cardStatus.style.color = '#15803d';
+        } else {
+          var urls = getCalendarUrls();
+          var hasUrls = urls.some(function(u) { return u && u.trim(); });
+          cardStatus.textContent = hasUrls ? 'Saved — tap to reconnect' : 'Not connected';
+          cardStatus.style.color = '#6b7280';
+        }
+      }
     }
 
     function populateCalendarInputs() {
@@ -1495,7 +1546,7 @@
     // ========================================
     // INIT
     // ========================================
-    var BUILD_TIMESTAMP = '2026-02-08 05:08 PM CST';
+    var BUILD_TIMESTAMP = '2026-02-09 06:05 PM CST';
 
     document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('build-stamp').textContent = 'Updated ' + BUILD_TIMESTAMP;
