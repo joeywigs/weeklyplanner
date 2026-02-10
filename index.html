@@ -87,11 +87,12 @@
     .week-table { margin-top: 8px; }
     .day-row {
       background: white; border-radius: 12px; margin-bottom: 8px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06); overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06); overflow: visible;
     }
     .day-header {
       display: flex; align-items: center; justify-content: space-between;
       padding: 12px 16px; border-bottom: 1px solid #f3f4f6;
+      border-radius: 12px 12px 0 0;
     }
     .day-label { font-weight: 700; font-size: 15px; color: #111; }
     .day-date { font-size: 12px; color: #9ca3af; }
@@ -1580,7 +1581,7 @@
     // ========================================
     // INIT
     // ========================================
-    var BUILD_TIMESTAMP = '2026-02-09 08:58 PM CST';
+    var BUILD_TIMESTAMP = '2026-02-09 09:07 PM CST';
 
     document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('build-stamp').textContent = 'Updated ' + BUILD_TIMESTAMP;
