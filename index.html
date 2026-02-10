@@ -635,6 +635,7 @@
           else if (baseKey === 'DTSTART') evt.dtstart = parseICSDate(val, key);
           else if (baseKey === 'DTEND') evt.dtend = parseICSDate(val, key);
           else if (baseKey === 'DURATION') evt.duration = val;
+          else if (baseKey === 'UID') evt.uid = val;
         }
       }
       return events;
@@ -728,6 +729,8 @@
 
       calendarEvents = [[], [], [], [], [], [], []];
       calendarEventCount = 0;
+      // Track seen events per day for dedup (by UID or title+time key)
+      var seenPerDay = [{}, {}, {}, {}, {}, {}, {}];
 
       for (var c = 0; c < calendarIcsData.length; c++) {
         var allEvents = parseICS(calendarIcsData[c]);
@@ -742,6 +745,9 @@
           if (end && end <= monday) continue;
           if (!end && start < monday) continue;
 
+          // Build dedup key: prefer UID, fall back to title+startTime
+          var dedupKey = evt.uid || ((evt.summary || '') + '|' + start.getTime());
+
           for (var d = 0; d < 7; d++) {
             var dayStart = new Date(monday);
             dayStart.setDate(monday.getDate() + d);
@@ -752,6 +758,10 @@
             var eventStart = start;
             var eventEnd = end || new Date(start.getTime() + 3600000);
             if (eventStart < dayEnd && eventEnd > dayStart) {
+              // Skip duplicate
+              if (seenPerDay[d][dedupKey]) continue;
+              seenPerDay[d][dedupKey] = true;
+
               var timeStr = '';
               if (!evt.dtstart.allDay) {
                 timeStr = formatTime(start);
@@ -868,6 +878,10 @@
                 '<div class="cal-connected-text">' + calendarIcsData.length + ' calendar' + (calendarIcsData.length !== 1 ? 's' : '') + ' connected</div>' +
                 '<div class="cal-connected-count">' + calendarEventCount + ' events this week</div>' +
               '</div>' +
+              '<div style="display:flex;gap:8px;">' +
+                '<button class="cal-disconnect" onclick="loadAllCalendars()">Refresh</button>' +
+                '<button class="cal-disconnect" onclick="clearCalendarEvents()">Clear</button>' +
+              '</div>' +
             '</div>';
         } else {
           planStatus.innerHTML =
@@ -890,6 +904,15 @@
           cardStatus.style.color = '#6b7280';
         }
       }
+    }
+
+    function clearCalendarEvents() {
+      calendarConnected = false;
+      calendarIcsData = [];
+      calendarEvents = [[], [], [], [], [], [], []];
+      calendarEventCount = 0;
+      renderCalSetup();
+      renderWeek();
     }
 
     function populateCalendarInputs() {
@@ -1557,7 +1580,7 @@
     // ========================================
     // INIT
     // ========================================
-    var BUILD_TIMESTAMP = '2026-02-09 08:49 PM CST';
+    var BUILD_TIMESTAMP = '2026-02-09 08:58 PM CST';
 
     document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('build-stamp').textContent = 'Updated ' + BUILD_TIMESTAMP;
