@@ -259,6 +259,33 @@
     .progress-bar { background: #e5e7eb; border-radius: 999px; height: 8px; margin-bottom: 20px; overflow: hidden; }
     .progress-fill { background: #16a34a; height: 100%; border-radius: 999px; transition: width 0.3s; }
 
+    /* ---- Needs Ingredients ---- */
+    .needs-ingredients {
+      background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px;
+      padding: 16px; margin-bottom: 16px;
+    }
+    .needs-ingredients-title {
+      font-size: 14px; font-weight: 700; color: #92400e; margin-bottom: 8px;
+    }
+    .needs-ingredients-item {
+      background: white; border-radius: 10px; padding: 12px; margin-bottom: 8px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .needs-ingredients-item:last-child { margin-bottom: 0; }
+    .needs-ingredients-name { font-size: 14px; font-weight: 600; color: #111; margin-bottom: 6px; }
+    .needs-ingredients-textarea {
+      width: 100%; min-height: 80px; border: 1.5px solid #d1d5db; border-radius: 8px;
+      padding: 8px 10px; font-size: 13px; font-family: inherit; resize: vertical;
+      outline: none;
+    }
+    .needs-ingredients-textarea:focus { border-color: #16a34a; box-shadow: 0 0 0 2px rgba(22,163,74,0.15); }
+    .needs-ingredients-save {
+      margin-top: 6px; padding: 6px 14px; background: #16a34a; color: white;
+      border: none; border-radius: 8px; font-size: 12px; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+    }
+    .needs-ingredients-save:hover { background: #15803d; }
+
     /* ---- Settings ---- */
     .feature-card {
       background: white; border-radius: 16px; padding: 20px; display: flex;
@@ -391,6 +418,7 @@
   <div id="page-shopping" class="page">
     <div class="container" style="padding-bottom: 80px;">
       <div class="page-title">Shopping List</div>
+      <div id="needs-ingredients-area"></div>
       <div class="progress-bar">
         <div class="progress-fill" id="shopping-progress" style="width: 0%"></div>
       </div>
@@ -1001,6 +1029,7 @@
             '<div class="dinner-results" id="dinner-results-' + i + '"></div>' +
           '</div>';
         if (selectedRecipe) {
+          var noIngredients = !selectedRecipe.ingredients || !selectedRecipe.ingredients.trim();
           dinnerHtml += '<div class="dinner-meta">' +
             '<span class="dinner-prep">' + selectedRecipe.time + '</span>' +
             '<span class="effort-dot ' + selectedRecipe.effort + '"></span>' +
@@ -1009,6 +1038,12 @@
           if (hasNuts) {
             dinnerHtml += '<div style="background:#fef3c7;color:#92400e;font-size:11px;padding:3px 8px;border-radius:8px;margin-top:4px;">🥜 Contains tree nuts</div>';
           }
+          if (noIngredients) {
+            dinnerHtml += '<div style="font-size:11px;color:#a16207;margin-top:3px;">Needs ingredients</div>';
+          }
+        } else if (selectedName) {
+          // Name assigned but recipe not found (shouldn't happen, but handle it)
+          dinnerHtml += '<div style="font-size:11px;color:#a16207;margin-top:3px;">Needs ingredients</div>';
         }
 
         return '<div class="day-row">' +
@@ -1054,17 +1089,50 @@
       var resultsEl = document.getElementById('dinner-results-' + dayIndex);
       if (!resultsEl) return;
 
-      if (filtered.length === 0) {
-        resultsEl.innerHTML = '<div style="padding:8px 10px;font-size:13px;color:#9ca3af;">No matches</div>';
+      var html = '';
+      if (filtered.length === 0 && !query) {
+        html = '<div style="padding:8px 10px;font-size:13px;color:#9ca3af;">No recipes yet</div>';
       } else {
-        resultsEl.innerHTML = filtered.map(function(r) {
+        html = filtered.map(function(r) {
           var nutIcon = r.hasTreeNuts ? '<span class="nut-icon">🥜</span>' : '';
           return '<div class="dinner-result-item" onmousedown="selectDinner(' + dayIndex + ', \'' + escapeAttr(r.name).replace(/'/g, "\\'") + '\')">' +
             '<span>' + escapeHtml(r.name) + '</span>' + nutIcon +
           '</div>';
         }).join('');
       }
+
+      // Show "Add as new" option if query doesn't exactly match an existing recipe
+      if (query) {
+        var exactMatch = recipes.some(function(r) { return r.name.toLowerCase() === query; });
+        if (!exactMatch) {
+          var displayName = input.value.trim();
+          html += '<div class="dinner-result-item" style="border-top:1px solid #e5e7eb;color:#16a34a;font-weight:600;" ' +
+            'onmousedown="quickAddRecipe(' + dayIndex + ', \'' + escapeAttr(displayName).replace(/'/g, "\\'") + '\')">' +
+            '<span>+ Add "' + escapeHtml(displayName) + '"</span>' +
+          '</div>';
+        }
+      }
+
+      resultsEl.innerHTML = html;
       resultsEl.classList.add('open');
+    }
+
+    function quickAddRecipe(dayIndex, name) {
+      var newRecipe = {
+        name: name,
+        effort: 'medium',
+        time: '? min',
+        servings: 4,
+        category: 'entree',
+        ingredients: '',
+        directions: ''
+      };
+      recipes.push(newRecipe);
+      saveRecipes();
+      dinners[dayIndex] = name;
+      saveDinners();
+      closeDinnerSearch();
+      renderWeek();
     }
 
     function selectDinner(dayIndex, recipeName) {
@@ -1511,6 +1579,9 @@
     // RENDER SHOPPING
     // ========================================
     function renderShopping() {
+      // Render "needs ingredients" section for this week's dinners missing ingredients
+      renderNeedsIngredients();
+
       var list = document.getElementById('shopping-list');
       var html = '';
       var categories = Object.keys(shoppingItems);
@@ -1531,6 +1602,55 @@
       }
       list.innerHTML = html;
       updateProgress();
+    }
+
+    function renderNeedsIngredients() {
+      var area = document.getElementById('needs-ingredients-area');
+      if (!area) return;
+
+      // Find this week's assigned dinners that have no ingredients
+      var missing = [];
+      for (var d = 0; d < 7; d++) {
+        var name = dinners[d];
+        if (!name) continue;
+        var recipe = recipes.find(function(r) { return r.name === name; });
+        if (!recipe || (recipe.ingredients && recipe.ingredients.trim())) continue;
+        // Avoid showing the same recipe twice
+        if (missing.some(function(m) { return m.name === name; })) continue;
+        var recipeIdx = recipes.indexOf(recipe);
+        missing.push({ name: name, day: days[d], recipeIdx: recipeIdx });
+      }
+
+      if (missing.length === 0) {
+        area.innerHTML = '';
+        return;
+      }
+
+      var html = '<div class="needs-ingredients">' +
+        '<div class="needs-ingredients-title">Recipes need ingredients (' + missing.length + ')</div>' +
+        '<p style="font-size:12px;color:#92400e;margin-bottom:10px;">These meals are on your plan this week but don\'t have ingredient lists yet. Add them so they show up in your shopping list.</p>';
+
+      for (var i = 0; i < missing.length; i++) {
+        var m = missing[i];
+        html += '<div class="needs-ingredients-item">' +
+          '<div class="needs-ingredients-name">' + escapeHtml(m.name) + ' <span style="font-weight:400;font-size:12px;color:#6b7280;">(' + m.day + ')</span></div>' +
+          '<textarea class="needs-ingredients-textarea" id="ing-textarea-' + m.recipeIdx + '" placeholder="e.g.\n1 lb chicken breast\n2 cups rice\n1 tbsp olive oil"></textarea>' +
+          '<button class="needs-ingredients-save" onclick="saveQuickIngredients(' + m.recipeIdx + ')">Save Ingredients</button>' +
+        '</div>';
+      }
+
+      html += '</div>';
+      area.innerHTML = html;
+    }
+
+    function saveQuickIngredients(recipeIdx) {
+      var textarea = document.getElementById('ing-textarea-' + recipeIdx);
+      if (!textarea) return;
+      var text = textarea.value.trim();
+      if (!text) return;
+      recipes[recipeIdx].ingredients = text;
+      saveRecipes();
+      renderShopping();
     }
 
     function toggleItem(category, index) {
@@ -1581,7 +1701,7 @@
     // ========================================
     // INIT
     // ========================================
-    var BUILD_TIMESTAMP = '2026-02-09 09:07 PM CST';
+    var BUILD_TIMESTAMP = '2026-02-09 09:14 PM CST';
 
     document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('build-stamp').textContent = 'Updated ' + BUILD_TIMESTAMP;
