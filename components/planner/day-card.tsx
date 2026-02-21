@@ -6,6 +6,7 @@ import { MorningCard } from './morning-card';
 import { LunchCard } from './lunch-card';
 import { EveningCard } from './evening-card';
 import { DinnerCard } from './dinner-card';
+import { CalendarEventsCard } from './calendar-events-card';
 
 interface DayCardProps {
   date: Date;
@@ -49,6 +50,7 @@ export function DayCard({ date }: DayCardProps) {
 
       {/* Sub-cards */}
       <div className="p-2 space-y-2">
+        <CalendarEventsCard dateKey={dateKey} />
         <MorningCard dateKey={dateKey} dayData={dayData} />
         <LunchCard dateKey={dateKey} dayData={dayData} dayOfWeek={date.getDay()} />
         <EveningCard dateKey={dateKey} dayData={dayData} />
