@@ -6,7 +6,7 @@ import { formatWeekRange } from '@/lib/date-utils';
 const BUILD_DATE = '2026-02-21';
 
 export function Header() {
-  const { weekDates, goToPrevWeek, goToNextWeek, goToCurrentWeek, weekOffset } =
+  const { weekDates, goToPrevWeek, goToNextWeek, goToCurrentWeek, weekOffset, editMode, toggleEditMode } =
     usePlanner();
 
   return (
@@ -16,7 +16,16 @@ export function Header() {
           <h1 className="text-lg font-bold text-[var(--foreground)]">
             Weekly Family Planner
           </h1>
-          <span className="text-[10px] text-gray-400">v{BUILD_DATE}</span>
+          <button
+            onClick={toggleEditMode}
+            className={`text-[10px] px-2.5 py-1 rounded-full font-semibold transition-colors ${
+              editMode
+                ? 'bg-accent-100 text-accent-700'
+                : 'bg-green-100 text-green-700'
+            }`}
+          >
+            {editMode ? 'Edit' : 'Live'}
+          </button>
         </div>
 
         <div className="flex items-center justify-between mt-2">

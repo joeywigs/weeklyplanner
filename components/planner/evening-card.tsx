@@ -2,22 +2,72 @@
 
 import { useState } from 'react';
 import { usePlanner } from '@/lib/planner-context';
+import { formatDateKey, getShortDayName } from '@/lib/date-utils';
 import type { DayData } from '@/lib/types';
 
 interface EveningCardProps {
   dateKey: string;
   dayData: DayData;
+  weekDates: Date[];
 }
 
-export function EveningCard({ dateKey, dayData }: EveningCardProps) {
-  const { addActivity, removeActivity } = usePlanner();
+export function EveningCard({ dateKey, dayData, weekDates }: EveningCardProps) {
+  const {
+    addActivity,
+    removeActivity,
+    getCalendarEventsForDay,
+    addCalendarEvent,
+    removeCalendarEvent,
+    editMode,
+  } = usePlanner();
   const [activityInput, setActivityInput] = useState('');
+  const [throughDate, setThroughDate] = useState('');
+
+  const calendarEvents = getCalendarEventsForDay(dateKey);
+
+  // Only show days after the current day for the "through" dropdown
+  const laterDates = weekDates.filter((d) => formatDateKey(d) > dateKey);
 
   function handleAdd() {
     const text = activityInput.trim();
     if (!text) return;
-    addActivity(dateKey, text);
+    if (throughDate) {
+      addCalendarEvent(text, dateKey, throughDate);
+    } else {
+      addActivity(dateKey, text);
+    }
     setActivityInput('');
+    setThroughDate('');
+  }
+
+  const hasItems = dayData.eveningActivities.length > 0 || calendarEvents.length > 0;
+
+  // Live mode: simplified read-only view
+  if (!editMode) {
+    return (
+      <div className="rounded-lg border border-evening-200 bg-[var(--evening-light)] p-2.5">
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-full bg-[var(--evening)]" />
+          <span className="text-xs font-semibold text-evening-800">Evening</span>
+        </div>
+        {hasItems ? (
+          <ul className="mt-1.5 space-y-0.5">
+            {calendarEvents.map((ev) => (
+              <li key={ev.id} className="text-[11px] text-evening-700 pl-3.5">
+                &bull; {ev.text}
+              </li>
+            ))}
+            {dayData.eveningActivities.map((a) => (
+              <li key={a.id} className="text-[11px] text-evening-700 pl-3.5">
+                &bull; {a.text}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-[10px] text-evening-300 mt-1.5 italic">Free evening</p>
+        )}
+      </div>
+    );
   }
 
   return (
@@ -46,8 +96,50 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
         </button>
       </div>
 
-      {dayData.eveningActivities.length > 0 && (
+      {laterDates.length > 0 && (
+        <div className="flex items-center gap-1.5 mt-1.5">
+          <span className="text-[10px] text-evening-500">through</span>
+          <select
+            value={throughDate}
+            onChange={(e) => setThroughDate(e.target.value)}
+            className="text-[10px] px-1 py-0.5 rounded border border-evening-200 bg-white text-evening-700 focus:outline-none focus:ring-1 focus:ring-evening-400"
+          >
+            <option value="">this day only</option>
+            {laterDates.map((d) => {
+              const key = formatDateKey(d);
+              return (
+                <option key={key} value={key}>
+                  {getShortDayName(d)}
+                </option>
+              );
+            })}
+          </select>
+        </div>
+      )}
+
+      {hasItems && (
         <ul className="mt-1.5 space-y-1">
+          {calendarEvents.map((ev) => (
+            <li
+              key={ev.id}
+              className="flex items-start gap-1 text-xs text-evening-800 bg-evening-200 rounded px-1.5 py-1"
+            >
+              <span className="flex-1 break-words">{ev.text}</span>
+              <button
+                onClick={() => removeCalendarEvent(ev.id)}
+                className="text-evening-400 hover:text-red-500 shrink-0 mt-0.5"
+              >
+                <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
+                  <path
+                    d="M3 3l6 6M9 3l-6 6"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </button>
+            </li>
+          ))}
           {dayData.eveningActivities.map((a) => (
             <li
               key={a.id}
@@ -72,7 +164,7 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
         </ul>
       )}
 
-      {dayData.eveningActivities.length === 0 && (
+      {!hasItems && (
         <p className="text-[10px] text-evening-300 mt-1.5 italic">
           No activities planned
         </p>

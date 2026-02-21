@@ -12,10 +12,21 @@ interface DayCardProps {
 }
 
 export function DayCard({ date }: DayCardProps) {
-  const { getDayData } = usePlanner();
+  const { getDayData, weekDates, getWeatherForDay, getCalendarEventsForDay, editMode } = usePlanner();
   const dateKey = formatDateKey(date);
   const dayData = getDayData(dateKey, date);
   const today = isToday(date);
+  const weather = getWeatherForDay(dateKey);
+
+  // Evening activity density: count manual + calendar events
+  const calendarEvents = getCalendarEventsForDay(dateKey);
+  const eveningCount = dayData.eveningActivities.length + calendarEvents.length;
+  const densityColor =
+    eveningCount === 0
+      ? 'bg-green-400'
+      : eveningCount === 1
+        ? 'bg-yellow-400'
+        : 'bg-red-400';
 
   return (
     <div
@@ -39,11 +50,22 @@ export function DayCard({ date }: DayCardProps) {
           >
             {getDayName(date)}
           </span>
-          <span
-            className={`text-xs ${today ? 'text-accent-600' : 'text-gray-500'}`}
-          >
-            {formatShortDate(date)}
-          </span>
+          <div className="flex items-center gap-1.5">
+            <div
+              className={`w-2 h-2 rounded-full ${densityColor}`}
+              title={`${eveningCount} evening event${eveningCount !== 1 ? 's' : ''}`}
+            />
+            {weather && (
+              <span className="text-xs" title={`${weather.high}°/${weather.low}°`}>
+                {weather.icon} <span className={`text-[10px] ${today ? 'text-accent-500' : 'text-gray-400'}`}>{weather.high}°</span>
+              </span>
+            )}
+            <span
+              className={`text-xs ${today ? 'text-accent-600' : 'text-gray-500'}`}
+            >
+              {formatShortDate(date)}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -51,7 +73,7 @@ export function DayCard({ date }: DayCardProps) {
       <div className="p-2 space-y-2">
         <MorningCard dateKey={dateKey} dayData={dayData} />
         <LunchCard dateKey={dateKey} dayData={dayData} dayOfWeek={date.getDay()} />
-        <EveningCard dateKey={dateKey} dayData={dayData} />
+        <EveningCard dateKey={dateKey} dayData={dayData} weekDates={weekDates} />
         <DinnerCard dateKey={dateKey} dayData={dayData} />
       </div>
     </div>

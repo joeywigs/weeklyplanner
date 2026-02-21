@@ -1,40 +1,5 @@
 import type { SchoolLunchMenu } from './types';
 
-export const SAMPLE_RECIPES = [
-  'Spaghetti Bolognese',
-  'Chicken Stir Fry',
-  'Tacos',
-  'Grilled Salmon',
-  'Mac and Cheese',
-  'Pizza Night',
-  'Chicken Parmesan',
-  'Beef Stew',
-  'Shrimp Scampi',
-  'Burgers',
-  'Chicken Alfredo',
-  'Fish Tacos',
-  'Pork Chops',
-  'Vegetable Soup',
-  'Fried Rice',
-  'BBQ Chicken',
-  'Lasagna',
-  'Chicken Pot Pie',
-  'Steak and Potatoes',
-  'Enchiladas',
-  'Teriyaki Chicken',
-  'Meatloaf',
-  'Caesar Salad with Grilled Chicken',
-  'Pulled Pork Sandwiches',
-  'Baked Ziti',
-  'Quesadillas',
-  'Pot Roast',
-  'Coconut Curry',
-  'Sloppy Joes',
-  'Pancakes for Dinner',
-  'Leftover Night',
-  'Eating Out',
-];
-
 // Sample school lunch menus keyed by day of week (1=Mon, 5=Fri)
 export const SAMPLE_SCHOOL_LUNCH: Record<number, SchoolLunchMenu> = {
   1: {

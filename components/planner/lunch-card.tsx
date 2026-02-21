@@ -11,7 +11,7 @@ interface LunchCardProps {
 }
 
 export function LunchCard({ dateKey, dayData, dayOfWeek }: LunchCardProps) {
-  const { setLunchChoice, toggleSchool } = usePlanner();
+  const { setLunchChoice, toggleSchool, editMode } = usePlanner();
   const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5;
   const menu = isWeekday ? SAMPLE_SCHOOL_LUNCH[dayOfWeek] : undefined;
 
@@ -24,6 +24,37 @@ export function LunchCard({ dateKey, dayData, dayOfWeek }: LunchCardProps) {
           <span className="text-xs font-semibold text-lunch-800">Lunch</span>
         </div>
         <p className="text-[10px] text-lunch-600 mt-1.5 italic">Weekend — no school lunch</p>
+      </div>
+    );
+  }
+
+  // Live mode: simplified read-only view
+  if (!editMode) {
+    const greyLabel = dayData.greyLunch === 'pack' ? 'Pack' : dayData.greyLunch === 'school' ? 'School' : '—';
+    const sloaneLabel = dayData.sloaneLunch === 'pack' ? 'Pack' : dayData.sloaneLunch === 'school' ? 'School' : '—';
+    return (
+      <div className="rounded-lg border border-lunch-200 bg-[var(--lunch-light)] p-2.5">
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-full bg-[var(--lunch)]" />
+          <span className="text-xs font-semibold text-lunch-800">Lunch</span>
+          <span className={`ml-auto text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+            dayData.hasSchool ? 'bg-lunch-200 text-lunch-800' : 'bg-gray-200 text-gray-600'
+          }`}>
+            {dayData.hasSchool ? 'School' : 'No School'}
+          </span>
+        </div>
+        {dayData.hasSchool && menu && (
+          <div className="mt-1.5">
+            <div className="text-[11px] font-semibold text-lunch-800">{menu.entree}</div>
+            <div className="flex gap-3 mt-1 text-[10px] text-lunch-700">
+              <span>Grey: {greyLabel}</span>
+              <span>Sloane: {sloaneLabel}</span>
+            </div>
+          </div>
+        )}
+        {!dayData.hasSchool && (
+          <p className="text-[10px] text-lunch-600 mt-1.5 italic">No school today</p>
+        )}
       </div>
     );
   }
@@ -51,21 +82,29 @@ export function LunchCard({ dateKey, dayData, dayOfWeek }: LunchCardProps) {
         <>
           {/* School menu */}
           <div className="mb-2 space-y-0.5">
-            <MenuRow label="Entree" value={menu.entree} />
-            <MenuRow label="Grill" value={menu.grill} />
-            <MenuRow label="Express" value={menu.express} />
-            <MenuRow label="Vegetable" value={menu.vegetable} />
-            <MenuRow label="Fruit" value={menu.fruit} />
+            <div className="text-[11px] font-semibold text-lunch-800">
+              {menu.entree}
+            </div>
+            <div className="flex flex-wrap gap-x-2 text-[10px] text-lunch-600">
+              <span>{menu.grill}</span>
+              <span className="text-lunch-300">·</span>
+              <span>{menu.express}</span>
+            </div>
+            <div className="flex flex-wrap gap-x-2 text-[10px] text-lunch-500">
+              <span>{menu.vegetable}</span>
+              <span className="text-lunch-300">·</span>
+              <span>{menu.fruit}</span>
+            </div>
           </div>
 
-          {/* Lunch choice per child */}
+          {/* Lunch choice per child — toggle pills */}
           <div className="space-y-1.5">
-            <ChildLunchChoice
+            <ChildLunchPill
               name="Grey"
               value={dayData.greyLunch}
               onChange={(choice) => setLunchChoice(dateKey, 'grey', choice)}
             />
-            <ChildLunchChoice
+            <ChildLunchPill
               name="Sloane"
               value={dayData.sloaneLunch}
               onChange={(choice) => setLunchChoice(dateKey, 'sloane', choice)}
@@ -81,16 +120,7 @@ export function LunchCard({ dateKey, dayData, dayOfWeek }: LunchCardProps) {
   );
 }
 
-function MenuRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex gap-1.5 text-[10px]">
-      <span className="text-lunch-600 font-medium w-14 shrink-0">{label}:</span>
-      <span className="text-lunch-800">{value}</span>
-    </div>
-  );
-}
-
-function ChildLunchChoice({
+function ChildLunchPill({
   name,
   value,
   onChange,
@@ -100,26 +130,32 @@ function ChildLunchChoice({
   onChange: (choice: 'pack' | 'school' | null) => void;
 }) {
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-[10px] font-semibold text-lunch-800 w-12">{name}</span>
-      <label className="flex items-center gap-1 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={value === 'pack'}
-          onChange={() => onChange(value === 'pack' ? null : 'pack')}
-          className="w-3 h-3 rounded accent-lunch-600"
-        />
-        <span className="text-[10px] text-lunch-700">Pack</span>
-      </label>
-      <label className="flex items-center gap-1 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={value === 'school'}
-          onChange={() => onChange(value === 'school' ? null : 'school')}
-          className="w-3 h-3 rounded accent-lunch-600"
-        />
-        <span className="text-[10px] text-lunch-700">School</span>
-      </label>
+    <div className="flex items-center gap-1.5">
+      <span className="text-[10px] font-semibold text-lunch-800 w-11 shrink-0">
+        {name}
+      </span>
+      <div className="flex rounded-full bg-white border border-lunch-200 overflow-hidden">
+        <button
+          onClick={() => onChange(value === 'pack' ? null : 'pack')}
+          className={`text-[10px] px-2.5 py-0.5 font-medium transition-colors ${
+            value === 'pack'
+              ? 'bg-lunch-400 text-white'
+              : 'text-lunch-600 hover:bg-lunch-50'
+          }`}
+        >
+          Pack
+        </button>
+        <button
+          onClick={() => onChange(value === 'school' ? null : 'school')}
+          className={`text-[10px] px-2.5 py-0.5 font-medium transition-colors ${
+            value === 'school'
+              ? 'bg-lunch-400 text-white'
+              : 'text-lunch-600 hover:bg-lunch-50'
+          }`}
+        >
+          School
+        </button>
+      </div>
     </div>
   );
 }

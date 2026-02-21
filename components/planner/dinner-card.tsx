@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { usePlanner } from '@/lib/planner-context';
-import { SAMPLE_RECIPES } from '@/lib/sample-data';
+import { getRecipes } from '@/lib/recipe-store';
 import type { DayData } from '@/lib/types';
 
 interface DinnerCardProps {
@@ -11,15 +11,19 @@ interface DinnerCardProps {
 }
 
 export function DinnerCard({ dateKey, dayData }: DinnerCardProps) {
-  const { setDinner, setCook } = usePlanner();
+  const { setDinner, setCook, swapDinner, editMode } = usePlanner();
   const [searchText, setSearchText] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const userRecipes = getRecipes();
   const filtered = searchText.trim()
-    ? SAMPLE_RECIPES.filter((r) =>
-        r.toLowerCase().includes(searchText.toLowerCase())
-      )
+    ? userRecipes
+        .filter((r) =>
+          r.name.toLowerCase().includes(searchText.toLowerCase())
+        )
+        .map((r) => r.name)
     : [];
 
   useEffect(() => {
@@ -43,10 +47,64 @@ export function DinnerCard({ dateKey, dayData }: DinnerCardProps) {
 
   function clearDinner() {
     setDinner(dateKey, '');
+    setCook(dateKey, '');
+  }
+
+  function handleDragStart(e: React.DragEvent) {
+    e.dataTransfer.setData('text/plain', dateKey);
+    e.dataTransfer.effectAllowed = 'move';
+  }
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setIsDragOver(true);
+  }
+
+  function handleDragLeave() {
+    setIsDragOver(false);
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragOver(false);
+    const fromDateKey = e.dataTransfer.getData('text/plain');
+    if (fromDateKey && fromDateKey !== dateKey) {
+      swapDinner(fromDateKey, dateKey);
+    }
+  }
+
+  // Live mode: simplified read-only view
+  if (!editMode) {
+    return (
+      <div className="rounded-lg border border-dinner-200 bg-[var(--dinner-light)] p-2.5">
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-full bg-[var(--dinner)]" />
+          <span className="text-xs font-semibold text-dinner-800">Dinner</span>
+          {dayData.cook && (
+            <span className="ml-auto text-[10px] text-dinner-600 font-medium">{dayData.cook} cooks</span>
+          )}
+        </div>
+        {dayData.dinner ? (
+          <p className="text-[11px] text-dinner-800 font-medium mt-1.5 pl-3.5">{dayData.dinner}</p>
+        ) : (
+          <p className="text-[10px] text-dinner-300 mt-1.5 italic">No dinner planned</p>
+        )}
+      </div>
+    );
   }
 
   return (
-    <div className="rounded-lg border border-dinner-200 bg-[var(--dinner-light)] p-2.5 overflow-visible">
+    <div
+      className={`rounded-lg border bg-[var(--dinner-light)] p-2.5 overflow-visible transition-colors ${
+        isDragOver
+          ? 'border-dinner-400 bg-dinner-100'
+          : 'border-dinner-200'
+      }`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       <div className="flex items-center gap-1.5 mb-2">
         <div className="w-2 h-2 rounded-full bg-[var(--dinner)]" />
         <span className="text-xs font-semibold text-dinner-800">Dinner</span>
@@ -64,7 +122,23 @@ export function DinnerCard({ dateKey, dayData }: DinnerCardProps) {
       </div>
 
       {dayData.dinner ? (
-        <div className="flex items-center gap-1.5 bg-white rounded-md px-2 py-1.5 border border-dinner-200">
+        <div
+          draggable
+          onDragStart={handleDragStart}
+          className="flex items-center gap-1.5 bg-white rounded-md px-2 py-1.5 border border-dinner-200 cursor-grab active:cursor-grabbing"
+        >
+          <svg
+            className="w-3 h-3 text-dinner-300 shrink-0"
+            viewBox="0 0 12 12"
+            fill="currentColor"
+          >
+            <circle cx="4" cy="3" r="1" />
+            <circle cx="8" cy="3" r="1" />
+            <circle cx="4" cy="6" r="1" />
+            <circle cx="8" cy="6" r="1" />
+            <circle cx="4" cy="9" r="1" />
+            <circle cx="8" cy="9" r="1" />
+          </svg>
           <span className="flex-1 text-xs text-dinner-800 font-medium">
             {dayData.dinner}
           </span>

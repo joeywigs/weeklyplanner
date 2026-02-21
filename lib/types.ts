@@ -22,8 +22,14 @@ export interface Activity {
 export interface CalendarEvent {
   id: string;
   text: string;
-  isAllDay: boolean;
-  dateKey?: string;
+  startDate: string;
+  endDate: string;
+}
+
+export interface CalendarSource {
+  id: string;
+  name: string;
+  url: string;
 }
 
 export interface GroceryItem {
@@ -42,6 +48,13 @@ export interface SchoolLunchMenu {
   express: string;
   vegetable: string;
   fruit: string;
+}
+
+export interface Recipe {
+  id: string;
+  name: string;
+  prepTime: string;
+  tags: string[];
 }
 
 export interface WeekState {
