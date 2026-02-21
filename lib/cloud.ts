@@ -8,41 +8,21 @@
  * When cloud is not configured, falls back to plain localStorage.
  */
 
-const WORKER_URL_KEY = 'cloud_worker_url';
-const HOUSEHOLD_KEY = 'household_id';
+const WORKER_URL = 'https://planner-api.joeywigs.workers.dev';
+const HOUSEHOLD_ID = 'wiggins-family';
 
 // ─── Config helpers ─────────────────────────────────────────────
 
 export function getWorkerUrl(): string {
-  if (typeof window === 'undefined') return '';
-  return localStorage.getItem(WORKER_URL_KEY) || '';
-}
-
-export function setWorkerUrl(url: string): void {
-  if (typeof window === 'undefined') return;
-  if (url) {
-    localStorage.setItem(WORKER_URL_KEY, url.replace(/\/+$/, ''));
-  } else {
-    localStorage.removeItem(WORKER_URL_KEY);
-  }
+  return WORKER_URL;
 }
 
 export function getHouseholdId(): string {
-  if (typeof window === 'undefined') return '';
-  return localStorage.getItem(HOUSEHOLD_KEY) || '';
-}
-
-export function setHouseholdId(id: string): void {
-  if (typeof window === 'undefined') return;
-  if (id) {
-    localStorage.setItem(HOUSEHOLD_KEY, id);
-  } else {
-    localStorage.removeItem(HOUSEHOLD_KEY);
-  }
+  return HOUSEHOLD_ID;
 }
 
 export function isCloudEnabled(): boolean {
-  return !!(getWorkerUrl() && getHouseholdId());
+  return true;
 }
 
 // ─── Low-level API calls ────────────────────────────────────────
