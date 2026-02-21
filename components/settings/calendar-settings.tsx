@@ -1,10 +1,8 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import type { CalendarSource } from '@/lib/types';
+import { useState, useEffect } from 'react';
 import {
   getCalendarSources,
-  setCalendarSources,
   getCachedCalendarEvents,
   setCachedCalendarEvents,
   clearCachedCalendarEvents,
@@ -12,76 +10,27 @@ import {
 } from '@/lib/calendar-store';
 import { parseICS } from '@/lib/ics-parser';
 
-function generateId(): string {
-  return Math.random().toString(36).substring(2, 9);
-}
-
 export function CalendarSettings() {
-  const [sources, setSources] = useState<CalendarSource[]>([]);
   const [eventCount, setEventCount] = useState(0);
   const [lastRefresh, setLastRefresh] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const sources = getCalendarSources();
+
   useEffect(() => {
-    const stored = getCalendarSources();
-    if (stored.length === 0) {
-      // Start with 2 empty slots
-      setSources([
-        { id: generateId(), name: '', url: '' },
-        { id: generateId(), name: '', url: '' },
-      ]);
-    } else {
-      setSources(stored);
-    }
     setEventCount(getCachedCalendarEvents().length);
     setLastRefresh(getLastRefreshTime());
   }, []);
 
-  const save = useCallback(
-    (updated: CalendarSource[]) => {
-      setSources(updated);
-      setCalendarSources(updated);
-    },
-    []
-  );
-
-  function updateSource(
-    id: string,
-    field: 'name' | 'url',
-    value: string
-  ) {
-    const updated = sources.map((s) =>
-      s.id === id ? { ...s, [field]: value } : s
-    );
-    save(updated);
-  }
-
-  function removeSource(id: string) {
-    const updated = sources.filter((s) => s.id !== id);
-    save(updated);
-  }
-
-  function addSource() {
-    const updated = [...sources, { id: generateId(), name: '', url: '' }];
-    save(updated);
-  }
-
   async function handleRefresh() {
-    const validSources = sources.filter((s) => s.url.trim());
-    if (validSources.length === 0) {
-      setError('Add at least one calendar URL first.');
-      return;
-    }
-
     setIsRefreshing(true);
     setError(null);
 
     try {
       const allEvents = await Promise.all(
-        validSources.map(async (src) => {
+        sources.map(async (src) => {
           const label = src.name || 'Calendar';
-          // Try direct fetch first, then fall back to CORS proxy
           let icsText: string;
           try {
             const directRes = await fetch(src.url.trim());
@@ -136,65 +85,25 @@ export function CalendarSettings() {
         Google Calendar
       </h2>
       <p className="text-xs text-gray-500 mb-3">
-        Add your Google Calendar ICS feed URLs to import events.
+        Importing events from:
       </p>
 
-      <div className="space-y-3">
+      <ul className="text-xs text-gray-600 space-y-1 mb-3">
         {sources.map((src) => (
-          <div key={src.id} className="space-y-1.5">
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={src.name}
-                onChange={(e) => updateSource(src.id, 'name', e.target.value)}
-                placeholder="Calendar name"
-                className="w-28 shrink-0 text-xs px-2 py-1.5 rounded-md bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-accent-400"
-              />
-              <input
-                type="url"
-                value={src.url}
-                onChange={(e) => updateSource(src.id, 'url', e.target.value)}
-                placeholder="https://calendar.google.com/calendar/ical/..."
-                className="flex-1 text-xs px-2 py-1.5 rounded-md bg-gray-50 border border-gray-200 placeholder:text-gray-400 focus:outline-none focus:ring-1 focus:ring-accent-400 min-w-0"
-              />
-              {sources.length > 1 && (
-                <button
-                  onClick={() => removeSource(src.id)}
-                  className="text-gray-300 hover:text-red-500 shrink-0"
-                >
-                  <svg
-                    className="w-4 h-4"
-                    viewBox="0 0 12 12"
-                    fill="none"
-                  >
-                    <path
-                      d="M3 3l6 6M9 3l-6 6"
-                      stroke="currentColor"
-                      strokeWidth={1.5}
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                </button>
-              )}
-            </div>
-          </div>
+          <li key={src.id} className="flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-accent-400 shrink-0" />
+            {src.name}
+          </li>
         ))}
-      </div>
-
-      <button
-        onClick={addSource}
-        className="mt-3 text-xs text-accent-600 hover:text-accent-700 font-medium"
-      >
-        + Add another calendar
-      </button>
+      </ul>
 
       {error && (
-        <p className="mt-2 text-xs text-red-600 bg-red-50 px-2 py-1.5 rounded-md">
+        <p className="mb-2 text-xs text-red-600 bg-red-50 px-2 py-1.5 rounded-md">
           {error}
         </p>
       )}
 
-      <div className="mt-4 flex items-center gap-2 flex-wrap">
+      <div className="flex items-center gap-2 flex-wrap">
         <button
           onClick={handleRefresh}
           disabled={isRefreshing}
