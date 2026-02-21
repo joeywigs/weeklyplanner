@@ -1,0 +1,11 @@
+{
+  "name": "planner-api",
+  "main": "worker/src/index.ts",
+  "compatibility_date": "2024-01-01",
+  "kv_namespaces": [
+    {
+      "binding": "PLANNER_KV",
+      "id": "2633cecf92aa4f8a858d815d578b28ab"
+    }
+  ]
+}

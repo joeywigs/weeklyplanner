@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "deploy:worker": "cd worker && npm ci && npx wrangler deploy",
     "start": "next start",
     "lint": "next lint"
   },
