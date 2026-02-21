@@ -1,6 +1,6 @@
 {
   "name": "planner-api",
-  "main": "src/index.ts",
+  "main": "worker/src/index.ts",
   "compatibility_date": "2024-01-01",
   "kv_namespaces": [
     {
