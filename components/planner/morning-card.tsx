@@ -10,7 +10,7 @@ interface MorningCardProps {
 }
 
 export function MorningCard({ dateKey, dayData }: MorningCardProps) {
-  const { setDropOff, addReminder, removeReminder } = usePlanner();
+  const { setDropOff, addReminder, removeReminder, editMode } = usePlanner();
   const [reminderInput, setReminderInput] = useState('');
 
   function handleAddReminder() {
@@ -18,6 +18,28 @@ export function MorningCard({ dateKey, dayData }: MorningCardProps) {
     if (!text) return;
     addReminder(dateKey, text);
     setReminderInput('');
+  }
+
+  // Live mode: simplified read-only view
+  if (!editMode) {
+    return (
+      <div className="rounded-lg border border-morning-200 bg-[var(--morning-light)] p-2.5">
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-full bg-[var(--morning)]" />
+          <span className="text-xs font-semibold text-morning-800">Morning</span>
+          <span className="ml-auto text-[10px] text-morning-600 font-medium">{dayData.dropOff} drops off</span>
+        </div>
+        {dayData.morningReminders.length > 0 && (
+          <ul className="mt-1.5 space-y-0.5">
+            {dayData.morningReminders.map((r) => (
+              <li key={r.id} className="text-[11px] text-morning-700 pl-3.5">
+                &bull; {r.text}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
   }
 
   return (

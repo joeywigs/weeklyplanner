@@ -102,6 +102,8 @@ interface PlannerContextValue {
   copyCaraNotes: () => void;
   getWeatherForDay: (dateKey: string) => { icon: string; high: number; low: number } | null;
   swapDinner: (fromDateKey: string, toDateKey: string) => void;
+  editMode: boolean;
+  toggleEditMode: () => void;
 }
 
 const PlannerContext = createContext<PlannerContextValue | null>(null);
@@ -110,6 +112,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
   const [weekOffset, setWeekOffset] = useState(0);
   const [state, setState] = useState<WeekState>(() => loadState(0));
   const [googleEvents, setGoogleEvents] = useState<CalendarEvent[]>([]);
+  const [editMode, setEditMode] = useState(true);
   const [weather, setWeather] = useState<
     Map<string, { code: number; high: number; low: number }>
   >(new Map());
@@ -423,6 +426,8 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     [weather]
   );
 
+  const toggleEditMode = useCallback(() => setEditMode((m) => !m), []);
+
   const goToWeek = useCallback((offset: number) => setWeekOffset(offset), []);
   const goToPrevWeek = useCallback(
     () => setWeekOffset((o) => o - 1),
@@ -468,6 +473,8 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
         copyCaraNotes,
         getWeatherForDay,
         swapDinner,
+        editMode,
+        toggleEditMode,
       }}
     >
       {children}

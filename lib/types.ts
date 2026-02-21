@@ -50,6 +50,13 @@ export interface SchoolLunchMenu {
   fruit: string;
 }
 
+export interface Recipe {
+  id: string;
+  name: string;
+  prepTime: string;
+  tags: string[];
+}
+
 export interface WeekState {
   weekOffset: number;
   days: Record<string, DayData>;

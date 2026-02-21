@@ -1,4 +1,5 @@
 import { CalendarSettings } from '@/components/settings/calendar-settings';
+import { RecipeSettings } from '@/components/settings/recipe-settings';
 
 export default function SettingsPage() {
   return (
@@ -11,6 +12,9 @@ export default function SettingsPage() {
       <div className="space-y-4">
         {/* Google Calendar */}
         <CalendarSettings />
+
+        {/* Recipes */}
+        <RecipeSettings />
 
         {/* Grocery Item Defaults */}
         <div className="rounded-xl border border-[var(--border)] bg-white p-4">

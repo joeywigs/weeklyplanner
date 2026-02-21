@@ -11,7 +11,7 @@ interface LunchCardProps {
 }
 
 export function LunchCard({ dateKey, dayData, dayOfWeek }: LunchCardProps) {
-  const { setLunchChoice, toggleSchool } = usePlanner();
+  const { setLunchChoice, toggleSchool, editMode } = usePlanner();
   const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5;
   const menu = isWeekday ? SAMPLE_SCHOOL_LUNCH[dayOfWeek] : undefined;
 
@@ -24,6 +24,37 @@ export function LunchCard({ dateKey, dayData, dayOfWeek }: LunchCardProps) {
           <span className="text-xs font-semibold text-lunch-800">Lunch</span>
         </div>
         <p className="text-[10px] text-lunch-600 mt-1.5 italic">Weekend — no school lunch</p>
+      </div>
+    );
+  }
+
+  // Live mode: simplified read-only view
+  if (!editMode) {
+    const greyLabel = dayData.greyLunch === 'pack' ? 'Pack' : dayData.greyLunch === 'school' ? 'School' : '—';
+    const sloaneLabel = dayData.sloaneLunch === 'pack' ? 'Pack' : dayData.sloaneLunch === 'school' ? 'School' : '—';
+    return (
+      <div className="rounded-lg border border-lunch-200 bg-[var(--lunch-light)] p-2.5">
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-full bg-[var(--lunch)]" />
+          <span className="text-xs font-semibold text-lunch-800">Lunch</span>
+          <span className={`ml-auto text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+            dayData.hasSchool ? 'bg-lunch-200 text-lunch-800' : 'bg-gray-200 text-gray-600'
+          }`}>
+            {dayData.hasSchool ? 'School' : 'No School'}
+          </span>
+        </div>
+        {dayData.hasSchool && menu && (
+          <div className="mt-1.5">
+            <div className="text-[11px] font-semibold text-lunch-800">{menu.entree}</div>
+            <div className="flex gap-3 mt-1 text-[10px] text-lunch-700">
+              <span>Grey: {greyLabel}</span>
+              <span>Sloane: {sloaneLabel}</span>
+            </div>
+          </div>
+        )}
+        {!dayData.hasSchool && (
+          <p className="text-[10px] text-lunch-600 mt-1.5 italic">No school today</p>
+        )}
       </div>
     );
   }

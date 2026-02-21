@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { usePlanner } from '@/lib/planner-context';
-import { SAMPLE_RECIPES } from '@/lib/sample-data';
+import { getRecipes } from '@/lib/recipe-store';
 import type { DayData } from '@/lib/types';
 
 interface DinnerCardProps {
@@ -11,16 +11,19 @@ interface DinnerCardProps {
 }
 
 export function DinnerCard({ dateKey, dayData }: DinnerCardProps) {
-  const { setDinner, setCook, swapDinner } = usePlanner();
+  const { setDinner, setCook, swapDinner, editMode } = usePlanner();
   const [searchText, setSearchText] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const userRecipes = getRecipes();
   const filtered = searchText.trim()
-    ? SAMPLE_RECIPES.filter((r) =>
-        r.toLowerCase().includes(searchText.toLowerCase())
-      )
+    ? userRecipes
+        .filter((r) =>
+          r.name.toLowerCase().includes(searchText.toLowerCase())
+        )
+        .map((r) => r.name)
     : [];
 
   useEffect(() => {
@@ -69,6 +72,26 @@ export function DinnerCard({ dateKey, dayData }: DinnerCardProps) {
     if (fromDateKey && fromDateKey !== dateKey) {
       swapDinner(fromDateKey, dateKey);
     }
+  }
+
+  // Live mode: simplified read-only view
+  if (!editMode) {
+    return (
+      <div className="rounded-lg border border-dinner-200 bg-[var(--dinner-light)] p-2.5">
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-full bg-[var(--dinner)]" />
+          <span className="text-xs font-semibold text-dinner-800">Dinner</span>
+          {dayData.cook && (
+            <span className="ml-auto text-[10px] text-dinner-600 font-medium">{dayData.cook} cooks</span>
+          )}
+        </div>
+        {dayData.dinner ? (
+          <p className="text-[11px] text-dinner-800 font-medium mt-1.5 pl-3.5">{dayData.dinner}</p>
+        ) : (
+          <p className="text-[10px] text-dinner-300 mt-1.5 italic">No dinner planned</p>
+        )}
+      </div>
+    );
   }
 
   return (

@@ -18,6 +18,7 @@ export function EveningCard({ dateKey, dayData, weekDates }: EveningCardProps) {
     getCalendarEventsForDay,
     addCalendarEvent,
     removeCalendarEvent,
+    editMode,
   } = usePlanner();
   const [activityInput, setActivityInput] = useState('');
   const [throughDate, setThroughDate] = useState('');
@@ -40,6 +41,34 @@ export function EveningCard({ dateKey, dayData, weekDates }: EveningCardProps) {
   }
 
   const hasItems = dayData.eveningActivities.length > 0 || calendarEvents.length > 0;
+
+  // Live mode: simplified read-only view
+  if (!editMode) {
+    return (
+      <div className="rounded-lg border border-evening-200 bg-[var(--evening-light)] p-2.5">
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-full bg-[var(--evening)]" />
+          <span className="text-xs font-semibold text-evening-800">Evening</span>
+        </div>
+        {hasItems ? (
+          <ul className="mt-1.5 space-y-0.5">
+            {calendarEvents.map((ev) => (
+              <li key={ev.id} className="text-[11px] text-evening-700 pl-3.5">
+                &bull; {ev.text}
+              </li>
+            ))}
+            {dayData.eveningActivities.map((a) => (
+              <li key={a.id} className="text-[11px] text-evening-700 pl-3.5">
+                &bull; {a.text}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-[10px] text-evening-300 mt-1.5 italic">Free evening</p>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-lg border border-evening-200 bg-[var(--evening-light)] p-2.5">
