@@ -1,5 +1,6 @@
 import { CalendarSettings } from '@/components/settings/calendar-settings';
 import { RecipeSettings } from '@/components/settings/recipe-settings';
+import { CloudSettings } from '@/components/settings/cloud-settings';
 
 export default function SettingsPage() {
   return (
@@ -10,6 +11,9 @@ export default function SettingsPage() {
       </p>
 
       <div className="space-y-4">
+        {/* Cloud Sync */}
+        <CloudSettings />
+
         {/* Google Calendar */}
         <CalendarSettings />
 
