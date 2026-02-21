@@ -22,8 +22,8 @@ export interface Activity {
 export interface CalendarEvent {
   id: string;
   text: string;
-  isAllDay: boolean;
-  dateKey?: string;
+  startDate: string;
+  endDate: string;
 }
 
 export interface GroceryItem {

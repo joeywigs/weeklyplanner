@@ -12,7 +12,7 @@ interface DayCardProps {
 }
 
 export function DayCard({ date }: DayCardProps) {
-  const { getDayData } = usePlanner();
+  const { getDayData, weekDates } = usePlanner();
   const dateKey = formatDateKey(date);
   const dayData = getDayData(dateKey, date);
   const today = isToday(date);
@@ -51,7 +51,7 @@ export function DayCard({ date }: DayCardProps) {
       <div className="p-2 space-y-2">
         <MorningCard dateKey={dateKey} dayData={dayData} />
         <LunchCard dateKey={dateKey} dayData={dayData} dayOfWeek={date.getDay()} />
-        <EveningCard dateKey={dateKey} dayData={dayData} />
+        <EveningCard dateKey={dateKey} dayData={dayData} weekDates={weekDates} />
         <DinnerCard dateKey={dateKey} dayData={dayData} />
       </div>
     </div>

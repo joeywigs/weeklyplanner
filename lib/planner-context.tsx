@@ -89,7 +89,7 @@ interface PlannerContextValue {
   setDinner: (dateKey: string, value: string) => void;
   setCook: (dateKey: string, value: 'Carly' | 'Joey' | '') => void;
   calendarEvents: CalendarEvent[];
-  addCalendarEvent: (text: string, isAllDay: boolean, dateKey?: string) => void;
+  addCalendarEvent: (text: string, startDate: string, endDate: string) => void;
   removeCalendarEvent: (id: string) => void;
   getCalendarEventsForDay: (dateKey: string) => CalendarEvent[];
   addGroceryItem: (name: string) => void;
@@ -239,12 +239,12 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
   );
 
   const addCalendarEvent = useCallback(
-    (text: string, isAllDay: boolean, dateKey?: string) => {
+    (text: string, startDate: string, endDate: string) => {
       setState((prev) => ({
         ...prev,
         calendarEvents: [
           ...prev.calendarEvents,
-          { id: generateId(), text, isAllDay, dateKey: isAllDay ? undefined : dateKey },
+          { id: generateId(), text, startDate, endDate },
         ],
       }));
     },
@@ -261,7 +261,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
   const getCalendarEventsForDay = useCallback(
     (dateKey: string): CalendarEvent[] => {
       return state.calendarEvents.filter(
-        (e) => e.isAllDay || e.dateKey === dateKey
+        (e) => dateKey >= e.startDate && dateKey <= e.endDate
       );
     },
     [state.calendarEvents]
