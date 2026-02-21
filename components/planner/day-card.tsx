@@ -19,7 +19,7 @@ export function DayCard({ date }: DayCardProps) {
 
   return (
     <div
-      className={`flex-shrink-0 w-[280px] lg:w-auto rounded-xl border bg-white shadow-sm snap-start ${
+      className={`flex-shrink-0 w-[280px] lg:w-auto rounded-xl border bg-white shadow-sm snap-start overflow-visible ${
         today ? 'border-accent-400 ring-2 ring-accent-100' : 'border-[var(--border)]'
       }`}
     >

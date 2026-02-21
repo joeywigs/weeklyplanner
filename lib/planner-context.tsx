@@ -12,6 +12,7 @@ import type {
   DayData,
   GroceryItem,
   CaraNote,
+  CalendarEvent,
   Reminder,
   Activity,
   WeekState,
@@ -32,23 +33,25 @@ function createDefaultDayData(date: Date): DayData {
     hasSchool: day >= 1 && day <= 5,
     eveningActivities: [],
     dinner: '',
+    cook: '',
   };
 }
 
 function loadState(weekOffset: number): WeekState {
   if (typeof window === 'undefined') {
-    return { weekOffset, days: {}, groceryItems: [], caraNotes: [] };
+    return { weekOffset, days: {}, groceryItems: [], caraNotes: [], calendarEvents: [] };
   }
   const key = `planner_week_${weekOffset}`;
   try {
     const stored = localStorage.getItem(key);
     if (stored) {
-      return JSON.parse(stored) as WeekState;
+      const parsed = JSON.parse(stored) as WeekState;
+      return { ...parsed, calendarEvents: parsed.calendarEvents ?? [] };
     }
   } catch {
     // ignore
   }
-  return { weekOffset, days: {}, groceryItems: [], caraNotes: [] };
+  return { weekOffset, days: {}, groceryItems: [], caraNotes: [], calendarEvents: [] };
 }
 
 function saveState(state: WeekState): void {
@@ -84,6 +87,11 @@ interface PlannerContextValue {
   addActivity: (dateKey: string, text: string) => void;
   removeActivity: (dateKey: string, id: string) => void;
   setDinner: (dateKey: string, value: string) => void;
+  setCook: (dateKey: string, value: 'Carly' | 'Joey' | '') => void;
+  calendarEvents: CalendarEvent[];
+  addCalendarEvent: (text: string, isAllDay: boolean, dateKey?: string) => void;
+  removeCalendarEvent: (id: string) => void;
+  getCalendarEventsForDay: (dateKey: string) => CalendarEvent[];
   addGroceryItem: (name: string) => void;
   removeGroceryItem: (id: string) => void;
   buildGroceryFromDinners: () => void;
@@ -222,6 +230,43 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     [updateDay]
   );
 
+  const setCook = useCallback(
+    (dateKey: string, value: 'Carly' | 'Joey' | '') => {
+      const date = new Date(dateKey + 'T00:00:00');
+      updateDay(dateKey, date, (day) => ({ ...day, cook: value }));
+    },
+    [updateDay]
+  );
+
+  const addCalendarEvent = useCallback(
+    (text: string, isAllDay: boolean, dateKey?: string) => {
+      setState((prev) => ({
+        ...prev,
+        calendarEvents: [
+          ...prev.calendarEvents,
+          { id: generateId(), text, isAllDay, dateKey: isAllDay ? undefined : dateKey },
+        ],
+      }));
+    },
+    []
+  );
+
+  const removeCalendarEvent = useCallback((id: string) => {
+    setState((prev) => ({
+      ...prev,
+      calendarEvents: prev.calendarEvents.filter((e) => e.id !== id),
+    }));
+  }, []);
+
+  const getCalendarEventsForDay = useCallback(
+    (dateKey: string): CalendarEvent[] => {
+      return state.calendarEvents.filter(
+        (e) => e.isAllDay || e.dateKey === dateKey
+      );
+    },
+    [state.calendarEvents]
+  );
+
   const addGroceryItem = useCallback((name: string) => {
     setState((prev) => ({
       ...prev,
@@ -315,6 +360,11 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
         addActivity,
         removeActivity,
         setDinner,
+        setCook,
+        calendarEvents: state.calendarEvents,
+        addCalendarEvent,
+        removeCalendarEvent,
+        getCalendarEventsForDay,
         addGroceryItem,
         removeGroceryItem,
         buildGroceryFromDinners,

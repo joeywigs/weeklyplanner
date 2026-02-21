@@ -51,7 +51,7 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
           {dayData.eveningActivities.map((a) => (
             <li
               key={a.id}
-              className="flex items-start gap-1 text-xs text-evening-800 bg-white rounded px-1.5 py-1"
+              className="flex items-start gap-1 text-xs text-evening-800 bg-evening-100 rounded px-1.5 py-1"
             >
               <span className="flex-1 break-words">{a.text}</span>
               <button

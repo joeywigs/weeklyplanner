@@ -11,7 +11,7 @@ interface DinnerCardProps {
 }
 
 export function DinnerCard({ dateKey, dayData }: DinnerCardProps) {
-  const { setDinner } = usePlanner();
+  const { setDinner, setCook } = usePlanner();
   const [searchText, setSearchText] = useState('');
   const [isSearching, setIsSearching] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -46,10 +46,21 @@ export function DinnerCard({ dateKey, dayData }: DinnerCardProps) {
   }
 
   return (
-    <div className="rounded-lg border border-dinner-200 bg-[var(--dinner-light)] p-2.5">
+    <div className="rounded-lg border border-dinner-200 bg-[var(--dinner-light)] p-2.5 overflow-visible">
       <div className="flex items-center gap-1.5 mb-2">
         <div className="w-2 h-2 rounded-full bg-[var(--dinner)]" />
         <span className="text-xs font-semibold text-dinner-800">Dinner</span>
+        <select
+          value={dayData.cook}
+          onChange={(e) =>
+            setCook(dateKey, e.target.value as 'Carly' | 'Joey' | '')
+          }
+          className="ml-auto text-[11px] px-1.5 py-0.5 rounded-md bg-white border border-dinner-200 text-dinner-700 focus:outline-none focus:ring-1 focus:ring-dinner-400"
+        >
+          <option value="">Who&apos;s cooking?</option>
+          <option value="Carly">Carly</option>
+          <option value="Joey">Joey</option>
+        </select>
       </div>
 
       {dayData.dinner ? (

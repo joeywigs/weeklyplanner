@@ -6,6 +6,7 @@ export interface DayData {
   hasSchool: boolean;
   eveningActivities: Activity[];
   dinner: string;
+  cook: 'Carly' | 'Joey' | '';
 }
 
 export interface Reminder {
@@ -16,6 +17,13 @@ export interface Reminder {
 export interface Activity {
   id: string;
   text: string;
+}
+
+export interface CalendarEvent {
+  id: string;
+  text: string;
+  isAllDay: boolean;
+  dateKey?: string;
 }
 
 export interface GroceryItem {
@@ -41,4 +49,5 @@ export interface WeekState {
   days: Record<string, DayData>;
   groceryItems: GroceryItem[];
   caraNotes: CaraNote[];
+  calendarEvents: CalendarEvent[];
 }
