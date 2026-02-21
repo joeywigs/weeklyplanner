@@ -5,19 +5,21 @@ const SOURCES_KEY = 'calendar_sources';
 const EVENTS_KEY = 'calendar_events_cache';
 const LAST_REFRESH_KEY = 'calendar_last_refresh';
 
-export function getCalendarSources(): CalendarSource[] {
-  if (typeof window === 'undefined') return [];
-  try {
-    const raw = syncGet(SOURCES_KEY);
-    return raw ? (JSON.parse(raw) as CalendarSource[]) : [];
-  } catch {
-    return [];
-  }
-}
+const DEFAULT_SOURCES: CalendarSource[] = [
+  {
+    id: 'carly-joey',
+    name: 'Carly and Joey',
+    url: 'https://calendar.google.com/calendar/ical/bde345mbnjjhikil4tsa8e7f90%40group.calendar.google.com/private-74d044285b31c465b0a824162a1c7e50/basic.ics',
+  },
+  {
+    id: 'girlies',
+    name: 'Girlies',
+    url: 'https://calendar.google.com/calendar/ical/ggbi1tl1ma1vphj0ihcc4blvmk%40group.calendar.google.com/private-c6c87295f36044d391f54ab195145214/basic.ics',
+  },
+];
 
-export function setCalendarSources(sources: CalendarSource[]): void {
-  if (typeof window === 'undefined') return;
-  syncSet(SOURCES_KEY, JSON.stringify(sources));
+export function getCalendarSources(): CalendarSource[] {
+  return DEFAULT_SOURCES;
 }
 
 export function getCachedCalendarEvents(): CalendarEvent[] {
