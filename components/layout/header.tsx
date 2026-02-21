@@ -37,7 +37,7 @@ export function Header() {
             {weekOffset !== 0 && (
               <button
                 onClick={goToCurrentWeek}
-                className="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+                className="text-xs px-2 py-0.5 rounded-full bg-accent-50 text-accent-600 hover:bg-accent-100 transition-colors"
               >
                 Today
               </button>
