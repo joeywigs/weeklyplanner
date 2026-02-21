@@ -18,7 +18,7 @@ import type {
   WeekState,
 } from './types';
 import { getWeekDates, formatDateKey } from './date-utils';
-import { getCachedCalendarEvents } from './calendar-store';
+import { getCachedCalendarEvents, onCalendarEventsChanged } from './calendar-store';
 import { fetchWeather, getWeatherIcon } from './weather';
 
 function generateId(): string {
@@ -119,14 +119,18 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
 
   const weekDates = getWeekDates(weekOffset);
 
-  // Load Google Calendar events from global cache on mount and when window regains focus
+  // Load Google Calendar events from global cache on mount, focus, and when cache changes
   useEffect(() => {
     setGoogleEvents(getCachedCalendarEvents());
-    function handleFocus() {
+    function reload() {
       setGoogleEvents(getCachedCalendarEvents());
     }
-    window.addEventListener('focus', handleFocus);
-    return () => window.removeEventListener('focus', handleFocus);
+    window.addEventListener('focus', reload);
+    const unsubscribe = onCalendarEventsChanged(reload);
+    return () => {
+      window.removeEventListener('focus', reload);
+      unsubscribe();
+    };
   }, []);
 
   // Fetch weather on mount
