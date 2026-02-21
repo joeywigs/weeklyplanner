@@ -6,7 +6,6 @@ import { MorningCard } from './morning-card';
 import { LunchCard } from './lunch-card';
 import { EveningCard } from './evening-card';
 import { DinnerCard } from './dinner-card';
-import { CalendarEventsCard } from './calendar-events-card';
 
 interface DayCardProps {
   date: Date;
@@ -20,7 +19,7 @@ export function DayCard({ date }: DayCardProps) {
 
   return (
     <div
-      className={`flex-shrink-0 w-[280px] lg:w-auto rounded-xl border bg-white shadow-sm snap-start ${
+      className={`flex-shrink-0 w-[280px] lg:w-auto rounded-xl border bg-white shadow-sm snap-start overflow-visible ${
         today ? 'border-accent-400 ring-2 ring-accent-100' : 'border-[var(--border)]'
       }`}
     >
@@ -50,7 +49,6 @@ export function DayCard({ date }: DayCardProps) {
 
       {/* Sub-cards */}
       <div className="p-2 space-y-2">
-        <CalendarEventsCard dateKey={dateKey} />
         <MorningCard dateKey={dateKey} dayData={dayData} />
         <LunchCard dateKey={dateKey} dayData={dayData} dayOfWeek={date.getDay()} />
         <EveningCard dateKey={dateKey} dayData={dayData} />
