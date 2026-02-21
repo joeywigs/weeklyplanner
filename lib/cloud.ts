@@ -9,7 +9,7 @@
  */
 
 const WORKER_URL = 'https://planner-api.joeywigs.workers.dev';
-const HOUSEHOLD_ID = 'wiggins-family';
+const HOUSEHOLD_ID = 'wigs744';
 
 // ─── Config helpers ─────────────────────────────────────────────
 
