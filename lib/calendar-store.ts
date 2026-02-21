@@ -33,12 +33,19 @@ export function setCachedCalendarEvents(events: CalendarEvent[]): void {
   if (typeof window === 'undefined') return;
   localStorage.setItem(EVENTS_KEY, JSON.stringify(events));
   localStorage.setItem(LAST_REFRESH_KEY, new Date().toISOString());
+  window.dispatchEvent(new Event('calendar-events-changed'));
 }
 
 export function clearCachedCalendarEvents(): void {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(EVENTS_KEY);
   localStorage.removeItem(LAST_REFRESH_KEY);
+  window.dispatchEvent(new Event('calendar-events-changed'));
+}
+
+export function onCalendarEventsChanged(callback: () => void): () => void {
+  window.addEventListener('calendar-events-changed', callback);
+  return () => window.removeEventListener('calendar-events-changed', callback);
 }
 
 export function getLastRefreshTime(): string | null {
