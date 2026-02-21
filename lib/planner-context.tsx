@@ -20,6 +20,7 @@ import type {
 import { getWeekDates, formatDateKey } from './date-utils';
 import { getCachedCalendarEvents, onCalendarEventsChanged } from './calendar-store';
 import { fetchWeather, getWeatherIcon } from './weather';
+import { syncGet, syncSet, syncPull, isCloudEnabled } from './cloud';
 
 function generateId(): string {
   return Math.random().toString(36).substring(2, 9);
@@ -39,13 +40,19 @@ function createDefaultDayData(date: Date): DayData {
   };
 }
 
+const emptyWeek = (weekOffset: number): WeekState => ({
+  weekOffset,
+  days: {},
+  groceryItems: [],
+  caraNotes: [],
+  calendarEvents: [],
+});
+
 function loadState(weekOffset: number): WeekState {
-  if (typeof window === 'undefined') {
-    return { weekOffset, days: {}, groceryItems: [], caraNotes: [], calendarEvents: [] };
-  }
+  if (typeof window === 'undefined') return emptyWeek(weekOffset);
   const key = `planner_week_${weekOffset}`;
   try {
-    const stored = localStorage.getItem(key);
+    const stored = syncGet(key);
     if (stored) {
       const parsed = JSON.parse(stored) as WeekState;
       return { ...parsed, calendarEvents: parsed.calendarEvents ?? [] };
@@ -53,14 +60,14 @@ function loadState(weekOffset: number): WeekState {
   } catch {
     // ignore
   }
-  return { weekOffset, days: {}, groceryItems: [], caraNotes: [], calendarEvents: [] };
+  return emptyWeek(weekOffset);
 }
 
 function saveState(state: WeekState): void {
   if (typeof window === 'undefined') return;
   const key = `planner_week_${state.weekOffset}`;
   try {
-    localStorage.setItem(key, JSON.stringify(state));
+    syncSet(key, JSON.stringify(state));
   } catch {
     // ignore
   }
@@ -176,6 +183,35 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     saveState(state);
   }, [state]);
+
+  // Cloud sync: pull latest on mount, week change, and focus
+  useEffect(() => {
+    if (!isCloudEnabled()) return;
+    const key = `planner_week_${weekOffset}`;
+
+    function pullFromCloud() {
+      syncPull(key).then((value) => {
+        if (value) {
+          try {
+            const parsed = JSON.parse(value) as WeekState;
+            setState((prev) => {
+              // Only update if cloud data is different (avoid loops)
+              if (JSON.stringify(prev) !== value) {
+                return { ...parsed, calendarEvents: parsed.calendarEvents ?? [] };
+              }
+              return prev;
+            });
+          } catch {
+            // ignore
+          }
+        }
+      });
+    }
+
+    pullFromCloud();
+    window.addEventListener('focus', pullFromCloud);
+    return () => window.removeEventListener('focus', pullFromCloud);
+  }, [weekOffset]);
 
   const getDayData = useCallback(
     (dateKey: string, date: Date): DayData => {
