@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --card: #ffffff;
+  --accent: #3b82f6;
+  --accent-light: #eff6ff;
+  --morning: #f59e0b;
+  --morning-light: #fffbeb;
+  --lunch: #10b981;
+  --lunch-light: #ecfdf5;
+  --evening: #8b5cf6;
+  --evening-light: #f5f3ff;
+  --dinner: #ef4444;
+  --dinner-light: #fef2f2;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Hide scrollbar for horizontal day card scroll */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@layer utilities {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
