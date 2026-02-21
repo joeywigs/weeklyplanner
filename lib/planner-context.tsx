@@ -18,6 +18,8 @@ import type {
   WeekState,
 } from './types';
 import { getWeekDates, formatDateKey } from './date-utils';
+import { getCachedCalendarEvents } from './calendar-store';
+import { fetchWeather, getWeatherIcon } from './weather';
 
 function generateId(): string {
   return Math.random().toString(36).substring(2, 9);
@@ -98,6 +100,8 @@ interface PlannerContextValue {
   addCaraNote: (text: string) => void;
   removeCaraNote: (id: string) => void;
   copyCaraNotes: () => void;
+  getWeatherForDay: (dateKey: string) => { icon: string; high: number; low: number } | null;
+  swapDinner: (fromDateKey: string, toDateKey: string) => void;
 }
 
 const PlannerContext = createContext<PlannerContextValue | null>(null);
@@ -105,8 +109,56 @@ const PlannerContext = createContext<PlannerContextValue | null>(null);
 export function PlannerProvider({ children }: { children: ReactNode }) {
   const [weekOffset, setWeekOffset] = useState(0);
   const [state, setState] = useState<WeekState>(() => loadState(0));
+  const [googleEvents, setGoogleEvents] = useState<CalendarEvent[]>([]);
+  const [weather, setWeather] = useState<
+    Map<string, { code: number; high: number; low: number }>
+  >(new Map());
 
   const weekDates = getWeekDates(weekOffset);
+
+  // Load Google Calendar events from global cache on mount and when window regains focus
+  useEffect(() => {
+    setGoogleEvents(getCachedCalendarEvents());
+    function handleFocus() {
+      setGoogleEvents(getCachedCalendarEvents());
+    }
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
+
+  // Fetch weather on mount
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    navigator.geolocation?.getCurrentPosition(
+      (pos) => {
+        fetchWeather(pos.coords.latitude, pos.coords.longitude).then(
+          (days) => {
+            const map = new Map<
+              string,
+              { code: number; high: number; low: number }
+            >();
+            for (const d of days) {
+              map.set(d.dateKey, { code: d.code, high: d.high, low: d.low });
+            }
+            setWeather(map);
+          }
+        );
+      },
+      () => {
+        // Fallback: use a default location (Dallas, TX area)
+        fetchWeather(32.78, -96.8).then((days) => {
+          const map = new Map<
+            string,
+            { code: number; high: number; low: number }
+          >();
+          for (const d of days) {
+            map.set(d.dateKey, { code: d.code, high: d.high, low: d.low });
+          }
+          setWeather(map);
+        });
+      }
+    );
+  }, []);
 
   // Load state when week changes
   useEffect(() => {
@@ -260,11 +312,15 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
 
   const getCalendarEventsForDay = useCallback(
     (dateKey: string): CalendarEvent[] => {
-      return state.calendarEvents.filter(
+      const manual = state.calendarEvents.filter(
         (e) => dateKey >= e.startDate && dateKey <= e.endDate
       );
+      const google = googleEvents.filter(
+        (e) => dateKey >= e.startDate && dateKey <= e.endDate
+      );
+      return [...google, ...manual];
     },
-    [state.calendarEvents]
+    [state.calendarEvents, googleEvents]
   );
 
   const addGroceryItem = useCallback((name: string) => {
@@ -328,6 +384,45 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     });
   }, [state.caraNotes]);
 
+  const swapDinner = useCallback(
+    (fromDateKey: string, toDateKey: string) => {
+      if (fromDateKey === toDateKey) return;
+      setState((prev) => {
+        const fromDate = new Date(fromDateKey + 'T00:00:00');
+        const toDate = new Date(toDateKey + 'T00:00:00');
+        const fromDay =
+          prev.days[fromDateKey] ?? createDefaultDayData(fromDate);
+        const toDay = prev.days[toDateKey] ?? createDefaultDayData(toDate);
+        return {
+          ...prev,
+          days: {
+            ...prev.days,
+            [fromDateKey]: {
+              ...fromDay,
+              dinner: toDay.dinner,
+              cook: toDay.cook,
+            },
+            [toDateKey]: {
+              ...toDay,
+              dinner: fromDay.dinner,
+              cook: fromDay.cook,
+            },
+          },
+        };
+      });
+    },
+    []
+  );
+
+  const getWeatherForDay = useCallback(
+    (dateKey: string) => {
+      const w = weather.get(dateKey);
+      if (!w) return null;
+      return { icon: getWeatherIcon(w.code), high: w.high, low: w.low };
+    },
+    [weather]
+  );
+
   const goToWeek = useCallback((offset: number) => setWeekOffset(offset), []);
   const goToPrevWeek = useCallback(
     () => setWeekOffset((o) => o - 1),
@@ -371,6 +466,8 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
         addCaraNote,
         removeCaraNote,
         copyCaraNotes,
+        getWeatherForDay,
+        swapDinner,
       }}
     >
       {children}

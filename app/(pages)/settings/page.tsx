@@ -1,3 +1,5 @@
+import { CalendarSettings } from '@/components/settings/calendar-settings';
+
 export default function SettingsPage() {
   return (
     <div className="px-4 py-6">
@@ -7,6 +9,9 @@ export default function SettingsPage() {
       </p>
 
       <div className="space-y-4">
+        {/* Google Calendar */}
+        <CalendarSettings />
+
         {/* Grocery Item Defaults */}
         <div className="rounded-xl border border-[var(--border)] bg-white p-4">
           <h2 className="text-sm font-bold text-gray-900 mb-1">

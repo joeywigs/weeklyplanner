@@ -12,10 +12,11 @@ interface DayCardProps {
 }
 
 export function DayCard({ date }: DayCardProps) {
-  const { getDayData, weekDates } = usePlanner();
+  const { getDayData, weekDates, getWeatherForDay } = usePlanner();
   const dateKey = formatDateKey(date);
   const dayData = getDayData(dateKey, date);
   const today = isToday(date);
+  const weather = getWeatherForDay(dateKey);
 
   return (
     <div
@@ -39,11 +40,18 @@ export function DayCard({ date }: DayCardProps) {
           >
             {getDayName(date)}
           </span>
-          <span
-            className={`text-xs ${today ? 'text-accent-600' : 'text-gray-500'}`}
-          >
-            {formatShortDate(date)}
-          </span>
+          <div className="flex items-center gap-1.5">
+            {weather && (
+              <span className="text-xs" title={`${weather.high}°/${weather.low}°`}>
+                {weather.icon} <span className={`text-[10px] ${today ? 'text-accent-500' : 'text-gray-400'}`}>{weather.high}°</span>
+              </span>
+            )}
+            <span
+              className={`text-xs ${today ? 'text-accent-600' : 'text-gray-500'}`}
+            >
+              {formatShortDate(date)}
+            </span>
+          </div>
         </div>
       </div>
 

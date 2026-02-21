@@ -51,21 +51,29 @@ export function LunchCard({ dateKey, dayData, dayOfWeek }: LunchCardProps) {
         <>
           {/* School menu */}
           <div className="mb-2 space-y-0.5">
-            <MenuRow label="Entree" value={menu.entree} />
-            <MenuRow label="Grill" value={menu.grill} />
-            <MenuRow label="Express" value={menu.express} />
-            <MenuRow label="Vegetable" value={menu.vegetable} />
-            <MenuRow label="Fruit" value={menu.fruit} />
+            <div className="text-[11px] font-semibold text-lunch-800">
+              {menu.entree}
+            </div>
+            <div className="flex flex-wrap gap-x-2 text-[10px] text-lunch-600">
+              <span>{menu.grill}</span>
+              <span className="text-lunch-300">·</span>
+              <span>{menu.express}</span>
+            </div>
+            <div className="flex flex-wrap gap-x-2 text-[10px] text-lunch-500">
+              <span>{menu.vegetable}</span>
+              <span className="text-lunch-300">·</span>
+              <span>{menu.fruit}</span>
+            </div>
           </div>
 
-          {/* Lunch choice per child */}
+          {/* Lunch choice per child — toggle pills */}
           <div className="space-y-1.5">
-            <ChildLunchChoice
+            <ChildLunchPill
               name="Grey"
               value={dayData.greyLunch}
               onChange={(choice) => setLunchChoice(dateKey, 'grey', choice)}
             />
-            <ChildLunchChoice
+            <ChildLunchPill
               name="Sloane"
               value={dayData.sloaneLunch}
               onChange={(choice) => setLunchChoice(dateKey, 'sloane', choice)}
@@ -81,16 +89,7 @@ export function LunchCard({ dateKey, dayData, dayOfWeek }: LunchCardProps) {
   );
 }
 
-function MenuRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex gap-1.5 text-[10px]">
-      <span className="text-lunch-600 font-medium w-14 shrink-0">{label}:</span>
-      <span className="text-lunch-800">{value}</span>
-    </div>
-  );
-}
-
-function ChildLunchChoice({
+function ChildLunchPill({
   name,
   value,
   onChange,
@@ -100,26 +99,32 @@ function ChildLunchChoice({
   onChange: (choice: 'pack' | 'school' | null) => void;
 }) {
   return (
-    <div className="flex items-center gap-2">
-      <span className="text-[10px] font-semibold text-lunch-800 w-12">{name}</span>
-      <label className="flex items-center gap-1 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={value === 'pack'}
-          onChange={() => onChange(value === 'pack' ? null : 'pack')}
-          className="w-3 h-3 rounded accent-lunch-600"
-        />
-        <span className="text-[10px] text-lunch-700">Pack</span>
-      </label>
-      <label className="flex items-center gap-1 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={value === 'school'}
-          onChange={() => onChange(value === 'school' ? null : 'school')}
-          className="w-3 h-3 rounded accent-lunch-600"
-        />
-        <span className="text-[10px] text-lunch-700">School</span>
-      </label>
+    <div className="flex items-center gap-1.5">
+      <span className="text-[10px] font-semibold text-lunch-800 w-11 shrink-0">
+        {name}
+      </span>
+      <div className="flex rounded-full bg-white border border-lunch-200 overflow-hidden">
+        <button
+          onClick={() => onChange(value === 'pack' ? null : 'pack')}
+          className={`text-[10px] px-2.5 py-0.5 font-medium transition-colors ${
+            value === 'pack'
+              ? 'bg-lunch-400 text-white'
+              : 'text-lunch-600 hover:bg-lunch-50'
+          }`}
+        >
+          Pack
+        </button>
+        <button
+          onClick={() => onChange(value === 'school' ? null : 'school')}
+          className={`text-[10px] px-2.5 py-0.5 font-medium transition-colors ${
+            value === 'school'
+              ? 'bg-lunch-400 text-white'
+              : 'text-lunch-600 hover:bg-lunch-50'
+          }`}
+        >
+          School
+        </button>
+      </div>
     </div>
   );
 }

@@ -26,6 +26,12 @@ export interface CalendarEvent {
   endDate: string;
 }
 
+export interface CalendarSource {
+  id: string;
+  name: string;
+  url: string;
+}
+
 export interface GroceryItem {
   id: string;
   name: string;
