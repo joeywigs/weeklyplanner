@@ -3,21 +3,21 @@
 @tailwind utilities;
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --muted: #64748b;
-  --border: #e2e8f0;
+  --background: #f8f7f4;
+  --foreground: #2d2d2d;
+  --muted: #7a7a7a;
+  --border: #e5e0d8;
   --card: #ffffff;
-  --accent: #3b82f6;
-  --accent-light: #eff6ff;
-  --morning: #f59e0b;
-  --morning-light: #fffbeb;
-  --lunch: #10b981;
-  --lunch-light: #ecfdf5;
-  --evening: #8b5cf6;
-  --evening-light: #f5f3ff;
-  --dinner: #ef4444;
-  --dinner-light: #fef2f2;
+  --accent: #6ba0c9;
+  --accent-light: #eef5fb;
+  --morning: #d4a843;
+  --morning-light: #fdf8ed;
+  --lunch: #7ba87b;
+  --lunch-light: #f2f7f2;
+  --evening: #9b82be;
+  --evening-light: #f6f2fa;
+  --dinner: #c98b95;
+  --dinner-light: #fbf0f2;
 }
 
 body {

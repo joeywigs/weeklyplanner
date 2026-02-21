@@ -20,34 +20,31 @@ export function DayCard({ date }: DayCardProps) {
   return (
     <div
       className={`flex-shrink-0 w-[280px] lg:w-auto rounded-xl border bg-white shadow-sm snap-start ${
-        today ? 'border-blue-400 ring-2 ring-blue-100' : 'border-[var(--border)]'
+        today ? 'border-accent-400 ring-2 ring-accent-100' : 'border-[var(--border)]'
       }`}
     >
       {/* Day header */}
       <div
         className={`px-3 py-2 rounded-t-xl border-b ${
           today
-            ? 'bg-blue-50 border-blue-200'
+            ? 'bg-accent-50 border-accent-200'
             : 'bg-gray-50 border-[var(--border)]'
         }`}
       >
         <div className="flex items-center justify-between">
           <span
             className={`text-sm font-bold ${
-              today ? 'text-blue-700' : 'text-gray-900'
+              today ? 'text-accent-700' : 'text-gray-900'
             }`}
           >
             {getDayName(date)}
           </span>
           <span
-            className={`text-xs ${today ? 'text-blue-600' : 'text-gray-500'}`}
+            className={`text-xs ${today ? 'text-accent-600' : 'text-gray-500'}`}
           >
             {formatShortDate(date)}
           </span>
         </div>
-        {today && (
-          <span className="text-[10px] font-medium text-blue-500">Today</span>
-        )}
       </div>
 
       {/* Sub-cards */}

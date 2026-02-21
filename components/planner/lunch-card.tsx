@@ -18,28 +18,28 @@ export function LunchCard({ dateKey, dayData, dayOfWeek }: LunchCardProps) {
   // Weekend: show simple lunch card
   if (!isWeekday) {
     return (
-      <div className="rounded-lg border border-emerald-200 bg-[var(--lunch-light)] p-2.5">
+      <div className="rounded-lg border border-lunch-200 bg-[var(--lunch-light)] p-2.5">
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full bg-[var(--lunch)]" />
-          <span className="text-xs font-semibold text-emerald-800">Lunch</span>
+          <span className="text-xs font-semibold text-lunch-800">Lunch</span>
         </div>
-        <p className="text-[10px] text-emerald-600 mt-1.5 italic">Weekend — no school lunch</p>
+        <p className="text-[10px] text-lunch-600 mt-1.5 italic">Weekend — no school lunch</p>
       </div>
     );
   }
 
   return (
-    <div className="rounded-lg border border-emerald-200 bg-[var(--lunch-light)] p-2.5">
+    <div className="rounded-lg border border-lunch-200 bg-[var(--lunch-light)] p-2.5">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full bg-[var(--lunch)]" />
-          <span className="text-xs font-semibold text-emerald-800">Lunch</span>
+          <span className="text-xs font-semibold text-lunch-800">Lunch</span>
         </div>
         <button
           onClick={() => toggleSchool(dateKey)}
           className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium transition-colors ${
             dayData.hasSchool
-              ? 'bg-emerald-200 text-emerald-800'
+              ? 'bg-lunch-200 text-lunch-800'
               : 'bg-gray-200 text-gray-600'
           }`}
         >
@@ -73,7 +73,7 @@ export function LunchCard({ dateKey, dayData, dayOfWeek }: LunchCardProps) {
           </div>
         </>
       ) : (
-        <p className="text-[10px] text-emerald-600 italic">
+        <p className="text-[10px] text-lunch-600 italic">
           No school today
         </p>
       )}
@@ -84,8 +84,8 @@ export function LunchCard({ dateKey, dayData, dayOfWeek }: LunchCardProps) {
 function MenuRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex gap-1.5 text-[10px]">
-      <span className="text-emerald-600 font-medium w-14 shrink-0">{label}:</span>
-      <span className="text-emerald-800">{value}</span>
+      <span className="text-lunch-600 font-medium w-14 shrink-0">{label}:</span>
+      <span className="text-lunch-800">{value}</span>
     </div>
   );
 }
@@ -101,24 +101,24 @@ function ChildLunchChoice({
 }) {
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[10px] font-semibold text-emerald-800 w-12">{name}</span>
+      <span className="text-[10px] font-semibold text-lunch-800 w-12">{name}</span>
       <label className="flex items-center gap-1 cursor-pointer">
         <input
           type="checkbox"
           checked={value === 'pack'}
           onChange={() => onChange(value === 'pack' ? null : 'pack')}
-          className="w-3 h-3 rounded accent-emerald-600"
+          className="w-3 h-3 rounded accent-lunch-600"
         />
-        <span className="text-[10px] text-emerald-700">Pack</span>
+        <span className="text-[10px] text-lunch-700">Pack</span>
       </label>
       <label className="flex items-center gap-1 cursor-pointer">
         <input
           type="checkbox"
           checked={value === 'school'}
           onChange={() => onChange(value === 'school' ? null : 'school')}
-          className="w-3 h-3 rounded accent-emerald-600"
+          className="w-3 h-3 rounded accent-lunch-600"
         />
-        <span className="text-[10px] text-emerald-700">School</span>
+        <span className="text-[10px] text-lunch-700">School</span>
       </label>
     </div>
   );

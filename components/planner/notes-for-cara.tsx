@@ -27,7 +27,7 @@ export function NotesForCara() {
       <div className="px-4 py-3 border-b border-[var(--border)] bg-gray-50 rounded-t-xl">
         <div className="flex items-center gap-2">
           <svg
-            className="w-4 h-4 text-purple-600"
+            className="w-4 h-4 text-evening-600"
             fill="none"
             viewBox="0 0 24 24"
             strokeWidth={1.5}
@@ -41,7 +41,7 @@ export function NotesForCara() {
           </svg>
           <h2 className="text-sm font-bold text-gray-900">Notes for Cara</h2>
           {caraNotes.length > 0 && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-purple-100 text-purple-700 font-medium">
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-evening-100 text-evening-700 font-medium">
               {caraNotes.length}
             </span>
           )}
@@ -57,11 +57,11 @@ export function NotesForCara() {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleAdd()}
             placeholder="Add note for Cara..."
-            className="flex-1 text-sm px-3 py-2 rounded-lg bg-gray-50 border border-[var(--border)] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent"
+            className="flex-1 text-sm px-3 py-2 rounded-lg bg-gray-50 border border-[var(--border)] placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-evening-400 focus:border-transparent"
           />
           <button
             onClick={handleAdd}
-            className="px-3 py-2 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors shrink-0"
+            className="px-3 py-2 text-sm font-medium bg-evening-500 text-white rounded-lg hover:bg-evening-600 transition-colors shrink-0"
           >
             Add
           </button>
@@ -100,7 +100,7 @@ export function NotesForCara() {
               className={`w-full text-xs py-2 rounded-lg border font-medium transition-colors ${
                 copied
                   ? 'border-green-300 bg-green-50 text-green-700'
-                  : 'border-purple-300 text-purple-600 hover:bg-purple-50'
+                  : 'border-evening-300 text-evening-600 hover:bg-evening-50'
               }`}
             >
               {copied ? 'Copied to clipboard!' : 'Copy all notes to clipboard'}

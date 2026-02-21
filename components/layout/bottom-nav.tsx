@@ -58,7 +58,7 @@ export function BottomNav() {
               href={item.href}
               className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg transition-colors ${
                 isActive
-                  ? 'text-blue-600'
+                  ? 'text-accent-600'
                   : 'text-gray-400 hover:text-gray-600'
               }`}
             >
