@@ -42,27 +42,47 @@ function parseZipEntries(buffer: ArrayBuffer): ZipEntry[] {
   const view = new DataView(buffer);
   const bytes = new Uint8Array(buffer);
   const entries: ZipEntry[] = [];
-  let offset = 0;
 
-  while (offset < buffer.byteLength - 4) {
-    // Local file header signature: PK\x03\x04
-    if (view.getUint32(offset, true) !== 0x04034b50) break;
+  // Find the End of Central Directory record (scans backwards)
+  let eocdOffset = -1;
+  for (let i = buffer.byteLength - 22; i >= 0; i--) {
+    if (view.getUint32(i, true) === 0x06054b50) {
+      eocdOffset = i;
+      break;
+    }
+  }
+  if (eocdOffset === -1) return entries;
 
-    const compressionMethod = view.getUint16(offset + 8, true);
-    const compressedSize = view.getUint32(offset + 18, true);
-    const filenameLength = view.getUint16(offset + 26, true);
-    const extraLength = view.getUint16(offset + 28, true);
+  const cdSize = view.getUint32(eocdOffset + 12, true);
+  const cdOffset = view.getUint32(eocdOffset + 16, true);
 
-    const filenameStart = offset + 30;
+  // Walk the central directory to get reliable sizes
+  let pos = cdOffset;
+  const cdEnd = cdOffset + cdSize;
+  while (pos < cdEnd && pos + 46 <= buffer.byteLength) {
+    // Central directory file header signature: PK\x01\x02
+    if (view.getUint32(pos, true) !== 0x02014b50) break;
+
+    const compressionMethod = view.getUint16(pos + 10, true);
+    const compressedSize = view.getUint32(pos + 20, true);
+    const filenameLength = view.getUint16(pos + 28, true);
+    const extraLength = view.getUint16(pos + 30, true);
+    const commentLength = view.getUint16(pos + 32, true);
+    const localHeaderOffset = view.getUint32(pos + 42, true);
+
     const filename = new TextDecoder().decode(
-      bytes.slice(filenameStart, filenameStart + filenameLength)
+      bytes.slice(pos + 46, pos + 46 + filenameLength)
     );
 
-    const dataStart = filenameStart + filenameLength + extraLength;
-    const compressedData = bytes.slice(dataStart, dataStart + compressedSize);
+    // Read local file header to find where data actually starts
+    const localFilenameLength = view.getUint16(localHeaderOffset + 26, true);
+    const localExtraLength = view.getUint16(localHeaderOffset + 28, true);
+    const dataStart = localHeaderOffset + 30 + localFilenameLength + localExtraLength;
 
+    const compressedData = bytes.slice(dataStart, dataStart + compressedSize);
     entries.push({ filename, compressionMethod, compressedData });
-    offset = dataStart + compressedSize;
+
+    pos += 46 + filenameLength + extraLength + commentLength;
   }
 
   return entries;

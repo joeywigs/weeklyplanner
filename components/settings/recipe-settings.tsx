@@ -108,7 +108,7 @@ export function RecipeSettings() {
     try {
       const imported = await parsePaprikaFile(file);
       if (imported.length === 0) {
-        setImportError('No recipes found in file. Supports .paprikarecipes and .paprikarecipe files.');
+        setImportError('No recipes found in file. Supports Paprika .zip exports, .paprikarecipes, and .paprikarecipe files.');
         return;
       }
 
