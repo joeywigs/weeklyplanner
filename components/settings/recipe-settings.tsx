@@ -64,6 +64,15 @@ export function RecipeSettings() {
     if (!editName.trim()) return;
     const existing = recipes.find((r) => r.id === editingId);
     const recipe: Recipe = {
+      ...(existing || {
+        cookTime: '',
+        totalTime: '',
+        servings: '',
+        source: '',
+        ingredients: [],
+        directions: '',
+        notes: '',
+      }),
       id: editingId!,
       name: editName.trim(),
       prepTime: editPrepTime.trim(),
@@ -292,9 +301,14 @@ export function RecipeSettings() {
             >
               <div className="flex-1 min-w-0">
                 <span className="font-medium text-gray-900">{recipe.name}</span>
-                {recipe.prepTime && (
+                {(recipe.prepTime || recipe.servings) && (
                   <span className="text-[10px] text-gray-400 ml-1.5">
-                    {recipe.prepTime}
+                    {[recipe.prepTime, recipe.servings ? `${recipe.servings} servings` : ''].filter(Boolean).join(' · ')}
+                  </span>
+                )}
+                {recipe.ingredients?.length > 0 && (
+                  <span className="text-[10px] text-gray-400 ml-1">
+                    · {recipe.ingredients.length} ingredients
                   </span>
                 )}
                 {recipe.tags.length > 0 && (

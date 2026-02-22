@@ -88,11 +88,35 @@ function parseZipEntries(buffer: ArrayBuffer): ZipEntry[] {
   return entries;
 }
 
-function parseMetadata(text: string): { prepTime: string } {
-  const cook = text.match(/Cook Time:\s*(.+?)(?=Servings:|Source:|Prep Time:|Total Time:|$)/);
-  const prep = text.match(/Prep Time:\s*(.+?)(?=Servings:|Source:|Cook Time:|Total Time:|$)/);
-  const total = text.match(/Total Time:\s*(.+?)(?=Servings:|Source:|Cook Time:|Prep Time:|$)/);
-  return { prepTime: prep?.[1]?.trim() || cook?.[1]?.trim() || total?.[1]?.trim() || '' };
+interface ParsedMetadata {
+  prepTime: string;
+  cookTime: string;
+  totalTime: string;
+  servings: string;
+  source: string;
+}
+
+function parseMetadata(text: string): ParsedMetadata {
+  const m = (label: string) => {
+    const re = new RegExp(label + ':\\s*(.+?)(?=(?:Prep Time|Cook Time|Total Time|Servings|Source):|$)');
+    return re.exec(text)?.[1]?.trim() || '';
+  };
+  return {
+    prepTime: m('Prep Time'),
+    cookTime: m('Cook Time'),
+    totalTime: m('Total Time'),
+    servings: m('Servings'),
+    source: m('Source'),
+  };
+}
+
+function parseTags(text: string): string[] {
+  const tags: string[] = [];
+  for (const cat of text.split(',')) {
+    const trimmed = cat.trim().toLowerCase();
+    if (trimmed) tags.push(trimmed);
+  }
+  return tags;
 }
 
 function parseHtmlRecipe(html: string): Recipe | null {
@@ -103,19 +127,58 @@ function parseHtmlRecipe(html: string): Recipe | null {
   const name = recipe.querySelector('.name')?.textContent?.trim();
   if (!name) return null;
 
-  const tags: string[] = [];
-  const catText = recipe.querySelector('.categories')?.textContent?.trim();
-  if (catText) {
-    for (const cat of catText.split(',')) {
-      const trimmed = cat.trim().toLowerCase();
-      if (trimmed) tags.push(trimmed);
+  const catText = recipe.querySelector('.categories')?.textContent?.trim() || '';
+  const tags = parseTags(catText);
+
+  const metaText = recipe.querySelector('.metadata')?.textContent?.trim() || '';
+  const meta = parseMetadata(metaText);
+
+  // Ingredients: each <p> inside .ingredients
+  const ingredients: string[] = [];
+  const ingDiv = recipe.querySelector('.ingredients');
+  if (ingDiv) {
+    for (const p of Array.from(ingDiv.querySelectorAll('p'))) {
+      const t = p.textContent?.trim();
+      if (t) ingredients.push(t);
     }
   }
 
-  const metaText = recipe.querySelector('.metadata')?.textContent?.trim() || '';
-  const { prepTime } = parseMetadata(metaText);
+  // Directions and Notes: found via .subhead divs
+  let directions = '';
+  let notes = '';
+  for (const subhead of Array.from(recipe.querySelectorAll('.subhead'))) {
+    const label = (subhead.textContent || '').trim().toLowerCase();
+    const parts: string[] = [];
+    let sibling = subhead.nextElementSibling;
+    while (sibling && !sibling.classList.contains('subhead')) {
+      const t = sibling.textContent?.trim();
+      if (t) parts.push(t);
+      sibling = sibling.nextElementSibling;
+    }
+    const content = parts.join('\n');
+    if (label.includes('direction')) directions = content;
+    else if (label.includes('note')) notes = content;
+  }
 
-  return { id: generateId(), name, prepTime, tags };
+  // Fallback: .text div for directions
+  if (!directions) {
+    const textDiv = recipe.querySelector('.text');
+    if (textDiv) directions = textDiv.textContent?.trim() || '';
+  }
+
+  return {
+    id: generateId(),
+    name,
+    prepTime: meta.prepTime || meta.cookTime || meta.totalTime,
+    cookTime: meta.cookTime,
+    totalTime: meta.totalTime,
+    servings: meta.servings,
+    source: meta.source,
+    tags,
+    ingredients,
+    directions,
+    notes,
+  };
 }
 
 interface PaprikaRecipeJSON {
@@ -125,24 +188,29 @@ interface PaprikaRecipeJSON {
   cook_time?: string;
   total_time?: string;
   servings?: string;
+  source?: string;
+  ingredients?: string;
+  directions?: string;
+  notes?: string;
 }
 
 function paprikaJsonToRecipe(raw: PaprikaRecipeJSON): Recipe | null {
   if (!raw.name) return null;
 
-  const tags: string[] = [];
-  if (raw.categories) {
-    for (const cat of raw.categories.split(',')) {
-      const trimmed = cat.trim().toLowerCase();
-      if (trimmed) tags.push(trimmed);
-    }
-  }
+  const tags = parseTags(raw.categories || '');
 
   return {
     id: generateId(),
     name: raw.name,
-    prepTime: raw.prep_time || raw.total_time || '',
+    prepTime: raw.prep_time || raw.cook_time || raw.total_time || '',
+    cookTime: raw.cook_time || '',
+    totalTime: raw.total_time || '',
+    servings: raw.servings || '',
+    source: raw.source || '',
     tags,
+    ingredients: raw.ingredients ? raw.ingredients.split('\n').filter(Boolean) : [],
+    directions: raw.directions || '',
+    notes: raw.notes || '',
   };
 }
 

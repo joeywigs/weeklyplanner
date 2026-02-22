@@ -54,7 +54,14 @@ export interface Recipe {
   id: string;
   name: string;
   prepTime: string;
+  cookTime: string;
+  totalTime: string;
+  servings: string;
+  source: string;
   tags: string[];
+  ingredients: string[];
+  directions: string;
+  notes: string;
 }
 
 export interface WeekState {
