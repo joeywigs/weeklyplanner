@@ -140,38 +140,19 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  // Fetch weather on mount
+  // Fetch weather on mount (Tulsa, OK)
   useEffect(() => {
     if (typeof window === 'undefined') return;
-    navigator.geolocation?.getCurrentPosition(
-      (pos) => {
-        fetchWeather(pos.coords.latitude, pos.coords.longitude).then(
-          (days) => {
-            const map = new Map<
-              string,
-              { code: number; high: number; low: number }
-            >();
-            for (const d of days) {
-              map.set(d.dateKey, { code: d.code, high: d.high, low: d.low });
-            }
-            setWeather(map);
-          }
-        );
-      },
-      () => {
-        // Fallback: use a default location (Dallas, TX area)
-        fetchWeather(32.78, -96.8).then((days) => {
-          const map = new Map<
-            string,
-            { code: number; high: number; low: number }
-          >();
-          for (const d of days) {
-            map.set(d.dateKey, { code: d.code, high: d.high, low: d.low });
-          }
-          setWeather(map);
-        });
+    fetchWeather(36.15, -95.99).then((days) => {
+      const map = new Map<
+        string,
+        { code: number; high: number; low: number }
+      >();
+      for (const d of days) {
+        map.set(d.dateKey, { code: d.code, high: d.high, low: d.low });
       }
-    );
+      setWeather(map);
+    });
   }, []);
 
   // Load state when week changes
