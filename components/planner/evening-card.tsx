@@ -17,38 +17,23 @@ interface EveningCardProps {
   dayData: DayData;
 }
 
-function OwnerButtons({
-  owner,
-  onChange,
-}: {
-  owner?: 'C' | 'J';
-  onChange: (owner: 'C' | 'J' | undefined) => void;
-}) {
-  return (
-    <div className="flex gap-0.5 shrink-0">
-      <button
-        onClick={(e) => { e.stopPropagation(); onChange(owner === 'C' ? undefined : 'C'); }}
-        className={`w-4 h-4 rounded text-[9px] font-bold leading-none flex items-center justify-center transition-colors ${
-          owner === 'C'
-            ? 'bg-red-500 text-white'
-            : 'bg-white/60 text-red-400 hover:bg-red-100'
-        }`}
-      >
-        C
-      </button>
-      <button
-        onClick={(e) => { e.stopPropagation(); onChange(owner === 'J' ? undefined : 'J'); }}
-        className={`w-4 h-4 rounded text-[9px] font-bold leading-none flex items-center justify-center transition-colors ${
-          owner === 'J'
-            ? 'bg-blue-500 text-white'
-            : 'bg-white/60 text-blue-400 hover:bg-blue-100'
-        }`}
-      >
-        J
-      </button>
-    </div>
-  );
+type Owner = 'C' | 'J' | 'CJ' | undefined;
+
+/** Cycle: unassigned → C → J → CJ → unassigned */
+function nextOwner(current: Owner): Owner {
+  switch (current) {
+    case undefined: return 'C';
+    case 'C': return 'J';
+    case 'J': return 'CJ';
+    case 'CJ': return undefined;
+  }
 }
+
+const OWNER_STYLES: Record<string, { bg: string; border: string; text: string; badge: string }> = {
+  C:  { bg: 'bg-red-100',    border: 'border-red-300',    text: 'text-red-800',    badge: 'bg-red-500 text-white' },
+  J:  { bg: 'bg-blue-100',   border: 'border-blue-300',   text: 'text-blue-800',   badge: 'bg-blue-500 text-white' },
+  CJ: { bg: 'bg-purple-100', border: 'border-purple-300', text: 'text-purple-800', badge: 'bg-purple-500 text-white' },
+};
 
 export function EveningCard({ dateKey, dayData }: EveningCardProps) {
   const {
@@ -80,21 +65,33 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
           <span className="text-xs font-semibold text-evening-800">Evening</span>
         </div>
         {hasItems ? (
-          <ul className="mt-1.5 space-y-0.5">
+          <ul className="mt-1.5 space-y-1">
             {calendarEvents.map((ev) => (
               <li key={ev.id} className="text-[11px] text-evening-700 pl-3.5">
                 &bull; {formatTime(ev) && <span className="font-medium">{formatTime(ev)} </span>}{ev.text}
               </li>
             ))}
-            {dayData.eveningActivities.map((a) => (
-              <li key={a.id} className="flex items-center gap-1 text-[11px] text-evening-700 pl-3.5">
-                <span className="flex-1">&bull; {a.text}</span>
-                <OwnerButtons
-                  owner={a.owner}
-                  onChange={(o) => setActivityOwner(dateKey, a.id, o)}
-                />
-              </li>
-            ))}
+            {dayData.eveningActivities.map((a) => {
+              const style = a.owner ? OWNER_STYLES[a.owner] : null;
+              return (
+                <li
+                  key={a.id}
+                  onClick={() => setActivityOwner(dateKey, a.id, nextOwner(a.owner))}
+                  className={`relative text-[11px] rounded px-2 py-1 cursor-pointer select-none transition-colors ${
+                    style
+                      ? `${style.bg} border ${style.border} ${style.text}`
+                      : 'text-evening-700 bg-evening-100 border border-transparent hover:border-evening-300'
+                  }`}
+                >
+                  {a.text}
+                  {a.owner && (
+                    <span className={`absolute -bottom-1 -right-1 text-[8px] font-bold leading-none px-1 py-0.5 rounded ${style!.badge}`}>
+                      {a.owner === 'CJ' ? 'C+J' : a.owner}
+                    </span>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         ) : (
           <p className="text-[10px] text-evening-300 mt-1.5 italic">Free evening</p>
@@ -139,31 +136,40 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
               {formatTime(ev) && <span className="font-medium">{formatTime(ev)} </span>}{ev.text}
             </li>
           ))}
-          {dayData.eveningActivities.map((a) => (
-            <li
-              key={a.id}
-              className="flex items-center gap-1 text-xs text-evening-800 bg-evening-100 rounded px-1.5 py-1"
-            >
-              <span className="flex-1 break-words">{a.text}</span>
-              <OwnerButtons
-                owner={a.owner}
-                onChange={(o) => setActivityOwner(dateKey, a.id, o)}
-              />
-              <button
-                onClick={() => removeActivity(dateKey, a.id)}
-                className="text-evening-300 hover:text-red-500 shrink-0"
+          {dayData.eveningActivities.map((a) => {
+            const style = a.owner ? OWNER_STYLES[a.owner] : null;
+            return (
+              <li
+                key={a.id}
+                className={`relative flex items-center gap-1 text-xs rounded px-1.5 py-1 cursor-pointer select-none transition-colors ${
+                  style
+                    ? `${style.bg} border ${style.border} ${style.text}`
+                    : 'text-evening-800 bg-evening-100 border border-transparent hover:border-evening-300'
+                }`}
+                onClick={() => setActivityOwner(dateKey, a.id, nextOwner(a.owner))}
               >
-                <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
-                  <path
-                    d="M3 3l6 6M9 3l-6 6"
-                    stroke="currentColor"
-                    strokeWidth={1.5}
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </button>
-            </li>
-          ))}
+                <span className="flex-1 break-words">{a.text}</span>
+                {a.owner && (
+                  <span className={`text-[8px] font-bold leading-none px-1 py-0.5 rounded ${style!.badge}`}>
+                    {a.owner === 'CJ' ? 'C+J' : a.owner}
+                  </span>
+                )}
+                <button
+                  onClick={(e) => { e.stopPropagation(); removeActivity(dateKey, a.id); }}
+                  className="text-evening-300 hover:text-red-500 shrink-0"
+                >
+                  <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
+                    <path
+                      d="M3 3l6 6M9 3l-6 6"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
 
