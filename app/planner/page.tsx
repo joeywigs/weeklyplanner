@@ -4,6 +4,7 @@ import { usePlanner } from '@/lib/planner-context';
 import { DayCard } from '@/components/planner/day-card';
 import { GroceryList } from '@/components/planner/grocery-list';
 import { NotesForCara } from '@/components/planner/notes-for-cara';
+import { WeekSummary } from '@/components/planner/week-summary';
 
 export default function PlannerPage() {
   const { weekDates } = usePlanner();
@@ -15,6 +16,11 @@ export default function PlannerPage() {
         {weekDates.map((date) => (
           <DayCard key={date.toISOString()} date={date} />
         ))}
+      </div>
+
+      {/* Week Summary */}
+      <div className="px-4 lg:px-3">
+        <WeekSummary />
       </div>
 
       {/* Grocery List and Notes for Cara */}

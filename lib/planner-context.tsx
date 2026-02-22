@@ -6,6 +6,7 @@ import {
   useState,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   type ReactNode,
 } from 'react';
@@ -35,6 +36,7 @@ function createDefaultDayData(date: Date): DayData {
   const day = date.getDay();
   return {
     dropOff: 'Carly',
+    pickUp: '',
     morningReminders: [],
     greyLunch: null,
     sloaneLunch: null,
@@ -43,6 +45,7 @@ function createDefaultDayData(date: Date): DayData {
     calendarEventOwners: {},
     dinner: '',
     cook: '',
+    notes: '',
   };
 }
 
@@ -89,7 +92,8 @@ interface PlannerContextValue {
   goToNextWeek: () => void;
   goToCurrentWeek: () => void;
   getDayData: (dateKey: string, date: Date) => DayData;
-  setDropOff: (dateKey: string, value: 'Carly' | 'Joey') => void;
+  setDropOff: (dateKey: string, value: 'Carly' | 'Joey' | 'Other') => void;
+  setPickUp: (dateKey: string, value: 'Carly' | 'Joey' | 'Other' | '') => void;
   addReminder: (dateKey: string, text: string) => void;
   removeReminder: (dateKey: string, id: string) => void;
   setLunchChoice: (
@@ -100,10 +104,10 @@ interface PlannerContextValue {
   toggleSchool: (dateKey: string) => void;
   addActivity: (dateKey: string, text: string) => void;
   removeActivity: (dateKey: string, id: string) => void;
-  setActivityOwner: (dateKey: string, id: string, owner: 'C' | 'J' | 'CJ' | undefined) => void;
-  setCalendarEventOwner: (dateKey: string, eventId: string, owner: 'C' | 'J' | 'CJ' | undefined) => void;
+  setActivityOwner: (dateKey: string, id: string, owner: 'C' | 'J' | 'O' | undefined) => void;
+  setCalendarEventOwner: (dateKey: string, eventId: string, owner: 'C' | 'J' | 'O' | undefined) => void;
   setDinner: (dateKey: string, value: string) => void;
-  setCook: (dateKey: string, value: 'Carly' | 'Joey' | 'Both' | '') => void;
+  setCook: (dateKey: string, value: 'Carly' | 'Joey' | 'Other' | '') => void;
   getCalendarEventsForDay: (dateKey: string) => CalendarEvent[];
   addGroceryItem: (name: string) => void;
   removeGroceryItem: (id: string) => void;
@@ -115,6 +119,7 @@ interface PlannerContextValue {
   copyCaraNotes: () => void;
   getWeatherForDay: (dateKey: string) => { icon: string; high: number; low: number } | null;
   getSchoolMenu: (dateKey: string) => SchoolLunchMenu | null;
+  setNotes: (dateKey: string, value: string) => void;
   swapDinner: (fromDateKey: string, toDateKey: string) => void;
   editMode: boolean;
   toggleEditMode: () => void;
@@ -135,7 +140,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
   const [schoolMenus, setSchoolMenus] = useState<Record<string, SchoolLunchMenu>>(() => getCachedMenus());
   const lastBuiltDinnerFingerprint = useRef<string | null>(null);
 
-  const weekDates = getWeekDates(weekOffset);
+  const weekDates = useMemo(() => getWeekDates(weekOffset), [weekOffset]);
 
   // Load Google Calendar events from global cache on mount, focus, and when cache changes
   useEffect(() => {
@@ -244,9 +249,17 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
   );
 
   const setDropOff = useCallback(
-    (dateKey: string, value: 'Carly' | 'Joey') => {
+    (dateKey: string, value: 'Carly' | 'Joey' | 'Other') => {
       const date = new Date(dateKey + 'T00:00:00');
       updateDay(dateKey, date, (day) => ({ ...day, dropOff: value }));
+    },
+    [updateDay]
+  );
+
+  const setPickUp = useCallback(
+    (dateKey: string, value: 'Carly' | 'Joey' | 'Other' | '') => {
+      const date = new Date(dateKey + 'T00:00:00');
+      updateDay(dateKey, date, (day) => ({ ...day, pickUp: value }));
     },
     [updateDay]
   );
@@ -328,7 +341,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
   );
 
   const setActivityOwner = useCallback(
-    (dateKey: string, id: string, owner: 'C' | 'J' | 'CJ' | undefined) => {
+    (dateKey: string, id: string, owner: 'C' | 'J' | 'O' | undefined) => {
       const date = new Date(dateKey + 'T00:00:00');
       updateDay(dateKey, date, (day) => ({
         ...day,
@@ -341,7 +354,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
   );
 
   const setCalendarEventOwner = useCallback(
-    (dateKey: string, eventId: string, owner: 'C' | 'J' | 'CJ' | undefined) => {
+    (dateKey: string, eventId: string, owner: 'C' | 'J' | 'O' | undefined) => {
       const date = new Date(dateKey + 'T00:00:00');
       updateDay(dateKey, date, (day) => {
         const owners = { ...(day.calendarEventOwners || {}) };
@@ -365,9 +378,17 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
   );
 
   const setCook = useCallback(
-    (dateKey: string, value: 'Carly' | 'Joey' | 'Both' | '') => {
+    (dateKey: string, value: 'Carly' | 'Joey' | 'Other' | '') => {
       const date = new Date(dateKey + 'T00:00:00');
       updateDay(dateKey, date, (day) => ({ ...day, cook: value }));
+    },
+    [updateDay]
+  );
+
+  const setNotes = useCallback(
+    (dateKey: string, value: string) => {
+      const date = new Date(dateKey + 'T00:00:00');
+      updateDay(dateKey, date, (day) => ({ ...day, notes: value }));
     },
     [updateDay]
   );
@@ -575,6 +596,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
         goToCurrentWeek,
         getDayData,
         setDropOff,
+        setPickUp,
         addReminder,
         removeReminder,
         setLunchChoice,
@@ -585,6 +607,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
         setCalendarEventOwner,
         setDinner,
         setCook,
+        setNotes,
         getCalendarEventsForDay,
         addGroceryItem,
         removeGroceryItem,

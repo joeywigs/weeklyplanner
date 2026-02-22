@@ -10,22 +10,25 @@ interface DinnerCardProps {
   dayData: DayData;
 }
 
-type Cook = 'Carly' | 'Joey' | 'Both' | '';
+type Cook = 'Carly' | 'Joey' | 'Other' | '';
 
-/** Cycle: unassigned → Carly → Joey → Both → unassigned */
-function nextCook(current: Cook): Cook {
+/** Cycle: unassigned → Carly → Joey → Other → unassigned */
+function nextCook(current: string): Cook {
   switch (current) {
     case '': return 'Carly';
     case 'Carly': return 'Joey';
-    case 'Joey': return 'Both';
+    case 'Joey': return 'Other';
+    case 'Other':
     case 'Both': return '';
+    default: return 'Carly';
   }
 }
 
 const COOK_STYLES: Record<string, { bg: string; border: string; text: string; badge: string }> = {
   Carly: { bg: 'bg-red-100',    border: 'border-red-300',    text: 'text-red-800',    badge: 'bg-red-500 text-white' },
   Joey:  { bg: 'bg-blue-100',   border: 'border-blue-300',   text: 'text-blue-800',   badge: 'bg-blue-500 text-white' },
-  Both:  { bg: 'bg-purple-100', border: 'border-purple-300', text: 'text-purple-800', badge: 'bg-purple-500 text-white' },
+  Other: { bg: 'bg-yellow-100',  border: 'border-yellow-300',  text: 'text-yellow-800',  badge: 'bg-yellow-400 text-yellow-900' },
+  Both:  { bg: 'bg-yellow-100',  border: 'border-yellow-300',  text: 'text-yellow-800',  badge: 'bg-yellow-400 text-yellow-900' },
 };
 
 export function DinnerCard({ dateKey, dayData }: DinnerCardProps) {
@@ -116,7 +119,7 @@ export function DinnerCard({ dateKey, dayData }: DinnerCardProps) {
             {dayData.dinner}
             {cook && (
               <span className={`absolute -bottom-1 -right-1 text-[8px] font-bold leading-none px-1 py-0.5 rounded ${cookStyle!.badge}`}>
-                {cook === 'Both' ? 'C+J' : cook === 'Carly' ? 'C' : 'J'}
+                {cook === 'Carly' ? 'C' : cook === 'Joey' ? 'J' : 'O'}
               </span>
             )}
           </button>
@@ -174,7 +177,7 @@ export function DinnerCard({ dateKey, dayData }: DinnerCardProps) {
           </button>
           {cook && (
             <span className={`text-[8px] font-bold leading-none px-1 py-0.5 rounded ${cookStyle!.badge}`}>
-              {cook === 'Both' ? 'C+J' : cook === 'Carly' ? 'C' : 'J'}
+              {cook === 'Carly' ? 'C' : cook === 'Joey' ? 'J' : 'O'}
             </span>
           )}
           <button

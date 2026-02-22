@@ -1,6 +1,7 @@
 import { CalendarSettings } from '@/components/settings/calendar-settings';
 import { RecipeSettings } from '@/components/settings/recipe-settings';
 import { CloudSettings } from '@/components/settings/cloud-settings';
+import { BirthdaySettings } from '@/components/settings/birthday-settings';
 
 export default function SettingsPage() {
   return (
@@ -16,6 +17,9 @@ export default function SettingsPage() {
 
         {/* Google Calendar */}
         <CalendarSettings />
+
+        {/* Important Birthdays */}
+        <BirthdaySettings />
 
         {/* Recipes */}
         <RecipeSettings />
