@@ -1,14 +1,14 @@
 export interface DayData {
-  dropOff: 'Carly' | 'Joey';
-  pickUp: 'Carly' | 'Joey' | '';
+  dropOff: 'Carly' | 'Joey' | 'Other';
+  pickUp: 'Carly' | 'Joey' | 'Other' | '';
   morningReminders: Reminder[];
   greyLunch: 'pack' | 'school' | null;
   sloaneLunch: 'pack' | 'school' | null;
   hasSchool: boolean;
   eveningActivities: Activity[];
-  calendarEventOwners: Record<string, 'C' | 'J' | 'CJ'>;
+  calendarEventOwners: Record<string, 'C' | 'J' | 'O'>;
   dinner: string;
-  cook: 'Carly' | 'Joey' | 'Both' | '';
+  cook: 'Carly' | 'Joey' | 'Other' | '';
   notes: string;
 }
 
@@ -20,7 +20,7 @@ export interface Reminder {
 export interface Activity {
   id: string;
   text: string;
-  owner?: 'C' | 'J' | 'CJ';
+  owner?: 'C' | 'J' | 'O';
 }
 
 export interface CalendarEvent {

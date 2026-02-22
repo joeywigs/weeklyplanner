@@ -8,14 +8,16 @@ export function WeekSummary() {
 
   let carlyDropOffs = 0;
   let joeyDropOffs = 0;
+  let otherDropOffs = 0;
   let carlyPickUps = 0;
   let joeyPickUps = 0;
+  let otherPickUps = 0;
   let carlyDinners = 0;
   let joeyDinners = 0;
-  let bothDinners = 0;
+  let otherDinners = 0;
   let carlyActivities = 0;
   let joeyActivities = 0;
-  let bothActivities = 0;
+  let otherActivities = 0;
 
   const dayBreakdown: {
     label: string;
@@ -32,42 +34,44 @@ export function WeekSummary() {
     const eventOwners = day.calendarEventOwners || {};
 
     if (day.dropOff === 'Carly') carlyDropOffs++;
-    else joeyDropOffs++;
+    else if (day.dropOff === 'Joey') joeyDropOffs++;
+    else if (day.dropOff === 'Other') otherDropOffs++;
 
     const pickUp = day.pickUp || '';
     if (pickUp === 'Carly') carlyPickUps++;
     else if (pickUp === 'Joey') joeyPickUps++;
+    else if (pickUp === 'Other') otherPickUps++;
 
     if (day.cook === 'Carly') carlyDinners++;
     else if (day.cook === 'Joey') joeyDinners++;
-    else if (day.cook === 'Both') bothDinners++;
+    else if (day.cook === 'Other') otherDinners++;
 
     for (const a of day.eveningActivities) {
       if (a.owner === 'C') carlyActivities++;
       else if (a.owner === 'J') joeyActivities++;
-      else if (a.owner === 'CJ') bothActivities++;
+      else if (a.owner === 'O') otherActivities++;
     }
     for (const ev of calEvents) {
       const o = eventOwners[ev.id];
       if (o === 'C') carlyActivities++;
       else if (o === 'J') joeyActivities++;
-      else if (o === 'CJ') bothActivities++;
+      else if (o === 'O') otherActivities++;
     }
 
     dayBreakdown.push({
       label: getShortDayName(date),
-      dropOff: day.dropOff === 'Carly' ? 'C' : 'J',
-      pickUp: pickUp === 'Carly' ? 'C' : pickUp === 'Joey' ? 'J' : '—',
-      cook: day.cook === 'Carly' ? 'C' : day.cook === 'Joey' ? 'J' : day.cook === 'Both' ? 'C+J' : '—',
+      dropOff: day.dropOff === 'Carly' ? 'C' : day.dropOff === 'Joey' ? 'J' : 'O',
+      pickUp: pickUp === 'Carly' ? 'C' : pickUp === 'Joey' ? 'J' : pickUp === 'Other' ? 'O' : '—',
+      cook: day.cook === 'Carly' ? 'C' : day.cook === 'Joey' ? 'J' : day.cook === 'Other' ? 'O' : '—',
       activityCount: day.eveningActivities.length + calEvents.length,
     });
   }
 
-  const personBadge = (label: string, color: 'red' | 'blue' | 'purple') => {
+  const personBadge = (label: string, color: 'red' | 'blue' | 'yellow') => {
     const colors = {
       red: 'bg-red-100 text-red-700',
       blue: 'bg-blue-100 text-blue-700',
-      purple: 'bg-purple-100 text-purple-700',
+      yellow: 'bg-yellow-100 text-yellow-700',
     };
     return (
       <span className={`inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded ${colors[color]}`}>
@@ -88,6 +92,7 @@ export function WeekSummary() {
             <div className="flex gap-1">
               {personBadge(`C: ${carlyDropOffs}`, 'red')}
               {personBadge(`J: ${joeyDropOffs}`, 'blue')}
+              {otherDropOffs > 0 && personBadge(`O: ${otherDropOffs}`, 'yellow')}
             </div>
           </div>
           <div className="flex items-center justify-between text-[11px]">
@@ -95,6 +100,7 @@ export function WeekSummary() {
             <div className="flex gap-1">
               {personBadge(`C: ${carlyPickUps}`, 'red')}
               {personBadge(`J: ${joeyPickUps}`, 'blue')}
+              {otherPickUps > 0 && personBadge(`O: ${otherPickUps}`, 'yellow')}
             </div>
           </div>
         </div>
@@ -104,7 +110,7 @@ export function WeekSummary() {
             <div className="flex gap-1">
               {personBadge(`C: ${carlyDinners}`, 'red')}
               {personBadge(`J: ${joeyDinners}`, 'blue')}
-              {bothDinners > 0 && personBadge(`Both: ${bothDinners}`, 'purple')}
+              {otherDinners > 0 && personBadge(`O: ${otherDinners}`, 'yellow')}
             </div>
           </div>
           <div className="flex items-center justify-between text-[11px]">
@@ -112,7 +118,7 @@ export function WeekSummary() {
             <div className="flex gap-1">
               {personBadge(`C: ${carlyActivities}`, 'red')}
               {personBadge(`J: ${joeyActivities}`, 'blue')}
-              {bothActivities > 0 && personBadge(`Both: ${bothActivities}`, 'purple')}
+              {otherActivities > 0 && personBadge(`O: ${otherActivities}`, 'yellow')}
             </div>
           </div>
         </div>
@@ -135,20 +141,22 @@ export function WeekSummary() {
               <tr key={d.label} className="border-t border-gray-100">
                 <td className="py-1 pr-2 font-semibold text-gray-700">{d.label}</td>
                 <td className="py-1 px-1 text-center">
-                  <span className={`font-bold ${d.dropOff === 'C' ? 'text-red-600' : 'text-blue-600'}`}>
+                  <span className={`font-bold ${
+                    d.dropOff === 'C' ? 'text-red-600' : d.dropOff === 'J' ? 'text-blue-600' : 'text-yellow-600'
+                  }`}>
                     {d.dropOff}
                   </span>
                 </td>
                 <td className="py-1 px-1 text-center">
                   <span className={`font-bold ${
-                    d.pickUp === 'C' ? 'text-red-600' : d.pickUp === 'J' ? 'text-blue-600' : 'text-gray-300'
+                    d.pickUp === 'C' ? 'text-red-600' : d.pickUp === 'J' ? 'text-blue-600' : d.pickUp === 'O' ? 'text-yellow-600' : 'text-gray-300'
                   }`}>
                     {d.pickUp}
                   </span>
                 </td>
                 <td className="py-1 px-1 text-center">
                   <span className={`font-bold ${
-                    d.cook === 'C' ? 'text-red-600' : d.cook === 'J' ? 'text-blue-600' : d.cook === 'C+J' ? 'text-purple-600' : 'text-gray-300'
+                    d.cook === 'C' ? 'text-red-600' : d.cook === 'J' ? 'text-blue-600' : d.cook === 'O' ? 'text-yellow-600' : 'text-gray-300'
                   }`}>
                     {d.cook}
                   </span>

@@ -9,9 +9,24 @@ interface MorningCardProps {
   dayData: DayData;
 }
 
+type DropOff = 'Carly' | 'Joey' | 'Other';
+
+const TOGGLE_OPTIONS: { value: DropOff; label: string }[] = [
+  { value: 'Carly', label: 'C' },
+  { value: 'Joey', label: 'J' },
+  { value: 'Other', label: 'O' },
+];
+
+const ACTIVE_STYLES: Record<DropOff, string> = {
+  Carly: 'bg-red-500 text-white border-red-500',
+  Joey: 'bg-blue-500 text-white border-blue-500',
+  Other: 'bg-yellow-400 text-yellow-900 border-yellow-400',
+};
+
 export function MorningCard({ dateKey, dayData }: MorningCardProps) {
   const { setDropOff, addReminder, removeReminder, editMode } = usePlanner();
   const [reminderInput, setReminderInput] = useState('');
+  const dropOff = dayData.dropOff as DropOff;
 
   function handleAddReminder() {
     const text = reminderInput.trim();
@@ -20,15 +35,36 @@ export function MorningCard({ dateKey, dayData }: MorningCardProps) {
     setReminderInput('');
   }
 
+  function renderToggle() {
+    return (
+      <div className="flex rounded-md overflow-hidden border border-morning-300">
+        {TOGGLE_OPTIONS.map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => setDropOff(dateKey, opt.value)}
+            className={`flex-1 text-[10px] font-bold py-1 transition-colors ${
+              dropOff === opt.value
+                ? ACTIVE_STYLES[opt.value]
+                : 'bg-white text-morning-500 hover:bg-morning-50'
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+    );
+  }
+
   // Live mode: simplified read-only view
   if (!editMode) {
     return (
       <div className="rounded-lg border border-morning-200 bg-[var(--morning-light)] p-2.5 min-h-[8.5rem]">
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 mb-1.5">
           <div className="w-2 h-2 rounded-full bg-[var(--morning)]" />
           <span className="text-xs font-semibold text-morning-800">Morning</span>
-          <span className="ml-auto text-[10px] text-morning-600 font-medium">{dayData.dropOff} drops off</span>
         </div>
+        {renderToggle()}
         {dayData.morningReminders.length > 0 && (
           <ul className="mt-1.5 space-y-0.5">
             {dayData.morningReminders.map((r) => (
@@ -49,20 +85,14 @@ export function MorningCard({ dateKey, dayData }: MorningCardProps) {
         <span className="text-xs font-semibold text-morning-800">Morning</span>
       </div>
 
-      {/* Drop-off */}
+      {/* Drop-off toggle */}
       <div className="mb-2">
         <label className="text-[10px] text-morning-700 font-medium uppercase tracking-wider">
           Drop-off
         </label>
-        <select
-          value={dayData.dropOff}
-          onChange={(e) => setDropOff(dateKey, e.target.value as 'Carly' | 'Joey')}
-          className="mt-1 w-full text-xs py-1.5 px-2 rounded-md font-medium bg-white border border-morning-300 text-morning-800 focus:outline-none focus:ring-1 focus:ring-morning-400 appearance-none cursor-pointer"
-          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 5l3 3 3-3' stroke='%2373551b' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px center' }}
-        >
-          <option value="Carly">Carly</option>
-          <option value="Joey">Joey</option>
-        </select>
+        <div className="mt-1">
+          {renderToggle()}
+        </div>
       </div>
 
       {/* Reminders */}
