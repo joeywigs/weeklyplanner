@@ -62,5 +62,4 @@ export interface WeekState {
   days: Record<string, DayData>;
   groceryItems: GroceryItem[];
   caraNotes: CaraNote[];
-  calendarEvents: CalendarEvent[];
 }
