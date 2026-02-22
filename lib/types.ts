@@ -17,6 +17,7 @@ export interface Reminder {
 export interface Activity {
   id: string;
   text: string;
+  owner?: 'C' | 'J';
 }
 
 export interface CalendarEvent {
@@ -36,6 +37,7 @@ export interface CalendarSource {
 export interface GroceryItem {
   id: string;
   name: string;
+  checked?: boolean;
 }
 
 export interface CaraNote {

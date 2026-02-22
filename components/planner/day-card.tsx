@@ -72,7 +72,7 @@ export function DayCard({ date }: DayCardProps) {
       {/* Sub-cards */}
       <div className="p-2 space-y-2">
         <MorningCard dateKey={dateKey} dayData={dayData} />
-        <LunchCard dateKey={dateKey} dayData={dayData} dayOfWeek={date.getDay()} />
+        <LunchCard dateKey={dateKey} dayData={dayData} dayOfWeek={date.getDay()} calendarEvents={calendarEvents} />
         <EveningCard dateKey={dateKey} dayData={dayData} />
         <DinnerCard dateKey={dateKey} dayData={dayData} />
       </div>

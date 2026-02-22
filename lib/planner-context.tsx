@@ -99,11 +99,13 @@ interface PlannerContextValue {
   toggleSchool: (dateKey: string) => void;
   addActivity: (dateKey: string, text: string) => void;
   removeActivity: (dateKey: string, id: string) => void;
+  setActivityOwner: (dateKey: string, id: string, owner: 'C' | 'J' | undefined) => void;
   setDinner: (dateKey: string, value: string) => void;
   setCook: (dateKey: string, value: 'Carly' | 'Joey' | '') => void;
   getCalendarEventsForDay: (dateKey: string) => CalendarEvent[];
   addGroceryItem: (name: string) => void;
   removeGroceryItem: (id: string) => void;
+  toggleGroceryItemChecked: (id: string) => void;
   clearGroceryItems: () => void;
   buildGroceryFromDinners: () => 'built' | 'already_built';
   addCaraNote: (text: string) => void;
@@ -320,6 +322,19 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     [updateDay]
   );
 
+  const setActivityOwner = useCallback(
+    (dateKey: string, id: string, owner: 'C' | 'J' | undefined) => {
+      const date = new Date(dateKey + 'T00:00:00');
+      updateDay(dateKey, date, (day) => ({
+        ...day,
+        eveningActivities: day.eveningActivities.map((a) =>
+          a.id === id ? { ...a, owner } : a
+        ),
+      }));
+    },
+    [updateDay]
+  );
+
   const setDinner = useCallback(
     (dateKey: string, value: string) => {
       const date = new Date(dateKey + 'T00:00:00');
@@ -365,6 +380,15 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     setState((prev) => ({
       ...prev,
       groceryItems: prev.groceryItems.filter((i) => i.id !== id),
+    }));
+  }, []);
+
+  const toggleGroceryItemChecked = useCallback((id: string) => {
+    setState((prev) => ({
+      ...prev,
+      groceryItems: prev.groceryItems.map((i) =>
+        i.id === id ? { ...i, checked: !i.checked } : i
+      ),
     }));
   }, []);
 
@@ -536,11 +560,13 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
         toggleSchool,
         addActivity,
         removeActivity,
+        setActivityOwner,
         setDinner,
         setCook,
         getCalendarEventsForDay,
         addGroceryItem,
         removeGroceryItem,
+        toggleGroceryItemChecked,
         clearGroceryItems,
         buildGroceryFromDinners,
         addCaraNote,
