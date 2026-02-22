@@ -103,7 +103,7 @@ interface PlannerContextValue {
   setActivityOwner: (dateKey: string, id: string, owner: 'C' | 'J' | 'CJ' | undefined) => void;
   setCalendarEventOwner: (dateKey: string, eventId: string, owner: 'C' | 'J' | 'CJ' | undefined) => void;
   setDinner: (dateKey: string, value: string) => void;
-  setCook: (dateKey: string, value: 'Carly' | 'Joey' | '') => void;
+  setCook: (dateKey: string, value: 'Carly' | 'Joey' | 'Both' | '') => void;
   getCalendarEventsForDay: (dateKey: string) => CalendarEvent[];
   addGroceryItem: (name: string) => void;
   removeGroceryItem: (id: string) => void;
@@ -365,7 +365,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
   );
 
   const setCook = useCallback(
-    (dateKey: string, value: 'Carly' | 'Joey' | '') => {
+    (dateKey: string, value: 'Carly' | 'Joey' | 'Both' | '') => {
       const date = new Date(dateKey + 'T00:00:00');
       updateDay(dateKey, date, (day) => ({ ...day, cook: value }));
     },

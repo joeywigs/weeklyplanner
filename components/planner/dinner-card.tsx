@@ -10,20 +10,22 @@ interface DinnerCardProps {
   dayData: DayData;
 }
 
-type Cook = 'Carly' | 'Joey' | '';
+type Cook = 'Carly' | 'Joey' | 'Both' | '';
 
-/** Cycle: unassigned → Carly → Joey → unassigned */
+/** Cycle: unassigned → Carly → Joey → Both → unassigned */
 function nextCook(current: Cook): Cook {
   switch (current) {
     case '': return 'Carly';
     case 'Carly': return 'Joey';
-    case 'Joey': return '';
+    case 'Joey': return 'Both';
+    case 'Both': return '';
   }
 }
 
 const COOK_STYLES: Record<string, { bg: string; border: string; text: string; badge: string }> = {
-  Carly: { bg: 'bg-red-100',  border: 'border-red-300',  text: 'text-red-800',  badge: 'bg-red-500 text-white' },
-  Joey:  { bg: 'bg-blue-100', border: 'border-blue-300', text: 'text-blue-800', badge: 'bg-blue-500 text-white' },
+  Carly: { bg: 'bg-red-100',    border: 'border-red-300',    text: 'text-red-800',    badge: 'bg-red-500 text-white' },
+  Joey:  { bg: 'bg-blue-100',   border: 'border-blue-300',   text: 'text-blue-800',   badge: 'bg-blue-500 text-white' },
+  Both:  { bg: 'bg-purple-100', border: 'border-purple-300', text: 'text-purple-800', badge: 'bg-purple-500 text-white' },
 };
 
 export function DinnerCard({ dateKey, dayData }: DinnerCardProps) {
@@ -114,7 +116,7 @@ export function DinnerCard({ dateKey, dayData }: DinnerCardProps) {
             {dayData.dinner}
             {cook && (
               <span className={`absolute -bottom-1 -right-1 text-[8px] font-bold leading-none px-1 py-0.5 rounded ${cookStyle!.badge}`}>
-                {cook === 'Carly' ? 'C' : 'J'}
+                {cook === 'Both' ? 'C+J' : cook === 'Carly' ? 'C' : 'J'}
               </span>
             )}
           </button>
@@ -172,7 +174,7 @@ export function DinnerCard({ dateKey, dayData }: DinnerCardProps) {
           </button>
           {cook && (
             <span className={`text-[8px] font-bold leading-none px-1 py-0.5 rounded ${cookStyle!.badge}`}>
-              {cook === 'Carly' ? 'C' : 'J'}
+              {cook === 'Both' ? 'C+J' : cook === 'Carly' ? 'C' : 'J'}
             </span>
           )}
           <button
