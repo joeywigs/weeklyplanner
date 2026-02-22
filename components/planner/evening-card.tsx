@@ -17,16 +17,16 @@ interface EveningCardProps {
   dayData: DayData;
 }
 
-type Owner = 'C' | 'J' | 'O' | undefined;
+type Owner = 'C' | 'J' | 'CJ' | 'O' | undefined;
 
-/** Cycle: unassigned → C → J → O → unassigned */
+/** Cycle: unassigned → C → J → C+J → O → unassigned */
 function nextOwner(current: string | undefined): Owner {
   switch (current) {
     case undefined: return 'C';
     case 'C': return 'J';
-    case 'J': return 'O';
-    case 'O':
-    case 'CJ': return undefined;
+    case 'J': return 'CJ';
+    case 'CJ': return 'O';
+    case 'O': return undefined;
     default: return 'C';
   }
 }
@@ -34,8 +34,15 @@ function nextOwner(current: string | undefined): Owner {
 const OWNER_STYLES: Record<string, { bg: string; border: string; text: string; badge: string }> = {
   C:  { bg: 'bg-red-100',    border: 'border-red-300',    text: 'text-red-800',    badge: 'bg-red-500 text-white' },
   J:  { bg: 'bg-blue-100',   border: 'border-blue-300',   text: 'text-blue-800',   badge: 'bg-blue-500 text-white' },
-  O:  { bg: 'bg-yellow-100',  border: 'border-yellow-300',  text: 'text-yellow-800',  badge: 'bg-yellow-400 text-yellow-900' },
-  CJ: { bg: 'bg-yellow-100',  border: 'border-yellow-300',  text: 'text-yellow-800',  badge: 'bg-yellow-400 text-yellow-900' },
+  CJ: { bg: 'bg-purple-100', border: 'border-purple-300', text: 'text-purple-800', badge: 'bg-purple-500 text-white' },
+  O:  { bg: 'bg-yellow-100', border: 'border-yellow-300', text: 'text-yellow-800', badge: 'bg-yellow-400 text-yellow-900' },
+};
+
+const OWNER_LABEL: Record<string, string> = {
+  C: 'C',
+  J: 'J',
+  CJ: 'C+J',
+  O: 'O',
 };
 
 export function EveningCard({ dateKey, dayData }: EveningCardProps) {
@@ -78,7 +85,7 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
         {formatTime(ev) && <span className="font-medium">{formatTime(ev)} </span>}{ev.text}
         {owner && (
           <span className={`absolute -bottom-1 -right-1 text-[8px] font-bold leading-none px-1 py-0.5 rounded ${style!.badge}`}>
-            {owner}
+            {OWNER_LABEL[owner]}
           </span>
         )}
       </button>
@@ -101,7 +108,7 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
         {a.text}
         {a.owner && (
           <span className={`absolute -bottom-1 -right-1 text-[8px] font-bold leading-none px-1 py-0.5 rounded ${style!.badge}`}>
-            {a.owner}
+            {OWNER_LABEL[a.owner]}
           </span>
         )}
       </button>
@@ -177,7 +184,7 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
                 </button>
                 {owner && (
                   <span className={`text-[8px] font-bold leading-none px-1 py-0.5 rounded ${style!.badge}`}>
-                    {owner}
+                    {OWNER_LABEL[owner]}
                   </span>
                 )}
               </div>
@@ -203,7 +210,7 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
                 </button>
                 {a.owner && (
                   <span className={`text-[8px] font-bold leading-none px-1 py-0.5 rounded ${style!.badge}`}>
-                    {a.owner}
+                    {OWNER_LABEL[a.owner]}
                   </span>
                 )}
                 <button

@@ -7,23 +7,26 @@ import type { DayData } from '@/lib/types';
 interface MorningCardProps {
   dateKey: string;
   dayData: DayData;
+  isWeekend: boolean;
 }
 
 type DropOff = 'Carly' | 'Joey' | 'Other';
 
-const TOGGLE_OPTIONS: { value: DropOff; label: string }[] = [
-  { value: 'Carly', label: 'C' },
-  { value: 'Joey', label: 'J' },
-  { value: 'Other', label: 'O' },
-];
+const CYCLE: DropOff[] = ['Carly', 'Joey', 'Other'];
 
-const ACTIVE_STYLES: Record<DropOff, string> = {
-  Carly: 'bg-red-500 text-white border-red-500',
-  Joey: 'bg-blue-500 text-white border-blue-500',
-  Other: 'bg-yellow-400 text-yellow-900 border-yellow-400',
+const LABEL: Record<DropOff, string> = {
+  Carly: 'C',
+  Joey: 'J',
+  Other: 'O',
 };
 
-export function MorningCard({ dateKey, dayData }: MorningCardProps) {
+const TEXT_STYLE: Record<DropOff, string> = {
+  Carly: 'text-red-500',
+  Joey: 'text-blue-500',
+  Other: 'text-yellow-500',
+};
+
+export function MorningCard({ dateKey, dayData, isWeekend }: MorningCardProps) {
   const { setDropOff, addReminder, removeReminder, editMode } = usePlanner();
   const [reminderInput, setReminderInput] = useState('');
   const dropOff = dayData.dropOff as DropOff;
@@ -35,24 +38,22 @@ export function MorningCard({ dateKey, dayData }: MorningCardProps) {
     setReminderInput('');
   }
 
-  function renderToggle() {
+  function cycleDropOff() {
+    const idx = CYCLE.indexOf(dropOff);
+    const next = CYCLE[(idx + 1) % CYCLE.length]!;
+    setDropOff(dateKey, next);
+  }
+
+  function renderDropOff() {
+    if (isWeekend) return null;
     return (
-      <div className="flex rounded-md overflow-hidden border border-morning-300">
-        {TOGGLE_OPTIONS.map((opt) => (
-          <button
-            key={opt.value}
-            type="button"
-            onClick={() => setDropOff(dateKey, opt.value)}
-            className={`flex-1 text-[10px] font-bold py-1 transition-colors ${
-              dropOff === opt.value
-                ? ACTIVE_STYLES[opt.value]
-                : 'bg-white text-morning-500 hover:bg-morning-50'
-            }`}
-          >
-            {opt.label}
-          </button>
-        ))}
-      </div>
+      <button
+        type="button"
+        onClick={cycleDropOff}
+        className={`text-[11px] font-semibold select-none active:scale-[0.96] transition-transform ${TEXT_STYLE[dropOff]}`}
+      >
+        Drop Off: {LABEL[dropOff]}
+      </button>
     );
   }
 
@@ -64,7 +65,7 @@ export function MorningCard({ dateKey, dayData }: MorningCardProps) {
           <div className="w-2 h-2 rounded-full bg-[var(--morning)]" />
           <span className="text-xs font-semibold text-morning-800">Morning</span>
         </div>
-        {renderToggle()}
+        {renderDropOff()}
         {dayData.morningReminders.length > 0 && (
           <ul className="mt-1.5 space-y-0.5">
             {dayData.morningReminders.map((r) => (
@@ -86,14 +87,11 @@ export function MorningCard({ dateKey, dayData }: MorningCardProps) {
       </div>
 
       {/* Drop-off toggle */}
-      <div className="mb-2">
-        <label className="text-[10px] text-morning-700 font-medium uppercase tracking-wider">
-          Drop-off
-        </label>
-        <div className="mt-1">
-          {renderToggle()}
+      {!isWeekend && (
+        <div className="mb-2">
+          {renderDropOff()}
         </div>
-      </div>
+      )}
 
       {/* Reminders */}
       <div>

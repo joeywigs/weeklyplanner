@@ -104,10 +104,10 @@ interface PlannerContextValue {
   toggleSchool: (dateKey: string) => void;
   addActivity: (dateKey: string, text: string) => void;
   removeActivity: (dateKey: string, id: string) => void;
-  setActivityOwner: (dateKey: string, id: string, owner: 'C' | 'J' | 'O' | undefined) => void;
-  setCalendarEventOwner: (dateKey: string, eventId: string, owner: 'C' | 'J' | 'O' | undefined) => void;
+  setActivityOwner: (dateKey: string, id: string, owner: 'C' | 'J' | 'CJ' | 'O' | undefined) => void;
+  setCalendarEventOwner: (dateKey: string, eventId: string, owner: 'C' | 'J' | 'CJ' | 'O' | undefined) => void;
   setDinner: (dateKey: string, value: string) => void;
-  setCook: (dateKey: string, value: 'Carly' | 'Joey' | 'Other' | '') => void;
+  setCook: (dateKey: string, value: 'Carly' | 'Joey' | 'Both' | 'Other' | '') => void;
   getCalendarEventsForDay: (dateKey: string) => CalendarEvent[];
   addGroceryItem: (name: string) => void;
   removeGroceryItem: (id: string) => void;
@@ -341,7 +341,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
   );
 
   const setActivityOwner = useCallback(
-    (dateKey: string, id: string, owner: 'C' | 'J' | 'O' | undefined) => {
+    (dateKey: string, id: string, owner: 'C' | 'J' | 'CJ' | 'O' | undefined) => {
       const date = new Date(dateKey + 'T00:00:00');
       updateDay(dateKey, date, (day) => ({
         ...day,
@@ -354,7 +354,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
   );
 
   const setCalendarEventOwner = useCallback(
-    (dateKey: string, eventId: string, owner: 'C' | 'J' | 'O' | undefined) => {
+    (dateKey: string, eventId: string, owner: 'C' | 'J' | 'CJ' | 'O' | undefined) => {
       const date = new Date(dateKey + 'T00:00:00');
       updateDay(dateKey, date, (day) => {
         const owners = { ...(day.calendarEventOwners || {}) };
@@ -378,7 +378,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
   );
 
   const setCook = useCallback(
-    (dateKey: string, value: 'Carly' | 'Joey' | 'Other' | '') => {
+    (dateKey: string, value: 'Carly' | 'Joey' | 'Both' | 'Other' | '') => {
       const date = new Date(dateKey + 'T00:00:00');
       updateDay(dateKey, date, (day) => ({ ...day, cook: value }));
     },

@@ -73,9 +73,9 @@ export function DayCard({ date }: DayCardProps) {
 
       {/* Sub-cards */}
       <div className="p-2 space-y-2">
-        <MorningCard dateKey={dateKey} dayData={dayData} />
+        <MorningCard dateKey={dateKey} dayData={dayData} isWeekend={date.getDay() === 0 || date.getDay() === 6} />
         <LunchCard dateKey={dateKey} dayData={dayData} dayOfWeek={date.getDay()} calendarEvents={calendarEvents} />
-        <PickupCard dateKey={dateKey} dayData={dayData} />
+        <PickupCard dateKey={dateKey} dayData={dayData} isWeekend={date.getDay() === 0 || date.getDay() === 6} />
         <EveningCard dateKey={dateKey} dayData={dayData} />
         <DinnerCard dateKey={dateKey} dayData={dayData} />
         <NotesCard dateKey={dateKey} dayData={dayData} />

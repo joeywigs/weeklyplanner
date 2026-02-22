@@ -6,9 +6,9 @@ export interface DayData {
   sloaneLunch: 'pack' | 'school' | null;
   hasSchool: boolean;
   eveningActivities: Activity[];
-  calendarEventOwners: Record<string, 'C' | 'J' | 'O'>;
+  calendarEventOwners: Record<string, 'C' | 'J' | 'CJ' | 'O'>;
   dinner: string;
-  cook: 'Carly' | 'Joey' | 'Other' | '';
+  cook: 'Carly' | 'Joey' | 'Both' | 'Other' | '';
   notes: string;
 }
 
@@ -20,7 +20,7 @@ export interface Reminder {
 export interface Activity {
   id: string;
   text: string;
-  owner?: 'C' | 'J' | 'O';
+  owner?: 'C' | 'J' | 'CJ' | 'O';
 }
 
 export interface CalendarEvent {
