@@ -17,6 +17,7 @@ export interface Reminder {
 export interface Activity {
   id: string;
   text: string;
+  owner?: 'C' | 'J';
 }
 
 export interface CalendarEvent {

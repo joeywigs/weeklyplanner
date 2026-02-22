@@ -99,6 +99,7 @@ interface PlannerContextValue {
   toggleSchool: (dateKey: string) => void;
   addActivity: (dateKey: string, text: string) => void;
   removeActivity: (dateKey: string, id: string) => void;
+  setActivityOwner: (dateKey: string, id: string, owner: 'C' | 'J' | undefined) => void;
   setDinner: (dateKey: string, value: string) => void;
   setCook: (dateKey: string, value: 'Carly' | 'Joey' | '') => void;
   getCalendarEventsForDay: (dateKey: string) => CalendarEvent[];
@@ -316,6 +317,19 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
       updateDay(dateKey, date, (day) => ({
         ...day,
         eveningActivities: day.eveningActivities.filter((a) => a.id !== id),
+      }));
+    },
+    [updateDay]
+  );
+
+  const setActivityOwner = useCallback(
+    (dateKey: string, id: string, owner: 'C' | 'J' | undefined) => {
+      const date = new Date(dateKey + 'T00:00:00');
+      updateDay(dateKey, date, (day) => ({
+        ...day,
+        eveningActivities: day.eveningActivities.map((a) =>
+          a.id === id ? { ...a, owner } : a
+        ),
       }));
     },
     [updateDay]
@@ -546,6 +560,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
         toggleSchool,
         addActivity,
         removeActivity,
+        setActivityOwner,
         setDinner,
         setCook,
         getCalendarEventsForDay,

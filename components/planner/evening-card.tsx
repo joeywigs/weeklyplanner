@@ -17,10 +17,44 @@ interface EveningCardProps {
   dayData: DayData;
 }
 
+function OwnerButtons({
+  owner,
+  onChange,
+}: {
+  owner?: 'C' | 'J';
+  onChange: (owner: 'C' | 'J' | undefined) => void;
+}) {
+  return (
+    <div className="flex gap-0.5 shrink-0">
+      <button
+        onClick={(e) => { e.stopPropagation(); onChange(owner === 'C' ? undefined : 'C'); }}
+        className={`w-4 h-4 rounded text-[9px] font-bold leading-none flex items-center justify-center transition-colors ${
+          owner === 'C'
+            ? 'bg-red-500 text-white'
+            : 'bg-white/60 text-red-400 hover:bg-red-100'
+        }`}
+      >
+        C
+      </button>
+      <button
+        onClick={(e) => { e.stopPropagation(); onChange(owner === 'J' ? undefined : 'J'); }}
+        className={`w-4 h-4 rounded text-[9px] font-bold leading-none flex items-center justify-center transition-colors ${
+          owner === 'J'
+            ? 'bg-blue-500 text-white'
+            : 'bg-white/60 text-blue-400 hover:bg-blue-100'
+        }`}
+      >
+        J
+      </button>
+    </div>
+  );
+}
+
 export function EveningCard({ dateKey, dayData }: EveningCardProps) {
   const {
     addActivity,
     removeActivity,
+    setActivityOwner,
     getCalendarEventsForDay,
     editMode,
   } = usePlanner();
@@ -53,8 +87,12 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
               </li>
             ))}
             {dayData.eveningActivities.map((a) => (
-              <li key={a.id} className="text-[11px] text-evening-700 pl-3.5">
-                &bull; {a.text}
+              <li key={a.id} className="flex items-center gap-1 text-[11px] text-evening-700 pl-3.5">
+                <span className="flex-1">&bull; {a.text}</span>
+                <OwnerButtons
+                  owner={a.owner}
+                  onChange={(o) => setActivityOwner(dateKey, a.id, o)}
+                />
               </li>
             ))}
           </ul>
@@ -104,12 +142,16 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
           {dayData.eveningActivities.map((a) => (
             <li
               key={a.id}
-              className="flex items-start gap-1 text-xs text-evening-800 bg-evening-100 rounded px-1.5 py-1"
+              className="flex items-center gap-1 text-xs text-evening-800 bg-evening-100 rounded px-1.5 py-1"
             >
               <span className="flex-1 break-words">{a.text}</span>
+              <OwnerButtons
+                owner={a.owner}
+                onChange={(o) => setActivityOwner(dateKey, a.id, o)}
+              />
               <button
                 onClick={() => removeActivity(dateKey, a.id)}
-                className="text-evening-300 hover:text-red-500 shrink-0 mt-0.5"
+                className="text-evening-300 hover:text-red-500 shrink-0"
               >
                 <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
                   <path
