@@ -1,0 +1,291 @@
+/**
+ * Matches recipe ingredients against the family's common Walmart grocery catalog.
+ * When a match is found, the Walmart product full name is used instead of the
+ * raw ingredient text, so the grocery list shows exactly what to buy.
+ */
+
+import { parseIngredient, formatQuantity } from './ingredient-scale';
+
+// ---------- Walmart catalog (from groceries.txt) ----------
+
+const CATALOG_CSV = `Frigo Shredded Parmesan Cheese 5 oz Refrigerated Plastic Cup,Shredded parmesan cheese
+Prima Della Oven Roasted Turkey Breast Deli-Sliced,Deli turkey breast
+Sargento Sliced Colby-Jack Natural Cheese 11 slices,Sliced cheese
+Charmin Toilet Paper Ultra Soft 6 Mega Rolls 2-Ply Bath Tissue,Toilet paper
+Daisy Pure and Natural Sour Cream 14 oz Pouch (Refrigerated),Sour cream
+Marketside Broccoli Florets 12 oz,Fresh broccoli florets
+KIND Gluten Free Dark Chocolate Nuts & Sea Salt Snack Bars Value Pack 1.4 oz 12 Count,Snack bars
+No Yolks Extra Broad Egg White Noodles 12 oz bag,Egg white pasta noodles
+Horizon Organic DHA Omega-3 2 Percent Milk 64 fl oz Carton,Reduced fat organic milk
+Cheez-It Original Cheese Crackers Baked Snack Crackers 20 Count,Cheese crackers
+Goldfish Cheddar Cheese Crackers Snack Packs 1 oz 12 Count Multi-Pack Tray,Cheese crackers snack packs
+93% Lean / 7% Fat Lean Ground Beef 1 lb Tray Fresh All Natural,Fresh lean ground beef
+Fresh Yellow Baby Potatoes 1.5 lb Bag,Fresh baby potatoes
+Fresh Cravings Pico de Gallo Salsa Mild 14 oz Recyclable Plastic Tub Gluten-Free Refrigerated,Fresh pico de gallo salsa
+Fresh Romaine Lettuce Hearts 3 Count Each,Fresh romaine lettuce
+Great Value Unsweetened Applesauce 46 oz Jar,Unsweetened applesauce
+Honey Nut Cheerios Heart Healthy Cereal Family Size 18.8 oz,Breakfast cereal
+Barilla Classic Non-GMO Kosher Certified Thin Spaghetti Pasta Noodles 16 oz,Thin spaghetti pasta
+bettergoods Restaurant Style Lightly Breaded White Meat Chicken Bites 24 oz (Frozen),Frozen chicken bites
+President All-Natural Feta Cheese Block 8 oz (Refrigerated),Feta cheese block
+Land O Lakes Unsalted Butter 4 Sticks 1 lb Pack,Unsalted butter
+Panera Bread Creamy Caesar Refrigerated Salad Dressing 12 Fluid oz Bottle,Caesar salad dressing
+Fresh Produce Bagged Whole Red Radish 1 Bag Each,Fresh red radishes
+Fresh Mini Cucumbers 16 oz,Fresh mini cucumbers
+Giovanni Rana Tortellini 5 Cheese Premium Flat Cut Pasta Bag Family Size 18oz Refrigerated,Refrigerated 5-cheese tortellini pasta
+KIND HEALTHY GRAINS Granola Oats & Honey Granola with Toasted Coconut Snack Mix 11 oz,Granola
+Quaker Maple & Brown Sugar Flavor Instant Oatmeal 1.51 oz 20 Packets,Instant oatmeal
+Emerald Nuts Cashews Roasted and Salted 100 Calorie Packs 0.62 oz 10 Ct,Portioned cashew snack packs
+Cascade Complete Dishwasher Detergent Liquid Gel Citrus 75 fl oz,Dishwasher detergent
+Barilla Classic Non-GMO Kosher Certified Angel Hair Pasta 16 oz,Angel hair pasta
+Great Value Multi-Grain Crackers 12.7 oz,Multi-grain crackers
+Fresh Tomato on the Vine Bag (1.9 lbs/Bag Est.),Fresh vine tomatoes
+Al Fresco Sweet Italian Style Chicken Dinner Sausage 11 oz 4 Count,Chicken sausage
+Kraft Italian Five Cheese Blend Shredded Cheese 8 oz Bag,Shredded Italian cheese blend
+Perdue Harvestland Free Range Fresh Boneless Chicken Breasts 1.3-1.9 lb Tray,Fresh boneless chicken breasts
+Spindrift Lemon Sparkling Water 12 fl oz 8 Count No Sugar 1 Calorie,Sparkling water
+Waterloo Sparkling Water Cherry Limeade 12 fl oz 8 pack cans,Sparkling water
+Great Value Organic Extra Virgin Olive Oil 25.5 fl oz Glass Bottle,Extra virgin olive oil
+Rao's Homemade Tomato Basil Pasta Sauce 24oz,Pasta sauce
+Daisy Pure and Natural Sour Cream 16 oz (1 lb) Tub (Refrigerated),Sour cream
+Swanson 33% Less Sodium Chicken Broth 32 oz Carton,Chicken broth
+Fresh Cravings Roasted Garlic Hummus Dip 10 oz Plastic Tub Gluten-Free,Hummus dip
+Town House Pita Sea Salt Oven Baked Crackers 9.5 oz,Pita crackers
+bettergoods Heirloom Blue Corn and Multigrain Tortilla Chips 10 oz,Tortilla chips
+Thomas' Plain Bagels 6 count 10g Protein Kosher Bagels 20 oz Bag,Plain bagels
+Philadelphia Whipped Cream Cheese Spread Original 8 oz,Whipped cream cheese spread
+Deep Indian Kitchen Coconut Chicken Curry 9oz (Frozen Packaged Meal),Frozen Indian curry meal
+Sprite Zero Sugar Lemon Lime Soda Pop 12 fl oz 12 Pack Cans,Diet lemon-lime soda
+Amy's Frozen Meals Pesto Tortellini Bowl Microwave Meals 9.5 oz,Frozen pasta meal
+Extra Spearmint Sugar Free Gum Back To School Chewing Gum 3 Pack 45 ct,Sugar-free chewing gum
+Great Value Cracker Cuts Sliced Colby & Monterey Jack Cheese 10 oz 30 Count,Sliced snack cheese
+Fresh Blackberries 12 oz Container,Fresh blackberries
+Fresh Mandarin Oranges 3 lb Bag,Fresh mandarin oranges
+Fresh Lime Each,Fresh lime
+Sweet Potatoes Whole Fresh 3 lb Bag,Fresh sweet potatoes
+Organic Marketside Fresh Baby Peeled Carrots 1 lb Bag,Fresh organic baby carrots
+Fresh Cherubs Grape Tomatoes 10 oz Package,Fresh grape tomatoes
+Fresh Green Onions Bunch Each,Fresh green onions
+Hunt's Tomato Paste 6 oz Can,Tomato paste
+Marketside Fresh Baby Spinach 6 oz Bag (Fresh),Fresh baby spinach
+Mahatma Ready-to-Heat Cilantro Limon Jasmine Rice Gluten Free 8.8 oz Bag,Microwaveable jasmine rice
+Fresh Lemon Each,Fresh lemon
+Great Value Organic Chick Pea Garbanzo Beans 15 oz Can,Canned chickpeas / garbanzo beans
+Fresh Italian Parsley Bunch Each,Fresh Italian parsley
+Fresh Whole Red Onion Each,Fresh red onion
+Siete Mild Taco Seasoning Mixed Spice 1.31 oz Packet,Taco seasoning
+Old El Paso Mild Chopped Green Chiles Meal Prep 4 oz,Canned green chiles
+Siete Foods Gluten Free Red Enchilada Sauce 15 oz Jar,Enchilada sauce
+Simply Orange Pulp Free Orange Juice 46 fl oz Bottle,Orange juice
+That's it. Gluten-Free Soft & Chewy Apple + Strawberry Ready-to-Eat Fruit Bars 0.7oz 8 Count,Fruit bars
+HORMEL Turkey Pepperoni Pizza Topping Gluten Free Refrigerated 5 oz Package,Turkey pepperoni
+Honeysuckle White 93% Lean / 7% Fat Ground Turkey Tray Fresh 1.2 lbs,Fresh lean ground turkey
+Bush's Seasoned Recipe Black Beans Canned Beans 15 oz,Canned black beans
+Marketside Fresh Organic Bananas Bunch,Fresh organic bananas
+Perdue Harvestland Free Range Fresh Chicken Breast Tenderloin Pieces 0.8-1.7lb Tray,Fresh chicken tenderloins
+Fresh Honeycrisp Apple Each,Fresh Honeycrisp apple
+Fresh Produce Whole Color Bell Peppers 3 Count Bag,Fresh bell peppers
+Oscar Mayer Deli Fresh Smoked Turkey Breast 9 oz Pack,Deli smoked turkey breast
+bettergoods Plain Whole Milk Greek Yogurt 32 oz Tub,Whole milk Greek yogurt
+Marketside Organic Fresh Spinach and Spring Mix 5.5 oz,Fresh organic spinach and spring mix
+Great Value Unsweetened Applesauce 3.2 oz 12 Pouches,Applesauce pouches
+Nature's Bakery Raspberry Fig Bars Snack 10 Pack 2 oz Each Box,Raspberry fig snack bars
+Bounty Paper Towels Select-a-Size 2 Triple Rolls,Paper towels
+Kraft Colby Jack Finely Shredded Cheese 16 oz Bag,Shredded Colby Jack cheese
+Sargento Sliced Havarti Natural Cheese 10 slices,Sliced Havarti cheese
+Sargento Natural String Cheese Snacks 12-Count,String cheese snacks
+Great Value Colby & Monterey Jack Cheese Snack 9 oz Bag 12 Cheese Sticks,Cheese sticks
+Marketside Grade A Large Pasture Raised Brown Eggs 12 Count,Pasture-raised eggs
+Oscar Mayer Bites Natural Slow-Roasted Turkey White Cheddar & Cracker Trio Lunch Kit 3.3 oz,Lunch snack kit
+Fresh Strawberries 1 lb,Fresh strawberries
+Marketside Authentic 6 Ingredient Flour Tortillas Soft Taco 8 Count,Flour tortillas
+Fresh Green Seedless Grapes Bag (2.25 lbs/Bag Est.),Fresh green grapes
+Sunbelt Bakery Chewy Granola Bars Chocolate Chip 15 Ct,Chocolate chip granola bars
+Sara Lee White made with Whole Grain Bread 20 oz,Sandwich bread
+Cinnamon Chex Cereal Gluten Free Breakfast Cereal Family Size 19.2 oz,Cinnamon breakfast cereal
+Del Monte Cut Green Beans Canned Vegetables 14.5 oz Can,Canned green beans
+Waterloo Sparkling Water Summer Berry 12 fl oz 8 pack cans,Sparkling water
+Fresh Hass Avocados Each,Fresh avocado
+Smucker's Uncrustables Peanut Butter & Strawberry Jam Sandwiches 10 Count 2 oz Each Frozen,Frozen PB&J sandwiches
+Fresh Jalapeno Pepper Approx. 3-5 per 0.25 Pound,Fresh jalapeño peppers
+Fresh Whole White Onions Each,Fresh white onion`;
+
+interface CatalogEntry {
+  fullName: string;
+  stemmed: string[];
+}
+
+const STOP_WORDS = new Set([
+  'a', 'an', 'the', 'and', 'or', 'of', 'to', 'for', 'with', 'in', 'on',
+]);
+
+const UNITS = new Set([
+  'cup', 'cups', 'tbsp', 'tablespoon', 'tablespoons', 'tsp', 'teaspoon',
+  'teaspoons', 'oz', 'ounce', 'ounces', 'lb', 'lbs', 'pound', 'pounds',
+  'can', 'cans', 'jar', 'jars', 'bottle', 'bottles', 'package', 'packages',
+  'packet', 'packets', 'bunch', 'bunches', 'bag', 'bags', 'clove', 'cloves',
+  'head', 'heads', 'stalk', 'stalks', 'sprig', 'sprigs', 'pinch', 'dash',
+  'handful', 'piece', 'pieces', 'slice', 'slices',
+]);
+
+function stem(word: string): string {
+  if (word.length <= 3) return word;
+  if (word.endsWith('ies')) return word.slice(0, -3) + 'y';
+  if (word.endsWith('oes')) return word.slice(0, -2);
+  if (word.endsWith('s') && !word.endsWith('ss')) return word.slice(0, -1);
+  return word;
+}
+
+function tokenize(text: string): string[] {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z\s]/g, ' ')
+    .split(/\s+/)
+    .filter((w) => w.length > 1 && !STOP_WORDS.has(w))
+    .map(stem);
+}
+
+const catalog: CatalogEntry[] = CATALOG_CSV.split('\n')
+  .filter(Boolean)
+  .map((line) => {
+    const idx = line.lastIndexOf(',');
+    return {
+      fullName: line.slice(0, idx).trim(),
+      stemmed: tokenize(line.slice(idx + 1)),
+    };
+  });
+
+function cleanIngredient(text: string): string[] {
+  const cleaned = text
+    .replace(/^[\d\s\/\.\-¼½¾⅓⅔⅛⅜⅝⅞]+/, '')
+    .replace(/\(.*?\)/g, '')
+    .split(',')[0]
+    .trim();
+
+  return tokenize(cleaned).filter((w) => !UNITS.has(w) && !UNITS.has(w + 's'));
+}
+
+/** Try to match a recipe ingredient against the Walmart catalog. */
+export function matchIngredient(ingredient: string): string | null {
+  const words = cleanIngredient(ingredient);
+  if (words.length === 0) return null;
+
+  let bestMatch: CatalogEntry | null = null;
+  let bestScore = 0;
+
+  for (const entry of catalog) {
+    const catWords = entry.stemmed;
+    const matched = words.filter((w) => catWords.includes(w)).length;
+    if (matched === 0) continue;
+
+    const recall = matched / words.length;
+    const precision = matched / catWords.length;
+
+    if (recall < 0.8) continue;
+    if (words.length === 1 && precision < 0.4) continue;
+
+    const score = recall * 2 + precision;
+    if (score > bestScore) {
+      bestScore = score;
+      bestMatch = entry;
+    }
+  }
+
+  return bestMatch?.fullName ?? null;
+}
+
+// ---------- Unit normalisation for merging ----------
+
+const UNIT_SYNONYMS: Record<string, string> = {
+  cups: 'cup', tablespoons: 'tablespoon', tbsp: 'tablespoon',
+  teaspoons: 'teaspoon', tsp: 'teaspoon',
+  ounces: 'ounce', oz: 'ounce',
+  pounds: 'pound', lbs: 'pound', lb: 'pound',
+  cans: 'can', jars: 'jar', bottles: 'bottle',
+  packets: 'packet', packages: 'package',
+  bunches: 'bunch', bags: 'bag',
+  cloves: 'clove', heads: 'head', stalks: 'stalk', sprigs: 'sprig',
+  slices: 'slice', pieces: 'piece',
+};
+
+function normalizeUnit(u: string): string {
+  const lower = u.toLowerCase();
+  return UNIT_SYNONYMS[lower] ?? lower;
+}
+
+/**
+ * Split the "rest" portion of a parsed ingredient into unit + base,
+ * e.g. "cups chicken broth" → { unit: "cup", base: "chicken broth" }.
+ */
+function splitUnitAndBase(rest: string): { unit: string; base: string } {
+  const words = rest.trim().split(/\s+/);
+  if (words.length > 1) {
+    const first = normalizeUnit(words[0]);
+    if (UNITS.has(first) || UNITS.has(words[0].toLowerCase())) {
+      return { unit: first, base: words.slice(1).join(' ').toLowerCase() };
+    }
+  }
+  return { unit: '', base: rest.toLowerCase().trim() };
+}
+
+interface MergedItem {
+  /** Display name: either the original text or a quantity-combined version. */
+  name: string;
+  /** The Walmart product name, if matched. */
+  walmartMatch: string | null;
+}
+
+/**
+ * Merge a flat list of recipe ingredients:
+ *  - Match each against the Walmart catalog.
+ *  - Walmart-matched items are deduplicated (same product = listed once).
+ *  - Unmatched items with the same base ingredient get their quantities summed.
+ */
+export function mergeIngredients(ingredients: string[]): MergedItem[] {
+  const matchedProducts = new Map<string, true>();
+  const unmatched = new Map<
+    string,
+    { qty: number; unit: string; rest: string; original: string }
+  >();
+  const results: MergedItem[] = [];
+
+  for (const raw of ingredients) {
+    const walmartName = matchIngredient(raw);
+
+    if (walmartName) {
+      if (!matchedProducts.has(walmartName)) {
+        matchedProducts.set(walmartName, true);
+        results.push({ name: walmartName, walmartMatch: walmartName });
+      }
+      continue;
+    }
+
+    // Not matched — try to merge by base ingredient
+    const parsed = parseIngredient(raw);
+    const { unit, base } = splitUnitAndBase(parsed.rest);
+    const key = `${unit}||${base}`;
+
+    const existing = unmatched.get(key);
+    if (existing && parsed.quantity !== null && existing.qty > 0) {
+      existing.qty += parsed.quantity;
+    } else if (!existing) {
+      unmatched.set(key, {
+        qty: parsed.quantity ?? 0,
+        unit,
+        rest: parsed.rest,
+        original: raw,
+      });
+    }
+  }
+
+  // Build display names for unmatched items
+  for (const entry of Array.from(unmatched.values())) {
+    const name =
+      entry.qty > 0
+        ? `${formatQuantity(entry.qty)} ${entry.rest}`
+        : entry.original;
+    results.push({ name, walmartMatch: null });
+  }
+
+  return results;
+}

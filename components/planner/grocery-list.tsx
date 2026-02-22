@@ -7,12 +7,26 @@ export function GroceryList() {
   const { groceryItems, addGroceryItem, removeGroceryItem, buildGroceryFromDinners } =
     usePlanner();
   const [input, setInput] = useState('');
+  const [showAlreadyBuilt, setShowAlreadyBuilt] = useState(false);
 
   function handleAdd() {
     const name = input.trim();
     if (!name) return;
     addGroceryItem(name);
     setInput('');
+  }
+
+  function handleBuild() {
+    const result = buildGroceryFromDinners();
+    if (result === 'already_built') {
+      setShowAlreadyBuilt(true);
+    } else {
+      setShowAlreadyBuilt(false);
+    }
+  }
+
+  function handleConfirmRebuild() {
+    setShowAlreadyBuilt(false);
   }
 
   return (
@@ -60,13 +74,28 @@ export function GroceryList() {
           </button>
         </div>
 
-        {/* Build from dinners button */}
-        <button
-          onClick={buildGroceryFromDinners}
-          className="w-full text-xs py-2 rounded-lg border border-dashed border-accent-300 text-accent-600 hover:bg-accent-50 transition-colors font-medium"
-        >
-          + Build from selected dinners
-        </button>
+        {/* Build from dinners button / already-built warning */}
+        {showAlreadyBuilt ? (
+          <div className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+            <p className="font-medium">Already built from these dinners</p>
+            <p className="mt-0.5 text-amber-600">
+              The dinner plan hasn&apos;t changed since the last build.
+            </p>
+            <button
+              onClick={handleConfirmRebuild}
+              className="mt-1.5 text-amber-700 underline hover:text-amber-900 font-medium"
+            >
+              OK
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={handleBuild}
+            className="w-full text-xs py-2 rounded-lg border border-dashed border-accent-300 text-accent-600 hover:bg-accent-50 transition-colors font-medium"
+          >
+            + Build from selected dinners
+          </button>
+        )}
 
         {/* Items list */}
         {groceryItems.length > 0 ? (
