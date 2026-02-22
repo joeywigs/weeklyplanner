@@ -40,12 +40,14 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
     addActivity,
     removeActivity,
     setActivityOwner,
+    setCalendarEventOwner,
     getCalendarEventsForDay,
     editMode,
   } = usePlanner();
   const [activityInput, setActivityInput] = useState('');
 
   const calendarEvents = getCalendarEventsForDay(dateKey);
+  const eventOwners = dayData.calendarEventOwners || {};
 
   function handleAdd() {
     const text = activityInput.trim();
@@ -56,6 +58,53 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
 
   const hasItems = dayData.eveningActivities.length > 0 || calendarEvents.length > 0;
 
+  function renderCalendarEvent(ev: CalendarEvent) {
+    const owner = eventOwners[ev.id] as Owner;
+    const style = owner ? OWNER_STYLES[owner] : null;
+    return (
+      <button
+        key={ev.id}
+        type="button"
+        onClick={() => setCalendarEventOwner(dateKey, ev.id, nextOwner(owner))}
+        className={`relative w-full text-left text-[11px] rounded px-2 py-1.5 select-none transition-colors active:scale-[0.98] ${
+          style
+            ? `${style.bg} border ${style.border} ${style.text}`
+            : 'text-evening-700 bg-evening-100 border border-transparent hover:border-evening-300'
+        }`}
+      >
+        {formatTime(ev) && <span className="font-medium">{formatTime(ev)} </span>}{ev.text}
+        {owner && (
+          <span className={`absolute -bottom-1 -right-1 text-[8px] font-bold leading-none px-1 py-0.5 rounded ${style!.badge}`}>
+            {owner === 'CJ' ? 'C+J' : owner}
+          </span>
+        )}
+      </button>
+    );
+  }
+
+  function renderActivity(a: { id: string; text: string; owner?: Owner }) {
+    const style = a.owner ? OWNER_STYLES[a.owner] : null;
+    return (
+      <button
+        key={a.id}
+        type="button"
+        onClick={() => setActivityOwner(dateKey, a.id, nextOwner(a.owner))}
+        className={`relative w-full text-left text-[11px] rounded px-2 py-1.5 select-none transition-colors active:scale-[0.98] ${
+          style
+            ? `${style.bg} border ${style.border} ${style.text}`
+            : 'text-evening-700 bg-evening-100 border border-transparent hover:border-evening-300'
+        }`}
+      >
+        {a.text}
+        {a.owner && (
+          <span className={`absolute -bottom-1 -right-1 text-[8px] font-bold leading-none px-1 py-0.5 rounded ${style!.badge}`}>
+            {a.owner === 'CJ' ? 'C+J' : a.owner}
+          </span>
+        )}
+      </button>
+    );
+  }
+
   // Live mode: simplified read-only view
   if (!editMode) {
     return (
@@ -65,34 +114,9 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
           <span className="text-xs font-semibold text-evening-800">Evening</span>
         </div>
         {hasItems ? (
-          <div className="mt-1.5 space-y-1">
-            {calendarEvents.map((ev) => (
-              <div key={ev.id} className="text-[11px] text-evening-700 pl-3.5">
-                &bull; {formatTime(ev) && <span className="font-medium">{formatTime(ev)} </span>}{ev.text}
-              </div>
-            ))}
-            {dayData.eveningActivities.map((a) => {
-              const style = a.owner ? OWNER_STYLES[a.owner] : null;
-              return (
-                <button
-                  key={a.id}
-                  type="button"
-                  onClick={() => setActivityOwner(dateKey, a.id, nextOwner(a.owner))}
-                  className={`relative w-full text-left text-[11px] rounded px-2 py-1.5 select-none transition-colors active:scale-[0.98] ${
-                    style
-                      ? `${style.bg} border ${style.border} ${style.text}`
-                      : 'text-evening-700 bg-evening-100 border border-transparent hover:border-evening-300'
-                  }`}
-                >
-                  {a.text}
-                  {a.owner && (
-                    <span className={`absolute -bottom-1 -right-1 text-[8px] font-bold leading-none px-1 py-0.5 rounded ${style!.badge}`}>
-                      {a.owner === 'CJ' ? 'C+J' : a.owner}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+          <div className="mt-1.5 space-y-1.5">
+            {calendarEvents.map(renderCalendarEvent)}
+            {dayData.eveningActivities.map(renderActivity)}
           </div>
         ) : (
           <p className="text-[10px] text-evening-300 mt-1.5 italic">Free evening</p>
@@ -128,15 +152,34 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
       </div>
 
       {hasItems && (
-        <div className="mt-1.5 space-y-1">
-          {calendarEvents.map((ev) => (
-            <div
-              key={ev.id}
-              className="text-xs text-evening-800 bg-evening-200 rounded px-1.5 py-1 break-words"
-            >
-              {formatTime(ev) && <span className="font-medium">{formatTime(ev)} </span>}{ev.text}
-            </div>
-          ))}
+        <div className="mt-1.5 space-y-1.5">
+          {calendarEvents.map((ev) => {
+            const owner = eventOwners[ev.id] as Owner;
+            const style = owner ? OWNER_STYLES[owner] : null;
+            return (
+              <div
+                key={ev.id}
+                className={`relative flex items-center gap-1 text-xs rounded px-1.5 py-1 transition-colors ${
+                  style
+                    ? `${style.bg} border ${style.border} ${style.text}`
+                    : 'text-evening-800 bg-evening-200 border border-transparent'
+                }`}
+              >
+                <button
+                  type="button"
+                  onClick={() => setCalendarEventOwner(dateKey, ev.id, nextOwner(owner))}
+                  className="flex-1 text-left break-words select-none active:scale-[0.98] cursor-pointer"
+                >
+                  {formatTime(ev) && <span className="font-medium">{formatTime(ev)} </span>}{ev.text}
+                </button>
+                {owner && (
+                  <span className={`text-[8px] font-bold leading-none px-1 py-0.5 rounded ${style!.badge}`}>
+                    {owner === 'CJ' ? 'C+J' : owner}
+                  </span>
+                )}
+              </div>
+            );
+          })}
           {dayData.eveningActivities.map((a) => {
             const style = a.owner ? OWNER_STYLES[a.owner] : null;
             return (

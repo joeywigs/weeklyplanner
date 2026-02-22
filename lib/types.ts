@@ -5,6 +5,7 @@ export interface DayData {
   sloaneLunch: 'pack' | 'school' | null;
   hasSchool: boolean;
   eveningActivities: Activity[];
+  calendarEventOwners: Record<string, 'C' | 'J' | 'CJ'>;
   dinner: string;
   cook: 'Carly' | 'Joey' | '';
 }

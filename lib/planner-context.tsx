@@ -40,6 +40,7 @@ function createDefaultDayData(date: Date): DayData {
     sloaneLunch: null,
     hasSchool: day >= 1 && day <= 5,
     eveningActivities: [],
+    calendarEventOwners: {},
     dinner: '',
     cook: '',
   };
@@ -100,6 +101,7 @@ interface PlannerContextValue {
   addActivity: (dateKey: string, text: string) => void;
   removeActivity: (dateKey: string, id: string) => void;
   setActivityOwner: (dateKey: string, id: string, owner: 'C' | 'J' | 'CJ' | undefined) => void;
+  setCalendarEventOwner: (dateKey: string, eventId: string, owner: 'C' | 'J' | 'CJ' | undefined) => void;
   setDinner: (dateKey: string, value: string) => void;
   setCook: (dateKey: string, value: 'Carly' | 'Joey' | '') => void;
   getCalendarEventsForDay: (dateKey: string) => CalendarEvent[];
@@ -338,6 +340,22 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     [updateDay]
   );
 
+  const setCalendarEventOwner = useCallback(
+    (dateKey: string, eventId: string, owner: 'C' | 'J' | 'CJ' | undefined) => {
+      const date = new Date(dateKey + 'T00:00:00');
+      updateDay(dateKey, date, (day) => {
+        const owners = { ...(day.calendarEventOwners || {}) };
+        if (owner) {
+          owners[eventId] = owner;
+        } else {
+          delete owners[eventId];
+        }
+        return { ...day, calendarEventOwners: owners };
+      });
+    },
+    [updateDay]
+  );
+
   const setDinner = useCallback(
     (dateKey: string, value: string) => {
       const date = new Date(dateKey + 'T00:00:00');
@@ -564,6 +582,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
         addActivity,
         removeActivity,
         setActivityOwner,
+        setCalendarEventOwner,
         setDinner,
         setCook,
         getCalendarEventsForDay,
