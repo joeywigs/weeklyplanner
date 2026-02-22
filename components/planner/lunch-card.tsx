@@ -1,18 +1,26 @@
 'use client';
 
 import { usePlanner } from '@/lib/planner-context';
-import type { DayData } from '@/lib/types';
+import type { DayData, CalendarEvent } from '@/lib/types';
 
 interface LunchCardProps {
   dateKey: string;
   dayData: DayData;
   dayOfWeek: number; // 0=Sun, 6=Sat
+  calendarEvents?: CalendarEvent[];
 }
 
-export function LunchCard({ dateKey, dayData, dayOfWeek }: LunchCardProps) {
+function hasNoSchoolEvent(events: CalendarEvent[] | undefined): boolean {
+  if (!events) return false;
+  return events.some((e) => /no\s*school/i.test(e.text));
+}
+
+export function LunchCard({ dateKey, dayData, dayOfWeek, calendarEvents }: LunchCardProps) {
   const { setLunchChoice, toggleSchool, getSchoolMenu, editMode } = usePlanner();
   const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5;
-  const menu = isWeekday ? getSchoolMenu(dateKey) : null;
+  const noSchoolFromCalendar = isWeekday && hasNoSchoolEvent(calendarEvents);
+  const effectiveHasSchool = dayData.hasSchool && !noSchoolFromCalendar;
+  const menu = effectiveHasSchool ? getSchoolMenu(dateKey) : null;
 
   // Weekend: show simple lunch card
   if (!isWeekday) {
@@ -23,6 +31,22 @@ export function LunchCard({ dateKey, dayData, dayOfWeek }: LunchCardProps) {
           <span className="text-xs font-semibold text-lunch-800">Lunch</span>
         </div>
         <p className="text-[10px] text-lunch-600 mt-1.5 italic">Weekend — no school lunch</p>
+      </div>
+    );
+  }
+
+  // Calendar says "No School" — show just that, nothing else
+  if (noSchoolFromCalendar) {
+    return (
+      <div className="rounded-lg border border-lunch-200 bg-[var(--lunch-light)] p-2.5 min-h-[14rem]">
+        <div className="flex items-center gap-1.5">
+          <div className="w-2 h-2 rounded-full bg-[var(--lunch)]" />
+          <span className="text-xs font-semibold text-lunch-800">Lunch</span>
+          <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded-full font-medium bg-gray-200 text-gray-600">
+            No School
+          </span>
+        </div>
+        <p className="text-[10px] text-lunch-600 mt-1.5 italic">No school today</p>
       </div>
     );
   }
@@ -75,16 +99,16 @@ export function LunchCard({ dateKey, dayData, dayOfWeek }: LunchCardProps) {
         <button
           onClick={() => toggleSchool(dateKey)}
           className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium transition-colors ${
-            dayData.hasSchool
+            effectiveHasSchool
               ? 'bg-lunch-200 text-lunch-800'
               : 'bg-gray-200 text-gray-600'
           }`}
         >
-          {dayData.hasSchool ? 'School' : 'No School'}
+          {effectiveHasSchool ? 'School' : 'No School'}
         </button>
       </div>
 
-      {dayData.hasSchool && menu ? (
+      {effectiveHasSchool && menu ? (
         <>
           {/* School menu */}
           <div className="mb-2 space-y-0.5">
@@ -129,7 +153,7 @@ export function LunchCard({ dateKey, dayData, dayOfWeek }: LunchCardProps) {
             />
           </div>
         </>
-      ) : dayData.hasSchool ? (
+      ) : effectiveHasSchool ? (
         <p className="text-[10px] text-lunch-400 italic">
           Menu not available
         </p>
