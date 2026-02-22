@@ -22,18 +22,8 @@ export function LunchCard({ dateKey, dayData, dayOfWeek, calendarEvents }: Lunch
   const effectiveHasSchool = dayData.hasSchool && !noSchoolFromCalendar;
   const menu = effectiveHasSchool ? getSchoolMenu(dateKey) : null;
 
-  // Weekend: show simple lunch card
-  if (!isWeekday) {
-    return (
-      <div className="rounded-lg border border-lunch-200 bg-[var(--lunch-light)] p-2.5 min-h-[14rem]">
-        <div className="flex items-center gap-1.5">
-          <div className="w-2 h-2 rounded-full bg-[var(--lunch)]" />
-          <span className="text-xs font-semibold text-lunch-800">Lunch</span>
-        </div>
-        <p className="text-[10px] text-lunch-600 mt-1.5 italic">Weekend — no school lunch</p>
-      </div>
-    );
-  }
+  // Weekend: no lunch card needed
+  if (!isWeekday) return null;
 
   // Calendar says "No School" — show just that, nothing else
   if (noSchoolFromCalendar) {

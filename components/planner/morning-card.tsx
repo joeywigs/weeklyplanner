@@ -20,10 +20,10 @@ const LABEL: Record<DropOff, string> = {
   Other: 'O',
 };
 
-const TEXT_STYLE: Record<DropOff, string> = {
-  Carly: 'text-red-500',
-  Joey: 'text-blue-500',
-  Other: 'text-yellow-500',
+const STYLES: Record<DropOff, { bg: string; border: string; text: string; badge: string }> = {
+  Carly: { bg: 'bg-red-100',    border: 'border-red-300',    text: 'text-red-800',    badge: 'bg-red-500 text-white' },
+  Joey:  { bg: 'bg-blue-100',   border: 'border-blue-300',   text: 'text-blue-800',   badge: 'bg-blue-500 text-white' },
+  Other: { bg: 'bg-yellow-100', border: 'border-yellow-300', text: 'text-yellow-800', badge: 'bg-yellow-400 text-yellow-900' },
 };
 
 export function MorningCard({ dateKey, dayData, isWeekend }: MorningCardProps) {
@@ -44,15 +44,20 @@ export function MorningCard({ dateKey, dayData, isWeekend }: MorningCardProps) {
     setDropOff(dateKey, next);
   }
 
+  const style = STYLES[dropOff];
+
   function renderDropOff() {
     if (isWeekend) return null;
     return (
       <button
         type="button"
         onClick={cycleDropOff}
-        className={`text-[11px] font-semibold select-none active:scale-[0.96] transition-transform ${TEXT_STYLE[dropOff]}`}
+        className={`relative w-full text-left text-[11px] rounded px-2 py-1.5 select-none transition-colors active:scale-[0.98] ${style.bg} border ${style.border} ${style.text}`}
       >
-        Drop Off: {LABEL[dropOff]}
+        Drop Off
+        <span className={`absolute -bottom-1 -right-1 text-[8px] font-bold leading-none px-1 py-0.5 rounded ${style.badge}`}>
+          {LABEL[dropOff]}
+        </span>
       </button>
     );
   }
