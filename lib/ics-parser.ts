@@ -25,34 +25,42 @@ export function parseICS(icsContent: string): CalendarEvent[] {
 
     if (!summary || !dtstart) continue;
 
-    // Deduplicate by UID
-    const eventId = uid ?? Math.random().toString(36).substring(2, 9);
-    if (uid && seen.has(uid)) continue;
-    if (uid) seen.add(uid);
+    // Skip cancelled events
+    const status = extractProperty(block, 'STATUS');
+    if (status && status.toUpperCase() === 'CANCELLED') continue;
 
-    const startDate = toDateKey(dtstart);
+    const start = toDateKey(dtstart);
+
+    // Deduplicate by UID + startDate (recurring events share UIDs across instances)
+    const baseId = uid ?? Math.random().toString(36).substring(2, 9);
+    const dedupKey = uid ? `${uid}_${start.dateKey}` : null;
+    if (dedupKey && seen.has(dedupKey)) continue;
+    if (dedupKey) seen.add(dedupKey);
+    const eventId = uid ? `${uid}_${start.dateKey}` : baseId;
     let endDate: string;
 
     if (dtend) {
-      endDate = toDateKey(dtend);
+      const end = toDateKey(dtend);
+      endDate = end.dateKey;
       // For all-day events, DTEND is exclusive — subtract one day
       if (dtend.isDate) {
         endDate = subtractOneDay(endDate);
       }
     } else {
-      endDate = startDate;
+      endDate = start.dateKey;
     }
 
     // If end is before start (single all-day event edge case), use start
-    if (endDate < startDate) {
-      endDate = startDate;
+    if (endDate < start.dateKey) {
+      endDate = start.dateKey;
     }
 
     events.push({
       id: eventId,
       text: unescapeICS(summary),
-      startDate,
+      startDate: start.dateKey,
       endDate,
+      ...(start.timeString ? { startTime: start.timeString } : {}),
     });
   }
 
@@ -65,8 +73,9 @@ export function parseICS(icsContent: string): CalendarEvent[] {
 export function deduplicateEvents(events: CalendarEvent[]): CalendarEvent[] {
   const seen = new Set<string>();
   return events.filter((e) => {
-    if (seen.has(e.id)) return false;
-    seen.add(e.id);
+    const key = `${e.id}_${e.startDate}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
     return true;
   });
 }
@@ -117,8 +126,13 @@ function extractDateValue(block: string, name: string): DateValue | null {
   return null;
 }
 
+interface DateKeyResult {
+  dateKey: string;
+  timeString: string | null; // "HH:MM" 24-hour format, null for all-day events
+}
+
 /**
- * Convert an ICS datetime to a local date key (YYYY-MM-DD).
+ * Convert an ICS datetime to a local date key (YYYY-MM-DD) and optional time.
  *
  * For all-day events (VALUE=DATE), the 8-digit string is used directly.
  * For timed events, we convert to the local timezone to get the correct day:
@@ -126,13 +140,16 @@ function extractDateValue(block: string, name: string): DateValue | null {
  *   - Times with TZID: converted via Intl.DateTimeFormat when possible
  *   - Bare times (no Z, no TZID): assumed local
  */
-function toDateKey(dv: DateValue): string {
+function toDateKey(dv: DateValue): DateKeyResult {
   const raw = dv.value;
 
   // All-day events: the 8 digits are the literal date, no TZ conversion needed
   if (dv.isDate) {
     const dateStr = raw.replace(/[^0-9]/g, '');
-    return `${dateStr.substring(0, 4)}-${dateStr.substring(4, 6)}-${dateStr.substring(6, 8)}`;
+    return {
+      dateKey: `${dateStr.substring(0, 4)}-${dateStr.substring(4, 6)}-${dateStr.substring(6, 8)}`,
+      timeString: null,
+    };
   }
 
   // Timed event — parse the components
@@ -160,7 +177,12 @@ function toDateKey(dv: DateValue): string {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, '0');
   const d = String(date.getDate()).padStart(2, '0');
-  return `${y}-${m}-${d}`;
+  const hh = String(date.getHours()).padStart(2, '0');
+  const mm = String(date.getMinutes()).padStart(2, '0');
+  return {
+    dateKey: `${y}-${m}-${d}`,
+    timeString: `${hh}:${mm}`,
+  };
 }
 
 /**
