@@ -45,7 +45,6 @@ const emptyWeek = (weekOffset: number): WeekState => ({
   days: {},
   groceryItems: [],
   caraNotes: [],
-  calendarEvents: [],
 });
 
 function loadState(weekOffset: number): WeekState {
@@ -55,7 +54,7 @@ function loadState(weekOffset: number): WeekState {
     const stored = syncGet(key);
     if (stored) {
       const parsed = JSON.parse(stored) as WeekState;
-      return { ...parsed, calendarEvents: parsed.calendarEvents ?? [] };
+      return parsed;
     }
   } catch {
     // ignore
@@ -97,9 +96,6 @@ interface PlannerContextValue {
   removeActivity: (dateKey: string, id: string) => void;
   setDinner: (dateKey: string, value: string) => void;
   setCook: (dateKey: string, value: 'Carly' | 'Joey' | '') => void;
-  calendarEvents: CalendarEvent[];
-  addCalendarEvent: (text: string, startDate: string, endDate: string) => void;
-  removeCalendarEvent: (id: string) => void;
   getCalendarEventsForDay: (dateKey: string) => CalendarEvent[];
   addGroceryItem: (name: string) => void;
   removeGroceryItem: (id: string) => void;
@@ -178,7 +174,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
             setState((prev) => {
               // Only update if cloud data is different (avoid loops)
               if (JSON.stringify(prev) !== value) {
-                return { ...parsed, calendarEvents: parsed.calendarEvents ?? [] };
+                return parsed;
               }
               return prev;
             });
@@ -314,37 +310,13 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     [updateDay]
   );
 
-  const addCalendarEvent = useCallback(
-    (text: string, startDate: string, endDate: string) => {
-      setState((prev) => ({
-        ...prev,
-        calendarEvents: [
-          ...prev.calendarEvents,
-          { id: generateId(), text, startDate, endDate },
-        ],
-      }));
-    },
-    []
-  );
-
-  const removeCalendarEvent = useCallback((id: string) => {
-    setState((prev) => ({
-      ...prev,
-      calendarEvents: prev.calendarEvents.filter((e) => e.id !== id),
-    }));
-  }, []);
-
   const getCalendarEventsForDay = useCallback(
     (dateKey: string): CalendarEvent[] => {
-      const manual = state.calendarEvents.filter(
+      return googleEvents.filter(
         (e) => dateKey >= e.startDate && dateKey <= e.endDate
       );
-      const google = googleEvents.filter(
-        (e) => dateKey >= e.startDate && dateKey <= e.endDate
-      );
-      return [...google, ...manual];
     },
-    [state.calendarEvents, googleEvents]
+    [googleEvents]
   );
 
   const addGroceryItem = useCallback((name: string) => {
@@ -482,9 +454,6 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
         removeActivity,
         setDinner,
         setCook,
-        calendarEvents: state.calendarEvents,
-        addCalendarEvent,
-        removeCalendarEvent,
         getCalendarEventsForDay,
         addGroceryItem,
         removeGroceryItem,
