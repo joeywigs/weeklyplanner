@@ -1,5 +1,6 @@
 export interface DayData {
   dropOff: 'Carly' | 'Joey';
+  pickUp: 'Carly' | 'Joey' | '';
   morningReminders: Reminder[];
   greyLunch: 'pack' | 'school' | null;
   sloaneLunch: 'pack' | 'school' | null;
@@ -8,6 +9,7 @@ export interface DayData {
   calendarEventOwners: Record<string, 'C' | 'J' | 'CJ'>;
   dinner: string;
   cook: 'Carly' | 'Joey' | 'Both' | '';
+  notes: string;
 }
 
 export interface Reminder {

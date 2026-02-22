@@ -35,6 +35,7 @@ function createDefaultDayData(date: Date): DayData {
   const day = date.getDay();
   return {
     dropOff: 'Carly',
+    pickUp: '',
     morningReminders: [],
     greyLunch: null,
     sloaneLunch: null,
@@ -43,6 +44,7 @@ function createDefaultDayData(date: Date): DayData {
     calendarEventOwners: {},
     dinner: '',
     cook: '',
+    notes: '',
   };
 }
 
@@ -90,6 +92,7 @@ interface PlannerContextValue {
   goToCurrentWeek: () => void;
   getDayData: (dateKey: string, date: Date) => DayData;
   setDropOff: (dateKey: string, value: 'Carly' | 'Joey') => void;
+  setPickUp: (dateKey: string, value: 'Carly' | 'Joey' | '') => void;
   addReminder: (dateKey: string, text: string) => void;
   removeReminder: (dateKey: string, id: string) => void;
   setLunchChoice: (
@@ -115,6 +118,7 @@ interface PlannerContextValue {
   copyCaraNotes: () => void;
   getWeatherForDay: (dateKey: string) => { icon: string; high: number; low: number } | null;
   getSchoolMenu: (dateKey: string) => SchoolLunchMenu | null;
+  setNotes: (dateKey: string, value: string) => void;
   swapDinner: (fromDateKey: string, toDateKey: string) => void;
   editMode: boolean;
   toggleEditMode: () => void;
@@ -251,6 +255,14 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     [updateDay]
   );
 
+  const setPickUp = useCallback(
+    (dateKey: string, value: 'Carly' | 'Joey' | '') => {
+      const date = new Date(dateKey + 'T00:00:00');
+      updateDay(dateKey, date, (day) => ({ ...day, pickUp: value }));
+    },
+    [updateDay]
+  );
+
   const addReminder = useCallback(
     (dateKey: string, text: string) => {
       const date = new Date(dateKey + 'T00:00:00');
@@ -368,6 +380,14 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     (dateKey: string, value: 'Carly' | 'Joey' | 'Both' | '') => {
       const date = new Date(dateKey + 'T00:00:00');
       updateDay(dateKey, date, (day) => ({ ...day, cook: value }));
+    },
+    [updateDay]
+  );
+
+  const setNotes = useCallback(
+    (dateKey: string, value: string) => {
+      const date = new Date(dateKey + 'T00:00:00');
+      updateDay(dateKey, date, (day) => ({ ...day, notes: value }));
     },
     [updateDay]
   );
@@ -575,6 +595,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
         goToCurrentWeek,
         getDayData,
         setDropOff,
+        setPickUp,
         addReminder,
         removeReminder,
         setLunchChoice,
@@ -585,6 +606,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
         setCalendarEventOwner,
         setDinner,
         setCook,
+        setNotes,
         getCalendarEventsForDay,
         addGroceryItem,
         removeGroceryItem,
