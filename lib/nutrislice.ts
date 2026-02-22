@@ -83,7 +83,8 @@ async function fetchWithProxies(url: string): Promise<string> {
 export async function fetchNutrisliceMenus(
   sundayDateKey: string
 ): Promise<Record<string, SchoolLunchMenu>> {
-  const apiUrl = `https://${DISTRICT}.api.nutrislice.com/menu/api/weeks/school/${SCHOOL}/menu-type/lunch/${sundayDateKey}/?format=json`;
+  const datePath = sundayDateKey.replace(/-/g, '/');
+  const apiUrl = `https://${DISTRICT}.api.nutrislice.com/menu/api/weeks/school/${SCHOOL}/menu-type/lunch/${datePath}/?format=json`;
 
   const text = await fetchWithProxies(apiUrl);
   const data = JSON.parse(text) as NutrisliceResponse;
