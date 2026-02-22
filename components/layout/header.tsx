@@ -3,19 +3,32 @@
 import { usePlanner } from '@/lib/planner-context';
 import { formatWeekRange } from '@/lib/date-utils';
 
-const BUILD_DATE = '2026-02-21';
+function formatSavedTime(date: Date): string {
+  const h = date.getHours();
+  const m = date.getMinutes();
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const hour = h % 12 || 12;
+  return `${hour}:${String(m).padStart(2, '0')} ${ampm}`;
+}
 
 export function Header() {
-  const { weekDates, goToPrevWeek, goToNextWeek, goToCurrentWeek, weekOffset, editMode, toggleEditMode } =
+  const { weekDates, goToPrevWeek, goToNextWeek, goToCurrentWeek, weekOffset, editMode, toggleEditMode, lastSaved } =
     usePlanner();
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-[var(--border)]">
       <div className="px-4 py-3">
         <div className="flex items-baseline justify-between">
-          <h1 className="text-lg font-bold text-[var(--foreground)]">
-            Weekly Family Planner
-          </h1>
+          <div>
+            <h1 className="text-lg font-bold text-[var(--foreground)]">
+              Weekly Family Planner
+            </h1>
+            {lastSaved && (
+              <p className="text-[10px] text-gray-400">
+                Last saved {formatSavedTime(lastSaved)}
+              </p>
+            )}
+          </div>
           <button
             onClick={toggleEditMode}
             className={`text-[10px] px-2.5 py-1 rounded-full font-semibold transition-colors ${

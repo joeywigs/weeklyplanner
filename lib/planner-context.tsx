@@ -116,6 +116,7 @@ interface PlannerContextValue {
   swapDinner: (fromDateKey: string, toDateKey: string) => void;
   editMode: boolean;
   toggleEditMode: () => void;
+  lastSaved: Date | null;
 }
 
 const PlannerContext = createContext<PlannerContextValue | null>(null);
@@ -125,6 +126,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<WeekState>(() => loadState(0));
   const [googleEvents, setGoogleEvents] = useState<CalendarEvent[]>([]);
   const [editMode, setEditMode] = useState(true);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [weather, setWeather] = useState<
     Map<string, { code: number; high: number; low: number }>
   >(new Map());
@@ -187,6 +189,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
   // Save state when it changes
   useEffect(() => {
     saveState(state);
+    setLastSaved(new Date());
   }, [state]);
 
   // Cloud sync: pull latest on mount, week change, and focus
@@ -577,6 +580,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
         swapDinner,
         editMode,
         toggleEditMode,
+        lastSaved,
       }}
     >
       {children}
