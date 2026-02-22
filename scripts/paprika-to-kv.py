@@ -15,7 +15,7 @@ except ImportError:
     sys.exit(1)
 
 # --- Configuration ---
-KV_NAMESPACE_ID = "[RECIPES_KV]"  # Replace with actual namespace ID
+KV_NAMESPACE_ID = "PLANNER_KV"  # Replace with actual namespace ID
 
 
 def slugify(name: str) -> str:
