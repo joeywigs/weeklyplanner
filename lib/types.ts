@@ -7,7 +7,7 @@ export interface DayData {
   eveningActivities: Activity[];
   calendarEventOwners: Record<string, 'C' | 'J' | 'CJ'>;
   dinner: string;
-  cook: 'Carly' | 'Joey' | '';
+  cook: 'Carly' | 'Joey' | 'Both' | '';
 }
 
 export interface Reminder {
