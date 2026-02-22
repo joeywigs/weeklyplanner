@@ -40,7 +40,7 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
   // Live mode: simplified read-only view
   if (!editMode) {
     return (
-      <div className="rounded-lg border border-evening-200 bg-[var(--evening-light)] p-2.5 min-h-[19rem]">
+      <div className="rounded-lg border border-evening-200 bg-[var(--evening-light)] p-2.5 min-h-[14rem]">
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full bg-[var(--evening)]" />
           <span className="text-xs font-semibold text-evening-800">Evening</span>
@@ -66,7 +66,7 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
   }
 
   return (
-    <div className="rounded-lg border border-evening-200 bg-[var(--evening-light)] p-2.5 min-h-[19rem]">
+    <div className="rounded-lg border border-evening-200 bg-[var(--evening-light)] p-2.5 min-h-[14rem]">
       <div className="flex items-center gap-1.5 mb-2">
         <div className="w-2 h-2 rounded-full bg-[var(--evening)]" />
         <span className="text-xs font-semibold text-evening-800">
