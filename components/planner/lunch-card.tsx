@@ -17,7 +17,7 @@ export function LunchCard({ dateKey, dayData, dayOfWeek }: LunchCardProps) {
   // Weekend: show simple lunch card
   if (!isWeekday) {
     return (
-      <div className="rounded-lg border border-lunch-200 bg-[var(--lunch-light)] p-2.5 min-h-[10rem]">
+      <div className="rounded-lg border border-lunch-200 bg-[var(--lunch-light)] p-2.5 min-h-[14rem]">
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full bg-[var(--lunch)]" />
           <span className="text-xs font-semibold text-lunch-800">Lunch</span>
@@ -32,7 +32,7 @@ export function LunchCard({ dateKey, dayData, dayOfWeek }: LunchCardProps) {
     const greyLabel = dayData.greyLunch === 'pack' ? 'Pack' : dayData.greyLunch === 'school' ? 'School' : '—';
     const sloaneLabel = dayData.sloaneLunch === 'pack' ? 'Pack' : dayData.sloaneLunch === 'school' ? 'School' : '—';
     return (
-      <div className="rounded-lg border border-lunch-200 bg-[var(--lunch-light)] p-2.5 min-h-[10rem]">
+      <div className="rounded-lg border border-lunch-200 bg-[var(--lunch-light)] p-2.5 min-h-[14rem]">
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full bg-[var(--lunch)]" />
           <span className="text-xs font-semibold text-lunch-800">Lunch</span>
@@ -44,7 +44,7 @@ export function LunchCard({ dateKey, dayData, dayOfWeek }: LunchCardProps) {
         </div>
         {dayData.hasSchool && menu && (
           <div className="mt-1.5 space-y-0.5">
-            <div className="text-[11px] font-semibold text-lunch-800">{menu.entree.join(', ')}</div>
+            <div className="text-[10px] text-lunch-600">{menu.entree.join(', ')}</div>
             <div className="text-[10px] text-lunch-600">{menu.grill.join(', ')}</div>
             <div className="text-[10px] text-lunch-600">{menu.express.join(', ')}</div>
             <div className="text-[10px] text-lunch-500">{menu.vegetable.join(', ')}</div>
@@ -66,7 +66,7 @@ export function LunchCard({ dateKey, dayData, dayOfWeek }: LunchCardProps) {
   }
 
   return (
-    <div className="rounded-lg border border-lunch-200 bg-[var(--lunch-light)] p-2.5 min-h-[10rem]">
+    <div className="rounded-lg border border-lunch-200 bg-[var(--lunch-light)] p-2.5 min-h-[14rem]">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full bg-[var(--lunch)]" />
@@ -88,9 +88,11 @@ export function LunchCard({ dateKey, dayData, dayOfWeek }: LunchCardProps) {
         <>
           {/* School menu */}
           <div className="mb-2 space-y-0.5">
-            <div className="text-[11px] font-semibold text-lunch-800">
-              {menu.entree.join(', ')}
-            </div>
+            {menu.entree.length > 0 && (
+              <div className="text-[10px] text-lunch-600">
+                <span className="font-medium text-lunch-700">Entree:</span> {menu.entree.join(', ')}
+              </div>
+            )}
             {menu.grill.length > 0 && (
               <div className="text-[10px] text-lunch-600">
                 <span className="font-medium text-lunch-700">Grill:</span> {menu.grill.join(', ')}
