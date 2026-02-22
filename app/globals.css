@@ -38,6 +38,14 @@ body {
   scrollbar-width: none;
 }
 
+/* Scale up for TV / large screen viewing */
+@media (min-width: 1600px) {
+  .planner-scale { zoom: 1.15; }
+}
+@media (min-width: 2200px) {
+  .planner-scale { zoom: 1.4; }
+}
+
 @layer utilities {
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom);

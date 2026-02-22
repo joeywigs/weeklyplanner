@@ -3,6 +3,7 @@ import type { CalendarEvent } from './types';
 /**
  * Parse ICS calendar content into CalendarEvent objects.
  * Handles all-day events (VALUE=DATE) and timed events with timezone support.
+ * Expands recurring events (RRULE) within a window around the current date.
  * For all-day events, Google Calendar makes DTEND exclusive (day after last day).
  */
 export function parseICS(icsContent: string): CalendarEvent[] {
@@ -12,7 +13,19 @@ export function parseICS(icsContent: string): CalendarEvent[] {
   // Unfold continuation lines (lines starting with space/tab continue the previous line)
   const unfolded = icsContent.replace(/\r\n[ \t]/g, '').replace(/\n[ \t]/g, '');
 
+  // Collect RECURRENCE-ID dates to know which instances are overridden
+  const overriddenInstances = new Set<string>();
   const blocks = unfolded.split('BEGIN:VEVENT');
+  for (let i = 1; i < blocks.length; i++) {
+    const block = blocks[i].split('END:VEVENT')[0];
+    if (!block) continue;
+    const uid = extractProperty(block, 'UID');
+    const recurrenceId = extractDateValue(block, 'RECURRENCE-ID');
+    if (uid && recurrenceId) {
+      const recDate = toDateKey(recurrenceId);
+      overriddenInstances.add(`${uid}_${recDate.dateKey}`);
+    }
+  }
 
   for (let i = 1; i < blocks.length; i++) {
     const block = blocks[i].split('END:VEVENT')[0];
@@ -22,6 +35,8 @@ export function parseICS(icsContent: string): CalendarEvent[] {
     const uid = extractProperty(block, 'UID');
     const dtstart = extractDateValue(block, 'DTSTART');
     const dtend = extractDateValue(block, 'DTEND');
+    const rrule = extractProperty(block, 'RRULE');
+    const exdates = extractExDates(block);
 
     if (!summary || !dtstart) continue;
 
@@ -30,38 +45,80 @@ export function parseICS(icsContent: string): CalendarEvent[] {
     if (status && status.toUpperCase() === 'CANCELLED') continue;
 
     const start = toDateKey(dtstart);
-
-    // Deduplicate by UID + startDate (recurring events share UIDs across instances)
     const baseId = uid ?? Math.random().toString(36).substring(2, 9);
-    const dedupKey = uid ? `${uid}_${start.dateKey}` : null;
-    if (dedupKey && seen.has(dedupKey)) continue;
-    if (dedupKey) seen.add(dedupKey);
-    const eventId = uid ? `${uid}_${start.dateKey}` : baseId;
-    let endDate: string;
 
+    // Calculate event duration in days for multi-day events
+    let durationDays = 0;
+    let durationMs = 0;
     if (dtend) {
-      const end = toDateKey(dtend);
-      endDate = end.dateKey;
-      // For all-day events, DTEND is exclusive — subtract one day
+      const endParsed = toDateKey(dtend);
+      let endDateKey = endParsed.dateKey;
       if (dtend.isDate) {
-        endDate = subtractOneDay(endDate);
+        endDateKey = subtractOneDay(endDateKey);
+      }
+      if (endDateKey < start.dateKey) endDateKey = start.dateKey;
+      const startD = new Date(start.dateKey + 'T12:00:00');
+      const endD = new Date(endDateKey + 'T12:00:00');
+      durationDays = Math.round((endD.getTime() - startD.getTime()) / 86400000);
+      durationMs = endD.getTime() - startD.getTime();
+    }
+
+    if (rrule) {
+      // Expand recurring events
+      const instances = expandRRule(
+        rrule,
+        dtstart,
+        durationDays,
+        durationMs,
+        start,
+        exdates,
+        overriddenInstances,
+        uid,
+      );
+      for (const inst of instances) {
+        const dedupKey = uid ? `${uid}_${inst.dateKey}` : null;
+        if (dedupKey && seen.has(dedupKey)) continue;
+        if (dedupKey) seen.add(dedupKey);
+        const eventId = uid ? `${uid}_${inst.dateKey}` : `${baseId}_${inst.dateKey}`;
+
+        events.push({
+          id: eventId,
+          text: unescapeICS(summary),
+          startDate: inst.dateKey,
+          endDate: inst.endDateKey,
+          ...(inst.timeString ? { startTime: inst.timeString } : {}),
+        });
       }
     } else {
-      endDate = start.dateKey;
-    }
+      // Non-recurring event
+      const dedupKey = uid ? `${uid}_${start.dateKey}` : null;
+      if (dedupKey && seen.has(dedupKey)) continue;
+      if (dedupKey) seen.add(dedupKey);
+      const eventId = uid ? `${uid}_${start.dateKey}` : baseId;
+      let endDate: string;
 
-    // If end is before start (single all-day event edge case), use start
-    if (endDate < start.dateKey) {
-      endDate = start.dateKey;
-    }
+      if (dtend) {
+        const end = toDateKey(dtend);
+        endDate = end.dateKey;
+        if (dtend.isDate) {
+          endDate = subtractOneDay(endDate);
+        }
+      } else {
+        endDate = start.dateKey;
+      }
 
-    events.push({
-      id: eventId,
-      text: unescapeICS(summary),
-      startDate: start.dateKey,
-      endDate,
-      ...(start.timeString ? { startTime: start.timeString } : {}),
-    });
+      if (endDate < start.dateKey) {
+        endDate = start.dateKey;
+      }
+
+      events.push({
+        id: eventId,
+        text: unescapeICS(summary),
+        startDate: start.dateKey,
+        endDate,
+        ...(start.timeString ? { startTime: start.timeString } : {}),
+      });
+    }
   }
 
   return events;
@@ -79,6 +136,231 @@ export function deduplicateEvents(events: CalendarEvent[]): CalendarEvent[] {
     return true;
   });
 }
+
+// --- RRULE expansion ---
+
+interface RRuleParts {
+  freq: string;
+  interval: number;
+  count?: number;
+  until?: Date;
+  byday?: string[];
+  bymonthday?: number[];
+  bymonth?: number[];
+}
+
+function parseRRule(rrule: string): RRuleParts {
+  const parts: Record<string, string> = {};
+  for (const segment of rrule.split(';')) {
+    const eq = segment.indexOf('=');
+    if (eq === -1) continue;
+    parts[segment.substring(0, eq).toUpperCase()] = segment.substring(eq + 1);
+  }
+
+  const result: RRuleParts = {
+    freq: parts['FREQ'] ?? 'DAILY',
+    interval: parts['INTERVAL'] ? parseInt(parts['INTERVAL'], 10) : 1,
+  };
+
+  if (parts['COUNT']) {
+    result.count = parseInt(parts['COUNT'], 10);
+  }
+  if (parts['UNTIL']) {
+    const u = parts['UNTIL'];
+    const cleaned = u.replace(/[^0-9]/g, '');
+    const year = parseInt(cleaned.substring(0, 4), 10);
+    const month = parseInt(cleaned.substring(4, 6), 10) - 1;
+    const day = parseInt(cleaned.substring(6, 8), 10);
+    result.until = new Date(year, month, day, 23, 59, 59);
+  }
+  if (parts['BYDAY']) {
+    result.byday = parts['BYDAY'].split(',').map((s) => s.trim());
+  }
+  if (parts['BYMONTHDAY']) {
+    result.bymonthday = parts['BYMONTHDAY'].split(',').map((s) => parseInt(s.trim(), 10));
+  }
+  if (parts['BYMONTH']) {
+    result.bymonth = parts['BYMONTH'].split(',').map((s) => parseInt(s.trim(), 10));
+  }
+
+  return result;
+}
+
+const DAY_MAP: Record<string, number> = {
+  SU: 0, MO: 1, TU: 2, WE: 3, TH: 4, FR: 5, SA: 6,
+};
+
+interface ExpandedInstance {
+  dateKey: string;
+  endDateKey: string;
+  timeString: string | null;
+}
+
+function expandRRule(
+  rrule: string,
+  dtstart: DateValue,
+  durationDays: number,
+  _durationMs: number,
+  startResult: DateKeyResult,
+  exdates: Set<string>,
+  overriddenInstances: Set<string>,
+  uid: string | null,
+): ExpandedInstance[] {
+  const rule = parseRRule(rrule);
+  const instances: ExpandedInstance[] = [];
+
+  // Expansion window: 30 days in the past, 90 days in the future
+  const now = new Date();
+  const windowStart = new Date(now);
+  windowStart.setDate(windowStart.getDate() - 30);
+  const windowEnd = new Date(now);
+  windowEnd.setDate(windowEnd.getDate() + 90);
+
+  const windowStartKey = dateToKey(windowStart);
+  const windowEndKey = dateToKey(windowEnd);
+
+  // Start date as a Date object for iteration
+  const startDate = new Date(startResult.dateKey + 'T12:00:00');
+  const maxInstances = rule.count ?? 1000; // safety cap
+
+  let count = 0;
+  let current = new Date(startDate);
+
+  // For WEEKLY with BYDAY, we need to iterate week by week
+  if (rule.freq === 'WEEKLY' && rule.byday) {
+    const targetDays = rule.byday
+      .map((d) => DAY_MAP[d.replace(/[^A-Z]/g, '')])
+      .filter((d) => d !== undefined) as number[];
+
+    if (targetDays.length === 0) return instances;
+
+    // Start from the beginning of the week of the start date
+    const weekStart = new Date(current);
+    weekStart.setDate(weekStart.getDate() - weekStart.getDay());
+
+    let week = new Date(weekStart);
+    while (count < maxInstances) {
+      if (rule.until && week > rule.until) break;
+      // Check if past window end
+      const weekEndDate = new Date(week);
+      weekEndDate.setDate(weekEndDate.getDate() + 6);
+      if (dateToKey(week) > windowEndKey && dateToKey(weekEndDate) > windowEndKey) break;
+
+      for (const dayNum of targetDays.sort((a, b) => a - b)) {
+        if (count >= maxInstances) break;
+
+        const instanceDate = new Date(week);
+        instanceDate.setDate(week.getDate() + dayNum);
+
+        // Skip instances before the original start date
+        if (instanceDate < startDate) continue;
+
+        if (rule.until && instanceDate > rule.until) break;
+
+        const dk = dateToKey(instanceDate);
+
+        // Skip if excluded
+        if (exdates.has(dk)) { count++; continue; }
+
+        // Skip if overridden by a RECURRENCE-ID instance
+        if (uid && overriddenInstances.has(`${uid}_${dk}`)) { count++; continue; }
+
+        count++;
+
+        // Only include if in window
+        if (dk >= windowStartKey && dk <= windowEndKey) {
+          const endDk = durationDays > 0 ? addDays(dk, durationDays) : dk;
+          instances.push({
+            dateKey: dk,
+            endDateKey: endDk,
+            timeString: startResult.timeString,
+          });
+        }
+      }
+
+      // Advance to next week (respecting interval)
+      week.setDate(week.getDate() + 7 * rule.interval);
+    }
+  } else {
+    // DAILY, MONTHLY, YEARLY (and WEEKLY without BYDAY)
+    while (count < maxInstances) {
+      const dk = dateToKey(current);
+
+      if (rule.until && current > rule.until) break;
+      if (dk > windowEndKey) break;
+
+      // Skip if excluded
+      const skip = exdates.has(dk) || (uid && overriddenInstances.has(`${uid}_${dk}`));
+
+      if (!skip && dk >= windowStartKey) {
+        const endDk = durationDays > 0 ? addDays(dk, durationDays) : dk;
+        instances.push({
+          dateKey: dk,
+          endDateKey: endDk,
+          timeString: startResult.timeString,
+        });
+      }
+
+      count++;
+
+      // Advance to next occurrence
+      switch (rule.freq) {
+        case 'DAILY':
+          current.setDate(current.getDate() + rule.interval);
+          break;
+        case 'WEEKLY':
+          current.setDate(current.getDate() + 7 * rule.interval);
+          break;
+        case 'MONTHLY':
+          current.setMonth(current.getMonth() + rule.interval);
+          break;
+        case 'YEARLY':
+          current.setFullYear(current.getFullYear() + rule.interval);
+          break;
+        default:
+          current.setDate(current.getDate() + rule.interval);
+          break;
+      }
+    }
+  }
+
+  return instances;
+}
+
+function extractExDates(block: string): Set<string> {
+  const exdates = new Set<string>();
+  const lines = block.split(/\r?\n/);
+  for (const line of lines) {
+    if (!line.startsWith('EXDATE')) continue;
+    const colonIdx = line.lastIndexOf(':');
+    if (colonIdx === -1) continue;
+    const values = line.substring(colonIdx + 1).split(',');
+    for (const v of values) {
+      const cleaned = v.trim().replace(/[^0-9]/g, '');
+      if (cleaned.length >= 8) {
+        exdates.add(
+          `${cleaned.substring(0, 4)}-${cleaned.substring(4, 6)}-${cleaned.substring(6, 8)}`
+        );
+      }
+    }
+  }
+  return exdates;
+}
+
+function dateToKey(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function addDays(dateKey: string, days: number): string {
+  const d = new Date(dateKey + 'T12:00:00');
+  d.setDate(d.getDate() + days);
+  return dateToKey(d);
+}
+
+// --- Original helper functions ---
 
 function extractProperty(block: string, name: string): string | null {
   // Match "NAME:" or "NAME;...:" at the start of a line

@@ -10,7 +10,7 @@ export default function PlannerPage() {
   const { weekDates } = usePlanner();
 
   return (
-    <div className="space-y-4 py-4">
+    <div className="space-y-4 py-4 planner-scale">
       {/* Day cards — horizontal scroll on mobile, grid on large screens */}
       <div className="flex gap-3 overflow-x-auto hide-scrollbar snap-x snap-mandatory px-4 lg:grid lg:grid-cols-7 lg:gap-2 lg:px-3">
         {weekDates.map((date) => (
