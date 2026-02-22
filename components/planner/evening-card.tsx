@@ -20,19 +20,22 @@ interface EveningCardProps {
 type Owner = 'C' | 'J' | 'O' | undefined;
 
 /** Cycle: unassigned → C → J → O → unassigned */
-function nextOwner(current: Owner): Owner {
+function nextOwner(current: string | undefined): Owner {
   switch (current) {
     case undefined: return 'C';
     case 'C': return 'J';
     case 'J': return 'O';
-    case 'O': return undefined;
+    case 'O':
+    case 'CJ': return undefined;
+    default: return 'C';
   }
 }
 
 const OWNER_STYLES: Record<string, { bg: string; border: string; text: string; badge: string }> = {
-  C: { bg: 'bg-red-100',    border: 'border-red-300',    text: 'text-red-800',    badge: 'bg-red-500 text-white' },
-  J: { bg: 'bg-blue-100',   border: 'border-blue-300',   text: 'text-blue-800',   badge: 'bg-blue-500 text-white' },
-  O: { bg: 'bg-yellow-100',  border: 'border-yellow-300',  text: 'text-yellow-800',  badge: 'bg-yellow-400 text-yellow-900' },
+  C:  { bg: 'bg-red-100',    border: 'border-red-300',    text: 'text-red-800',    badge: 'bg-red-500 text-white' },
+  J:  { bg: 'bg-blue-100',   border: 'border-blue-300',   text: 'text-blue-800',   badge: 'bg-blue-500 text-white' },
+  O:  { bg: 'bg-yellow-100',  border: 'border-yellow-300',  text: 'text-yellow-800',  badge: 'bg-yellow-400 text-yellow-900' },
+  CJ: { bg: 'bg-yellow-100',  border: 'border-yellow-300',  text: 'text-yellow-800',  badge: 'bg-yellow-400 text-yellow-900' },
 };
 
 export function EveningCard({ dateKey, dayData }: EveningCardProps) {

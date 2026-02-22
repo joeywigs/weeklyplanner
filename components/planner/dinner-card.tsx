@@ -13,12 +13,14 @@ interface DinnerCardProps {
 type Cook = 'Carly' | 'Joey' | 'Other' | '';
 
 /** Cycle: unassigned → Carly → Joey → Other → unassigned */
-function nextCook(current: Cook): Cook {
+function nextCook(current: string): Cook {
   switch (current) {
     case '': return 'Carly';
     case 'Carly': return 'Joey';
     case 'Joey': return 'Other';
-    case 'Other': return '';
+    case 'Other':
+    case 'Both': return '';
+    default: return 'Carly';
   }
 }
 
@@ -26,6 +28,7 @@ const COOK_STYLES: Record<string, { bg: string; border: string; text: string; ba
   Carly: { bg: 'bg-red-100',    border: 'border-red-300',    text: 'text-red-800',    badge: 'bg-red-500 text-white' },
   Joey:  { bg: 'bg-blue-100',   border: 'border-blue-300',   text: 'text-blue-800',   badge: 'bg-blue-500 text-white' },
   Other: { bg: 'bg-yellow-100',  border: 'border-yellow-300',  text: 'text-yellow-800',  badge: 'bg-yellow-400 text-yellow-900' },
+  Both:  { bg: 'bg-yellow-100',  border: 'border-yellow-300',  text: 'text-yellow-800',  badge: 'bg-yellow-400 text-yellow-900' },
 };
 
 export function DinnerCard({ dateKey, dayData }: DinnerCardProps) {
