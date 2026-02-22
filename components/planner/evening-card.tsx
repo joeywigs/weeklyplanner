@@ -25,23 +25,23 @@ function OwnerButtons({
   onChange: (owner: 'C' | 'J' | undefined) => void;
 }) {
   return (
-    <div className="flex gap-0.5 shrink-0">
+    <div className="flex gap-1 shrink-0">
       <button
         onClick={(e) => { e.stopPropagation(); onChange(owner === 'C' ? undefined : 'C'); }}
-        className={`w-4 h-4 rounded text-[9px] font-bold leading-none flex items-center justify-center transition-colors ${
+        className={`w-6 h-6 rounded-md text-[11px] font-bold leading-none flex items-center justify-center transition-colors border ${
           owner === 'C'
-            ? 'bg-red-500 text-white'
-            : 'bg-white/60 text-red-400 hover:bg-red-100'
+            ? 'bg-red-500 border-red-500 text-white'
+            : 'bg-white border-red-300 text-red-400 hover:bg-red-50'
         }`}
       >
         C
       </button>
       <button
         onClick={(e) => { e.stopPropagation(); onChange(owner === 'J' ? undefined : 'J'); }}
-        className={`w-4 h-4 rounded text-[9px] font-bold leading-none flex items-center justify-center transition-colors ${
+        className={`w-6 h-6 rounded-md text-[11px] font-bold leading-none flex items-center justify-center transition-colors border ${
           owner === 'J'
-            ? 'bg-blue-500 text-white'
-            : 'bg-white/60 text-blue-400 hover:bg-blue-100'
+            ? 'bg-blue-500 border-blue-500 text-white'
+            : 'bg-white border-blue-300 text-blue-400 hover:bg-blue-50'
         }`}
       >
         J
