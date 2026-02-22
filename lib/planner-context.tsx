@@ -6,6 +6,7 @@ import {
   useState,
   useCallback,
   useEffect,
+  useRef,
   type ReactNode,
 } from 'react';
 import type {
@@ -24,6 +25,7 @@ import { fetchNutrisliceMenus, getCachedMenus, setCachedMenus } from './nutrisli
 import { fetchWeather, getWeatherIcon } from './weather';
 import { syncGet, syncSet, syncPull, isCloudEnabled } from './cloud';
 import { getRecipes } from './recipe-store';
+import { mergeIngredients } from './grocery-match';
 
 function generateId(): string {
   return Math.random().toString(36).substring(2, 9);
@@ -102,7 +104,8 @@ interface PlannerContextValue {
   getCalendarEventsForDay: (dateKey: string) => CalendarEvent[];
   addGroceryItem: (name: string) => void;
   removeGroceryItem: (id: string) => void;
-  buildGroceryFromDinners: () => void;
+  clearGroceryItems: () => void;
+  buildGroceryFromDinners: () => 'built' | 'already_built';
   addCaraNote: (text: string) => void;
   removeCaraNote: (id: string) => void;
   copyCaraNotes: () => void;
@@ -124,6 +127,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     Map<string, { code: number; high: number; low: number }>
   >(new Map());
   const [schoolMenus, setSchoolMenus] = useState<Record<string, SchoolLunchMenu>>(() => getCachedMenus());
+  const lastBuiltDinnerFingerprint = useRef<string | null>(null);
 
   const weekDates = getWeekDates(weekOffset);
 
@@ -364,31 +368,63 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
-  const buildGroceryFromDinners = useCallback(() => {
+  const clearGroceryItems = useCallback(() => {
+    lastBuiltDinnerFingerprint.current = null;
+    setState((prev) => ({
+      ...prev,
+      groceryItems: [],
+    }));
+  }, []);
+
+  const buildGroceryFromDinners = useCallback((): 'built' | 'already_built' => {
     const dinnerNames = Object.values(state.days)
       .map((d) => d.dinner)
       .filter(Boolean);
+    const fingerprint = dinnerNames.slice().sort().join('|');
+
+    // Warn if dinners haven't changed since last build
+    if (fingerprint === lastBuiltDinnerFingerprint.current) {
+      return 'already_built';
+    }
+
     const recipes = getRecipes();
     const recipeLookup = new Map(
       recipes.map((r) => [r.name.toLowerCase(), r])
     );
 
-    const newItems: GroceryItem[] = [];
+    // Collect all ingredients across all dinner recipes
+    const allIngredients: string[] = [];
+    const unmatchedDinners: string[] = [];
+
     for (const name of dinnerNames) {
       const recipe = recipeLookup.get(name.toLowerCase());
       if (recipe && recipe.ingredients.length > 0) {
-        for (const ingredient of recipe.ingredients) {
-          newItems.push({ id: generateId(), name: ingredient });
-        }
+        allIngredients.push(...recipe.ingredients);
       } else {
-        newItems.push({ id: generateId(), name: `Ingredients for: ${name}` });
+        unmatchedDinners.push(name);
       }
     }
+
+    // Match against Walmart catalog and merge duplicates
+    const merged = mergeIngredients(allIngredients);
+    const newItems: GroceryItem[] = merged.map((m) => ({
+      id: generateId(),
+      name: m.name,
+    }));
+
+    // Add placeholder items for dinners without recipes
+    for (const name of unmatchedDinners) {
+      newItems.push({ id: generateId(), name: `Ingredients for: ${name}` });
+    }
+
+    lastBuiltDinnerFingerprint.current = fingerprint;
 
     setState((prev) => ({
       ...prev,
       groceryItems: [...prev.groceryItems, ...newItems],
     }));
+
+    return 'built';
   }, [state.days]);
 
   const addCaraNote = useCallback((text: string) => {
@@ -505,6 +541,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
         getCalendarEventsForDay,
         addGroceryItem,
         removeGroceryItem,
+        clearGroceryItems,
         buildGroceryFromDinners,
         addCaraNote,
         removeCaraNote,

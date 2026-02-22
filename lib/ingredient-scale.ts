@@ -42,7 +42,7 @@ export function parseIngredient(text: string): ParsedIngredient {
   return { quantity: qty, rest: rest.trim(), original: text };
 }
 
-function formatQuantity(n: number): string {
+export function formatQuantity(n: number): string {
   // Common fractions for nice display
   const fractions: [number, string][] = [
     [0.125, '⅛'], [0.25, '¼'], [0.333, '⅓'], [0.375, '⅜'],
