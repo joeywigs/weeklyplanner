@@ -6,6 +6,7 @@ import {
   useState,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   type ReactNode,
 } from 'react';
@@ -139,7 +140,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
   const [schoolMenus, setSchoolMenus] = useState<Record<string, SchoolLunchMenu>>(() => getCachedMenus());
   const lastBuiltDinnerFingerprint = useRef<string | null>(null);
 
-  const weekDates = getWeekDates(weekOffset);
+  const weekDates = useMemo(() => getWeekDates(weekOffset), [weekOffset]);
 
   // Load Google Calendar events from global cache on mount, focus, and when cache changes
   useEffect(() => {
