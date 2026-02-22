@@ -1,14 +1,5 @@
 import type { Recipe } from './types';
 
-interface PaprikaRecipeJSON {
-  name?: string;
-  categories?: string;
-  prep_time?: string;
-  cook_time?: string;
-  total_time?: string;
-  servings?: string;
-}
-
 function generateId(): string {
   return Math.random().toString(36).substring(2, 9);
 }
@@ -77,7 +68,46 @@ function parseZipEntries(buffer: ArrayBuffer): ZipEntry[] {
   return entries;
 }
 
-function paprikaToRecipe(raw: PaprikaRecipeJSON): Recipe | null {
+function parseMetadata(text: string): { prepTime: string } {
+  const cook = text.match(/Cook Time:\s*(.+?)(?=Servings:|Source:|Prep Time:|Total Time:|$)/);
+  const prep = text.match(/Prep Time:\s*(.+?)(?=Servings:|Source:|Cook Time:|Total Time:|$)/);
+  const total = text.match(/Total Time:\s*(.+?)(?=Servings:|Source:|Cook Time:|Prep Time:|$)/);
+  return { prepTime: prep?.[1]?.trim() || cook?.[1]?.trim() || total?.[1]?.trim() || '' };
+}
+
+function parseHtmlRecipe(html: string): Recipe | null {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
+  const recipe = doc.querySelector('.recipe');
+  if (!recipe) return null;
+
+  const name = recipe.querySelector('.name')?.textContent?.trim();
+  if (!name) return null;
+
+  const tags: string[] = [];
+  const catText = recipe.querySelector('.categories')?.textContent?.trim();
+  if (catText) {
+    for (const cat of catText.split(',')) {
+      const trimmed = cat.trim().toLowerCase();
+      if (trimmed) tags.push(trimmed);
+    }
+  }
+
+  const metaText = recipe.querySelector('.metadata')?.textContent?.trim() || '';
+  const { prepTime } = parseMetadata(metaText);
+
+  return { id: generateId(), name, prepTime, tags };
+}
+
+interface PaprikaRecipeJSON {
+  name?: string;
+  categories?: string;
+  prep_time?: string;
+  cook_time?: string;
+  total_time?: string;
+  servings?: string;
+}
+
+function paprikaJsonToRecipe(raw: PaprikaRecipeJSON): Recipe | null {
   if (!raw.name) return null;
 
   const tags: string[] = [];
@@ -100,23 +130,38 @@ export async function parsePaprikaFile(file: File): Promise<Recipe[]> {
   const buffer = await file.arrayBuffer();
   const recipes: Recipe[] = [];
 
-  // Try as a .paprikarecipes zip bundle
   try {
     const entries = parseZipEntries(buffer);
     if (entries.length > 0) {
       for (const entry of entries) {
         try {
+          // Skip directories, dotfiles, index.html, __MACOSX
+          const basename = entry.filename.split('/').pop() || '';
+          if (
+            !basename ||
+            basename.startsWith('.') ||
+            basename === 'index.html' ||
+            entry.filename.includes('__MACOSX')
+          ) {
+            continue;
+          }
+
           let data: Uint8Array;
           if (entry.compressionMethod === 8) {
-            data = await decompressStream(
-              entry.compressedData,
-              'deflate-raw'
-            );
+            data = await decompressStream(entry.compressedData, 'deflate-raw');
           } else {
             data = entry.compressedData;
           }
 
-          // Each .paprikarecipe is gzipped JSON
+          // HTML files — parse with DOMParser
+          if (basename.endsWith('.html') || basename.endsWith('.htm')) {
+            const html = new TextDecoder().decode(data);
+            const recipe = parseHtmlRecipe(html);
+            if (recipe) recipes.push(recipe);
+            continue;
+          }
+
+          // Legacy .paprikarecipe files — gzipped JSON
           let jsonStr: string;
           try {
             const decompressed = await decompressStream(data, 'gzip');
@@ -126,7 +171,7 @@ export async function parsePaprikaFile(file: File): Promise<Recipe[]> {
           }
 
           const raw = JSON.parse(jsonStr) as PaprikaRecipeJSON;
-          const recipe = paprikaToRecipe(raw);
+          const recipe = paprikaJsonToRecipe(raw);
           if (recipe) recipes.push(recipe);
         } catch {
           // Skip invalid entries
@@ -136,6 +181,18 @@ export async function parsePaprikaFile(file: File): Promise<Recipe[]> {
     }
   } catch {
     // Not a valid zip
+  }
+
+  // Try as a single HTML file
+  try {
+    const html = new TextDecoder().decode(new Uint8Array(buffer));
+    const recipe = parseHtmlRecipe(html);
+    if (recipe) {
+      recipes.push(recipe);
+      return recipes;
+    }
+  } catch {
+    // Not valid HTML
   }
 
   // Try as a single .paprikarecipe (gzipped JSON)
@@ -149,7 +206,7 @@ export async function parsePaprikaFile(file: File): Promise<Recipe[]> {
       jsonStr = new TextDecoder().decode(data);
     }
     const raw = JSON.parse(jsonStr) as PaprikaRecipeJSON;
-    const recipe = paprikaToRecipe(raw);
+    const recipe = paprikaJsonToRecipe(raw);
     if (recipe) recipes.push(recipe);
   } catch {
     // Not a valid single recipe file
