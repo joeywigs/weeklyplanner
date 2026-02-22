@@ -125,6 +125,8 @@ interface PlannerContextValue {
   editMode: boolean;
   toggleEditMode: () => void;
   lastSaved: Date | null;
+  viewMode: 'week' | '3day';
+  toggleViewMode: () => void;
 }
 
 const PlannerContext = createContext<PlannerContextValue | null>(null);
@@ -134,6 +136,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<WeekState>(() => loadState(0));
   const [googleEvents, setGoogleEvents] = useState<CalendarEvent[]>([]);
   const [editMode, setEditMode] = useState(true);
+  const [viewMode, setViewMode] = useState<'week' | '3day'>('week');
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [weather, setWeather] = useState<
     Map<string, { code: number; high: number; low: number }>
@@ -586,6 +589,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
   );
 
   const toggleEditMode = useCallback(() => setEditMode((m) => !m), []);
+  const toggleViewMode = useCallback(() => setViewMode((m) => m === 'week' ? '3day' : 'week'), []);
 
   const goToWeek = useCallback((offset: number) => setWeekOffset(offset), []);
   const goToPrevWeek = useCallback(
@@ -640,6 +644,8 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
         editMode,
         toggleEditMode,
         lastSaved,
+        viewMode,
+        toggleViewMode,
       }}
     >
       {children}

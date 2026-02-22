@@ -11,7 +11,7 @@ const ZOOM_STEPS = [0.75, 0.85, 1, 1.15, 1.3, 1.5];
 const DEFAULT_ZOOM_INDEX = 2; // 1x
 
 export default function PlannerPage() {
-  const { weekDates } = usePlanner();
+  const { weekDates, viewMode } = usePlanner();
   const [zoomIndex, setZoomIndex] = useState(DEFAULT_ZOOM_INDEX);
   const zoom = ZOOM_STEPS[zoomIndex];
 
@@ -39,12 +39,22 @@ export default function PlannerPage() {
           +
         </button>
       </div>
-      {/* Day cards — horizontal scroll on mobile, grid on large screens */}
-      <div className="flex gap-3 overflow-x-auto hide-scrollbar snap-x snap-mandatory px-4 lg:grid lg:grid-cols-7 lg:gap-2 lg:px-3">
-        {weekDates.map((date) => (
-          <DayCard key={date.toISOString()} date={date} />
-        ))}
-      </div>
+      {/* Day cards */}
+      {viewMode === 'week' ? (
+        <div className="flex gap-3 overflow-x-auto hide-scrollbar snap-x snap-mandatory px-4 lg:grid lg:grid-cols-7 lg:gap-2 lg:px-3">
+          {weekDates.map((date) => (
+            <DayCard key={date.toISOString()} date={date} />
+          ))}
+        </div>
+      ) : (
+        <div className="flex gap-3 overflow-x-auto snap-x snap-mandatory px-4 pb-2" style={{ scrollbarWidth: 'thin' }}>
+          {weekDates.map((date) => (
+            <div key={date.toISOString()} className="min-w-[calc(33.333%-0.5rem)] max-w-[calc(33.333%-0.5rem)] snap-start">
+              <DayCard date={date} />
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Week Summary */}
       <div className="px-4 lg:px-3">

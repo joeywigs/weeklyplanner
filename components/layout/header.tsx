@@ -12,7 +12,7 @@ function formatSavedTime(date: Date): string {
 }
 
 export function Header() {
-  const { weekDates, goToPrevWeek, goToNextWeek, goToCurrentWeek, weekOffset, editMode, toggleEditMode, lastSaved } =
+  const { weekDates, goToPrevWeek, goToNextWeek, goToCurrentWeek, weekOffset, editMode, toggleEditMode, lastSaved, viewMode, toggleViewMode } =
     usePlanner();
 
   return (
@@ -29,16 +29,24 @@ export function Header() {
               </p>
             )}
           </div>
-          <button
-            onClick={toggleEditMode}
-            className={`text-[10px] px-2.5 py-1 rounded-full font-semibold transition-colors ${
-              editMode
-                ? 'bg-accent-100 text-accent-700'
-                : 'bg-green-100 text-green-700'
-            }`}
-          >
-            {editMode ? 'Edit' : 'Live'}
-          </button>
+          <div className="flex flex-col items-end gap-1">
+            <button
+              onClick={toggleEditMode}
+              className={`text-[10px] px-2.5 py-1 rounded-full font-semibold transition-colors ${
+                editMode
+                  ? 'bg-accent-100 text-accent-700'
+                  : 'bg-green-100 text-green-700'
+              }`}
+            >
+              {editMode ? 'Edit' : 'Live'}
+            </button>
+            <button
+              onClick={toggleViewMode}
+              className="text-[10px] px-2.5 py-1 rounded-full font-semibold transition-colors bg-gray-100 text-gray-600 hover:bg-gray-200"
+            >
+              {viewMode === 'week' ? '7 Day' : '3 Day'}
+            </button>
+          </div>
         </div>
 
         <div className="flex items-center justify-between mt-2">
