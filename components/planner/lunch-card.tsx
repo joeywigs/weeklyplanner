@@ -44,7 +44,7 @@ export function LunchCard({ dateKey, dayData, dayOfWeek }: LunchCardProps) {
         </div>
         {dayData.hasSchool && menu && (
           <div className="mt-1.5 space-y-0.5">
-            <div className="text-[11px] font-semibold text-lunch-800">{menu.entree.join(', ')}</div>
+            <div className="text-[10px] text-lunch-600">{menu.entree.join(', ')}</div>
             <div className="text-[10px] text-lunch-600">{menu.grill.join(', ')}</div>
             <div className="text-[10px] text-lunch-600">{menu.express.join(', ')}</div>
             <div className="text-[10px] text-lunch-500">{menu.vegetable.join(', ')}</div>
@@ -88,9 +88,11 @@ export function LunchCard({ dateKey, dayData, dayOfWeek }: LunchCardProps) {
         <>
           {/* School menu */}
           <div className="mb-2 space-y-0.5">
-            <div className="text-[11px] font-semibold text-lunch-800">
-              {menu.entree.join(', ')}
-            </div>
+            {menu.entree.length > 0 && (
+              <div className="text-[10px] text-lunch-600">
+                <span className="font-medium text-lunch-700">Entree:</span> {menu.entree.join(', ')}
+              </div>
+            )}
             {menu.grill.length > 0 && (
               <div className="text-[10px] text-lunch-600">
                 <span className="font-medium text-lunch-700">Grill:</span> {menu.grill.join(', ')}
