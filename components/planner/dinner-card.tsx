@@ -77,7 +77,7 @@ export function DinnerCard({ dateKey, dayData }: DinnerCardProps) {
   // Live mode: simplified read-only view
   if (!editMode) {
     return (
-      <div className="rounded-lg border border-dinner-200 bg-[var(--dinner-light)] p-2.5">
+      <div className="rounded-lg border border-dinner-200 bg-[var(--dinner-light)] p-2.5 min-h-[6.5rem]">
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full bg-[var(--dinner)]" />
           <span className="text-xs font-semibold text-dinner-800">Dinner</span>
@@ -96,7 +96,7 @@ export function DinnerCard({ dateKey, dayData }: DinnerCardProps) {
 
   return (
     <div
-      className={`rounded-lg border bg-[var(--dinner-light)] p-2.5 overflow-visible transition-colors ${
+      className={`rounded-lg border bg-[var(--dinner-light)] p-2.5 overflow-visible transition-colors min-h-[6.5rem] ${
         isDragOver
           ? 'border-dinner-400 bg-dinner-100'
           : 'border-dinner-200'

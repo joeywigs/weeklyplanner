@@ -1,7 +1,6 @@
 'use client';
 
 import { usePlanner } from '@/lib/planner-context';
-import { SAMPLE_SCHOOL_LUNCH } from '@/lib/sample-data';
 import type { DayData } from '@/lib/types';
 
 interface LunchCardProps {
@@ -11,14 +10,14 @@ interface LunchCardProps {
 }
 
 export function LunchCard({ dateKey, dayData, dayOfWeek }: LunchCardProps) {
-  const { setLunchChoice, toggleSchool, editMode } = usePlanner();
+  const { setLunchChoice, toggleSchool, getSchoolMenu, editMode } = usePlanner();
   const isWeekday = dayOfWeek >= 1 && dayOfWeek <= 5;
-  const menu = isWeekday ? SAMPLE_SCHOOL_LUNCH[dayOfWeek] : undefined;
+  const menu = isWeekday ? getSchoolMenu(dateKey) : null;
 
   // Weekend: show simple lunch card
   if (!isWeekday) {
     return (
-      <div className="rounded-lg border border-lunch-200 bg-[var(--lunch-light)] p-2.5">
+      <div className="rounded-lg border border-lunch-200 bg-[var(--lunch-light)] p-2.5 min-h-[10rem]">
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full bg-[var(--lunch)]" />
           <span className="text-xs font-semibold text-lunch-800">Lunch</span>
@@ -33,7 +32,7 @@ export function LunchCard({ dateKey, dayData, dayOfWeek }: LunchCardProps) {
     const greyLabel = dayData.greyLunch === 'pack' ? 'Pack' : dayData.greyLunch === 'school' ? 'School' : '—';
     const sloaneLabel = dayData.sloaneLunch === 'pack' ? 'Pack' : dayData.sloaneLunch === 'school' ? 'School' : '—';
     return (
-      <div className="rounded-lg border border-lunch-200 bg-[var(--lunch-light)] p-2.5">
+      <div className="rounded-lg border border-lunch-200 bg-[var(--lunch-light)] p-2.5 min-h-[10rem]">
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full bg-[var(--lunch)]" />
           <span className="text-xs font-semibold text-lunch-800">Lunch</span>
@@ -44,13 +43,20 @@ export function LunchCard({ dateKey, dayData, dayOfWeek }: LunchCardProps) {
           </span>
         </div>
         {dayData.hasSchool && menu && (
-          <div className="mt-1.5">
-            <div className="text-[11px] font-semibold text-lunch-800">{menu.entree}</div>
+          <div className="mt-1.5 space-y-0.5">
+            <div className="text-[11px] font-semibold text-lunch-800">{menu.entree.join(', ')}</div>
+            <div className="text-[10px] text-lunch-600">{menu.grill.join(', ')}</div>
+            <div className="text-[10px] text-lunch-600">{menu.express.join(', ')}</div>
+            <div className="text-[10px] text-lunch-500">{menu.vegetable.join(', ')}</div>
+            <div className="text-[10px] text-lunch-500">{menu.fruit.join(', ')}</div>
             <div className="flex gap-3 mt-1 text-[10px] text-lunch-700">
               <span>Grey: {greyLabel}</span>
               <span>Sloane: {sloaneLabel}</span>
             </div>
           </div>
+        )}
+        {dayData.hasSchool && !menu && (
+          <p className="text-[10px] text-lunch-400 mt-1.5 italic">Menu not available</p>
         )}
         {!dayData.hasSchool && (
           <p className="text-[10px] text-lunch-600 mt-1.5 italic">No school today</p>
@@ -60,7 +66,7 @@ export function LunchCard({ dateKey, dayData, dayOfWeek }: LunchCardProps) {
   }
 
   return (
-    <div className="rounded-lg border border-lunch-200 bg-[var(--lunch-light)] p-2.5">
+    <div className="rounded-lg border border-lunch-200 bg-[var(--lunch-light)] p-2.5 min-h-[10rem]">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full bg-[var(--lunch)]" />
@@ -83,18 +89,28 @@ export function LunchCard({ dateKey, dayData, dayOfWeek }: LunchCardProps) {
           {/* School menu */}
           <div className="mb-2 space-y-0.5">
             <div className="text-[11px] font-semibold text-lunch-800">
-              {menu.entree}
+              {menu.entree.join(', ')}
             </div>
-            <div className="flex flex-wrap gap-x-2 text-[10px] text-lunch-600">
-              <span>{menu.grill}</span>
-              <span className="text-lunch-300">·</span>
-              <span>{menu.express}</span>
-            </div>
-            <div className="flex flex-wrap gap-x-2 text-[10px] text-lunch-500">
-              <span>{menu.vegetable}</span>
-              <span className="text-lunch-300">·</span>
-              <span>{menu.fruit}</span>
-            </div>
+            {menu.grill.length > 0 && (
+              <div className="text-[10px] text-lunch-600">
+                <span className="font-medium text-lunch-700">Grill:</span> {menu.grill.join(', ')}
+              </div>
+            )}
+            {menu.express.length > 0 && (
+              <div className="text-[10px] text-lunch-600">
+                <span className="font-medium text-lunch-700">Express:</span> {menu.express.join(', ')}
+              </div>
+            )}
+            {menu.vegetable.length > 0 && (
+              <div className="text-[10px] text-lunch-500">
+                <span className="font-medium text-lunch-600">Veg:</span> {menu.vegetable.join(', ')}
+              </div>
+            )}
+            {menu.fruit.length > 0 && (
+              <div className="text-[10px] text-lunch-500">
+                <span className="font-medium text-lunch-600">Fruit:</span> {menu.fruit.join(', ')}
+              </div>
+            )}
           </div>
 
           {/* Lunch choice per child — toggle pills */}
@@ -111,6 +127,10 @@ export function LunchCard({ dateKey, dayData, dayOfWeek }: LunchCardProps) {
             />
           </div>
         </>
+      ) : dayData.hasSchool ? (
+        <p className="text-[10px] text-lunch-400 italic">
+          Menu not available
+        </p>
       ) : (
         <p className="text-[10px] text-lunch-600 italic">
           No school today

@@ -44,11 +44,11 @@ export interface CaraNote {
 }
 
 export interface SchoolLunchMenu {
-  entree: string;
-  grill: string;
-  express: string;
-  vegetable: string;
-  fruit: string;
+  entree: string[];
+  grill: string[];
+  express: string[];
+  vegetable: string[];
+  fruit: string[];
 }
 
 export interface Recipe {

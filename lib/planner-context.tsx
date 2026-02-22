@@ -13,12 +13,14 @@ import type {
   GroceryItem,
   CaraNote,
   CalendarEvent,
+  SchoolLunchMenu,
   Reminder,
   Activity,
   WeekState,
 } from './types';
 import { getWeekDates, formatDateKey } from './date-utils';
 import { getCachedCalendarEvents, onCalendarEventsChanged } from './calendar-store';
+import { fetchNutrisliceMenus, getCachedMenus, setCachedMenus } from './nutrislice';
 import { fetchWeather, getWeatherIcon } from './weather';
 import { syncGet, syncSet, syncPull, isCloudEnabled } from './cloud';
 
@@ -104,6 +106,7 @@ interface PlannerContextValue {
   removeCaraNote: (id: string) => void;
   copyCaraNotes: () => void;
   getWeatherForDay: (dateKey: string) => { icon: string; high: number; low: number } | null;
+  getSchoolMenu: (dateKey: string) => SchoolLunchMenu | null;
   swapDinner: (fromDateKey: string, toDateKey: string) => void;
   editMode: boolean;
   toggleEditMode: () => void;
@@ -119,6 +122,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
   const [weather, setWeather] = useState<
     Map<string, { code: number; high: number; low: number }>
   >(new Map());
+  const [schoolMenus, setSchoolMenus] = useState<Record<string, SchoolLunchMenu>>(() => getCachedMenus());
 
   const weekDates = getWeekDates(weekOffset);
 
@@ -150,6 +154,23 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
       setWeather(map);
     });
   }, []);
+
+  // Fetch school lunch menus from Nutrislice when week changes
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const sundayKey = formatDateKey(weekDates[0]!);
+    fetchNutrisliceMenus(sundayKey)
+      .then((menus) => {
+        setSchoolMenus((prev) => {
+          const merged = { ...prev, ...menus };
+          setCachedMenus(merged);
+          return merged;
+        });
+      })
+      .catch(() => {
+        // Silently fail — cached data will be used
+      });
+  }, [weekDates]);
 
   // Load state when week changes
   useEffect(() => {
@@ -425,6 +446,13 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     [weather]
   );
 
+  const getSchoolMenu = useCallback(
+    (dateKey: string): SchoolLunchMenu | null => {
+      return schoolMenus[dateKey] ?? null;
+    },
+    [schoolMenus]
+  );
+
   const toggleEditMode = useCallback(() => setEditMode((m) => !m), []);
 
   const goToWeek = useCallback((offset: number) => setWeekOffset(offset), []);
@@ -468,6 +496,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
         removeCaraNote,
         copyCaraNotes,
         getWeatherForDay,
+        getSchoolMenu,
         swapDinner,
         editMode,
         toggleEditMode,
