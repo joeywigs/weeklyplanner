@@ -15,7 +15,7 @@ except ImportError:
     sys.exit(1)
 
 # --- Configuration ---
-KV_NAMESPACE_ID = "PLANNER_KV"  # Replace with actual namespace ID
+KV_BINDING = "PLANNER_KV"
 
 
 def slugify(name: str) -> str:
@@ -139,7 +139,7 @@ def upload_to_kv(key: str, value: str) -> bool:
     result = subprocess.run(
         [
             "npx", "wrangler", "kv", "key", "put",
-            "--namespace-id", KV_NAMESPACE_ID,
+            "--binding", KV_BINDING,
             key, value,
         ],
         capture_output=True,
