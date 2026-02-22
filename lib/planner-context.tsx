@@ -23,6 +23,7 @@ import { getCachedCalendarEvents, onCalendarEventsChanged } from './calendar-sto
 import { fetchNutrisliceMenus, getCachedMenus, setCachedMenus } from './nutrislice';
 import { fetchWeather, getWeatherIcon } from './weather';
 import { syncGet, syncSet, syncPull, isCloudEnabled } from './cloud';
+import { getRecipes } from './recipe-store';
 
 function generateId(): string {
   return Math.random().toString(36).substring(2, 9);
@@ -367,10 +368,23 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     const dinnerNames = Object.values(state.days)
       .map((d) => d.dinner)
       .filter(Boolean);
-    const newItems: GroceryItem[] = dinnerNames.map((name) => ({
-      id: generateId(),
-      name: `Ingredients for: ${name}`,
-    }));
+    const recipes = getRecipes();
+    const recipeLookup = new Map(
+      recipes.map((r) => [r.name.toLowerCase(), r])
+    );
+
+    const newItems: GroceryItem[] = [];
+    for (const name of dinnerNames) {
+      const recipe = recipeLookup.get(name.toLowerCase());
+      if (recipe && recipe.ingredients.length > 0) {
+        for (const ingredient of recipe.ingredients) {
+          newItems.push({ id: generateId(), name: ingredient });
+        }
+      } else {
+        newItems.push({ id: generateId(), name: `Ingredients for: ${name}` });
+      }
+    }
+
     setState((prev) => ({
       ...prev,
       groceryItems: [...prev.groceryItems, ...newItems],
