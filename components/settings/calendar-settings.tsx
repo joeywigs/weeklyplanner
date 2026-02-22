@@ -8,7 +8,7 @@ import {
   clearCachedCalendarEvents,
   getLastRefreshTime,
 } from '@/lib/calendar-store';
-import { parseICS } from '@/lib/ics-parser';
+import { parseICS, deduplicateEvents } from '@/lib/ics-parser';
 
 export function CalendarSettings() {
   const [eventCount, setEventCount] = useState(0);
@@ -51,7 +51,7 @@ export function CalendarSettings() {
         })
       );
 
-      const merged = allEvents.flat();
+      const merged = deduplicateEvents(allEvents.flat());
       setCachedCalendarEvents(merged);
       setEventCount(merged.length);
       setLastRefresh(getLastRefreshTime());
