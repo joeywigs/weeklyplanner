@@ -36,6 +36,7 @@ export interface CalendarSource {
 export interface GroceryItem {
   id: string;
   name: string;
+  checked?: boolean;
 }
 
 export interface CaraNote {

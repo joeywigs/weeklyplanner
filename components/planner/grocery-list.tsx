@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, useMemo } from 'react';
 import { usePlanner } from '@/lib/planner-context';
 import { parseIngredient } from '@/lib/ingredient-scale';
+import type { GroceryItem } from '@/lib/types';
 
 /** Strip leading quantities, units, and trailing size/count info so the
  *  Walmart search focuses on just the product name. */
@@ -33,17 +34,32 @@ const POPUP_NAME = 'walmart_shopping';
 /* ------------------------------------------------------------------ */
 function WalmartShoppingPanel({
   items,
+  onToggleChecked,
   onClose,
 }: {
-  items: { id: string; name: string }[];
+  items: GroceryItem[];
+  onToggleChecked: (id: string) => void;
   onClose: () => void;
 }) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [checked, setChecked] = useState<Set<string>>(new Set());
+  const checkedSet = useMemo(
+    () => new Set(items.filter((i) => i.checked).map((i) => i.id)),
+    [items],
+  );
+
+  // Start on the first unchecked item
+  const firstUnchecked = useMemo(
+    () => {
+      const idx = items.findIndex((i) => !i.checked);
+      return idx >= 0 ? idx : 0;
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
+  const [currentIndex, setCurrentIndex] = useState(firstUnchecked);
   const popupRef = useRef<Window | null>(null);
 
   const total = items.length;
-  const done = checked.size;
+  const done = checkedSet.size;
   const current = items[currentIndex];
 
   // Close the popup when this component unmounts
@@ -57,7 +73,6 @@ function WalmartShoppingPanel({
 
   /** Open or navigate the single Walmart popup window */
   const openInPopup = useCallback((url: string) => {
-    // If the popup is still open, navigate it; otherwise open fresh
     if (popupRef.current && !popupRef.current.closed) {
       popupRef.current.location.href = url;
       popupRef.current.focus();
@@ -75,15 +90,6 @@ function WalmartShoppingPanel({
     }
   }, []);
 
-  const toggleChecked = useCallback((id: string) => {
-    setChecked((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  }, []);
-
   const goToItem = useCallback(
     (idx: number) => {
       setCurrentIndex(idx);
@@ -97,8 +103,8 @@ function WalmartShoppingPanel({
 
   const handleMarkAdded = useCallback(() => {
     if (!current) return;
-    if (!checked.has(current.id)) {
-      toggleChecked(current.id);
+    if (!checkedSet.has(current.id)) {
+      onToggleChecked(current.id);
     }
     // advance to next item and auto-search
     if (currentIndex < total - 1) {
@@ -106,7 +112,7 @@ function WalmartShoppingPanel({
       setCurrentIndex(nextIdx);
       openInPopup(walmartSearchUrl(items[nextIdx].name));
     }
-  }, [current, checked, currentIndex, total, items, toggleChecked, openInPopup]);
+  }, [current, checkedSet, currentIndex, total, items, onToggleChecked, openInPopup]);
 
   const handleClose = useCallback(() => {
     if (popupRef.current && !popupRef.current.closed) {
@@ -194,12 +200,12 @@ function WalmartShoppingPanel({
                   <button
                     onClick={handleMarkAdded}
                     className={`flex-1 text-center text-xs py-2 rounded-lg font-medium transition-colors ${
-                      checked.has(current.id)
+                      checkedSet.has(current.id)
                         ? 'bg-green-100 text-green-700 border border-green-300'
                         : 'bg-white text-gray-600 border border-gray-300 hover:bg-gray-50'
                     }`}
                   >
-                    {checked.has(current.id) ? 'Added' : 'Mark added'}
+                    {checkedSet.has(current.id) ? 'Added' : 'Mark added'}
                   </button>
                 </div>
                 <div className="flex justify-between">
@@ -212,7 +218,7 @@ function WalmartShoppingPanel({
                   </button>
                   <button
                     onClick={() => {
-                      if (!checked.has(current.id)) toggleChecked(current.id);
+                      if (!checkedSet.has(current.id)) onToggleChecked(current.id);
                       if (currentIndex < total - 1) goToItem(currentIndex + 1);
                     }}
                     className="text-[10px] text-blue-500 hover:text-blue-700 font-medium"
@@ -238,15 +244,15 @@ function WalmartShoppingPanel({
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      toggleChecked(item.id);
+                      onToggleChecked(item.id);
                     }}
                     className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
-                      checked.has(item.id)
+                      checkedSet.has(item.id)
                         ? 'bg-green-500 border-green-500 text-white'
                         : 'border-gray-300'
                     }`}
                   >
-                    {checked.has(item.id) && (
+                    {checkedSet.has(item.id) && (
                       <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
                         <path
                           d="M2.5 6l2.5 2.5 4.5-5"
@@ -260,7 +266,7 @@ function WalmartShoppingPanel({
                   </button>
                   <span
                     className={`flex-1 ${
-                      checked.has(item.id)
+                      checkedSet.has(item.id)
                         ? 'line-through text-gray-400'
                         : 'text-gray-700'
                     }`}
@@ -285,6 +291,7 @@ export function GroceryList() {
     groceryItems,
     addGroceryItem,
     removeGroceryItem,
+    toggleGroceryItemChecked,
     clearGroceryItems,
     buildGroceryFromDinners,
   } = usePlanner();
@@ -319,6 +326,7 @@ export function GroceryList() {
     return (
       <WalmartShoppingPanel
         items={groceryItems}
+        onToggleChecked={toggleGroceryItemChecked}
         onClose={() => setWalmartMode(false)}
       />
     );
@@ -342,11 +350,20 @@ export function GroceryList() {
             />
           </svg>
           <h2 className="text-sm font-bold text-gray-900">Grocery List</h2>
-          {groceryItems.length > 0 && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent-100 text-accent-700 font-medium">
-              {groceryItems.length}
-            </span>
-          )}
+          {groceryItems.length > 0 && (() => {
+            const checkedCount = groceryItems.filter((i) => i.checked).length;
+            return (
+              <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${
+                checkedCount === groceryItems.length
+                  ? 'bg-green-100 text-green-700'
+                  : 'bg-accent-100 text-accent-700'
+              }`}>
+                {checkedCount > 0
+                  ? `${checkedCount}/${groceryItems.length}`
+                  : groceryItems.length}
+              </span>
+            );
+          })()}
           {groceryItems.length > 0 && (
             <button
               onClick={() => setShowClearConfirm(true)}
@@ -428,9 +445,35 @@ export function GroceryList() {
             {groceryItems.map((item) => (
               <li
                 key={item.id}
-                className="flex items-center gap-2 text-sm text-gray-800 bg-gray-50 rounded-lg px-3 py-2"
+                className={`flex items-center gap-2 text-sm rounded-lg px-3 py-2 ${
+                  item.checked
+                    ? 'bg-green-50 text-gray-400'
+                    : 'bg-gray-50 text-gray-800'
+                }`}
               >
-                <span className="flex-1">{item.name}</span>
+                <button
+                  onClick={() => toggleGroceryItemChecked(item.id)}
+                  className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors ${
+                    item.checked
+                      ? 'bg-green-500 border-green-500 text-white'
+                      : 'border-gray-300 hover:border-gray-400'
+                  }`}
+                >
+                  {item.checked && (
+                    <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
+                      <path
+                        d="M2.5 6l2.5 2.5 4.5-5"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  )}
+                </button>
+                <span className={`flex-1 ${item.checked ? 'line-through' : ''}`}>
+                  {item.name}
+                </span>
                 <button
                   onClick={() => removeGroceryItem(item.id)}
                   className="text-gray-400 hover:text-red-500 transition-colors shrink-0"
