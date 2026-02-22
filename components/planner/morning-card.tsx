@@ -23,7 +23,7 @@ export function MorningCard({ dateKey, dayData }: MorningCardProps) {
   // Live mode: simplified read-only view
   if (!editMode) {
     return (
-      <div className="rounded-lg border border-morning-200 bg-[var(--morning-light)] p-2.5">
+      <div className="rounded-lg border border-morning-200 bg-[var(--morning-light)] p-2.5 min-h-[8.5rem]">
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full bg-[var(--morning)]" />
           <span className="text-xs font-semibold text-morning-800">Morning</span>
@@ -43,7 +43,7 @@ export function MorningCard({ dateKey, dayData }: MorningCardProps) {
   }
 
   return (
-    <div className="rounded-lg border border-morning-200 bg-[var(--morning-light)] p-2.5">
+    <div className="rounded-lg border border-morning-200 bg-[var(--morning-light)] p-2.5 min-h-[8.5rem]">
       <div className="flex items-center gap-1.5 mb-2">
         <div className="w-2 h-2 rounded-full bg-[var(--morning)]" />
         <span className="text-xs font-semibold text-morning-800">Morning</span>
