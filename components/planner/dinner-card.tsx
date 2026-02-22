@@ -10,6 +10,22 @@ interface DinnerCardProps {
   dayData: DayData;
 }
 
+type Cook = 'Carly' | 'Joey' | '';
+
+/** Cycle: unassigned → Carly → Joey → unassigned */
+function nextCook(current: Cook): Cook {
+  switch (current) {
+    case '': return 'Carly';
+    case 'Carly': return 'Joey';
+    case 'Joey': return '';
+  }
+}
+
+const COOK_STYLES: Record<string, { bg: string; border: string; text: string; badge: string }> = {
+  Carly: { bg: 'bg-red-100',  border: 'border-red-300',  text: 'text-red-800',  badge: 'bg-red-500 text-white' },
+  Joey:  { bg: 'bg-blue-100', border: 'border-blue-300', text: 'text-blue-800', badge: 'bg-blue-500 text-white' },
+};
+
 export function DinnerCard({ dateKey, dayData }: DinnerCardProps) {
   const { setDinner, setCook, swapDinner, editMode } = usePlanner();
   const [searchText, setSearchText] = useState('');
@@ -74,6 +90,9 @@ export function DinnerCard({ dateKey, dayData }: DinnerCardProps) {
     }
   }
 
+  const cook = dayData.cook as Cook;
+  const cookStyle = cook ? COOK_STYLES[cook] : null;
+
   // Live mode: simplified read-only view
   if (!editMode) {
     return (
@@ -81,12 +100,24 @@ export function DinnerCard({ dateKey, dayData }: DinnerCardProps) {
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full bg-[var(--dinner)]" />
           <span className="text-xs font-semibold text-dinner-800">Dinner</span>
-          {dayData.cook && (
-            <span className="ml-auto text-[10px] text-dinner-600 font-medium">{dayData.cook} cooks</span>
-          )}
         </div>
         {dayData.dinner ? (
-          <p className="text-[11px] text-dinner-800 font-medium mt-1.5 pl-3.5">{dayData.dinner}</p>
+          <button
+            type="button"
+            onClick={() => setCook(dateKey, nextCook(cook))}
+            className={`relative w-full text-left text-[11px] font-medium rounded px-2 py-1.5 mt-1.5 select-none transition-colors active:scale-[0.98] ${
+              cookStyle
+                ? `${cookStyle.bg} border ${cookStyle.border} ${cookStyle.text}`
+                : 'text-dinner-800 bg-dinner-100 border border-transparent hover:border-dinner-300'
+            }`}
+          >
+            {dayData.dinner}
+            {cook && (
+              <span className={`absolute -bottom-1 -right-1 text-[8px] font-bold leading-none px-1 py-0.5 rounded ${cookStyle!.badge}`}>
+                {cook === 'Carly' ? 'C' : 'J'}
+              </span>
+            )}
+          </button>
         ) : (
           <p className="text-[10px] text-dinner-300 mt-1.5 italic">No dinner planned</p>
         )}
@@ -108,27 +139,20 @@ export function DinnerCard({ dateKey, dayData }: DinnerCardProps) {
       <div className="flex items-center gap-1.5 mb-2">
         <div className="w-2 h-2 rounded-full bg-[var(--dinner)]" />
         <span className="text-xs font-semibold text-dinner-800">Dinner</span>
-        <select
-          value={dayData.cook}
-          onChange={(e) =>
-            setCook(dateKey, e.target.value as 'Carly' | 'Joey' | '')
-          }
-          className="ml-auto text-[11px] px-1.5 py-0.5 rounded-md bg-white border border-dinner-200 text-dinner-700 focus:outline-none focus:ring-1 focus:ring-dinner-400"
-        >
-          <option value="">Who&apos;s cooking?</option>
-          <option value="Carly">Carly</option>
-          <option value="Joey">Joey</option>
-        </select>
       </div>
 
       {dayData.dinner ? (
         <div
           draggable
           onDragStart={handleDragStart}
-          className="flex items-center gap-1.5 bg-white rounded-md px-2 py-1.5 border border-dinner-200 cursor-grab active:cursor-grabbing"
+          className={`relative flex items-center gap-1.5 rounded-md px-2 py-1.5 border cursor-grab active:cursor-grabbing transition-colors ${
+            cookStyle
+              ? `${cookStyle.bg} ${cookStyle.border} ${cookStyle.text}`
+              : 'bg-white border-dinner-200'
+          }`}
         >
           <svg
-            className="w-3 h-3 text-dinner-300 shrink-0"
+            className={`w-3 h-3 shrink-0 ${cookStyle ? cookStyle.text : 'text-dinner-300'}`}
             viewBox="0 0 12 12"
             fill="currentColor"
           >
@@ -139,12 +163,21 @@ export function DinnerCard({ dateKey, dayData }: DinnerCardProps) {
             <circle cx="4" cy="9" r="1" />
             <circle cx="8" cy="9" r="1" />
           </svg>
-          <span className="flex-1 text-xs text-dinner-800 font-medium">
+          <button
+            type="button"
+            onClick={() => setCook(dateKey, nextCook(cook))}
+            className="flex-1 text-left text-xs font-medium break-words select-none active:scale-[0.98] cursor-pointer"
+          >
             {dayData.dinner}
-          </span>
+          </button>
+          {cook && (
+            <span className={`text-[8px] font-bold leading-none px-1 py-0.5 rounded ${cookStyle!.badge}`}>
+              {cook === 'Carly' ? 'C' : 'J'}
+            </span>
+          )}
           <button
             onClick={clearDinner}
-            className="text-dinner-300 hover:text-dinner-600 shrink-0"
+            className={`shrink-0 ${cookStyle ? `${cookStyle.text} hover:opacity-70` : 'text-dinner-300 hover:text-dinner-600'}`}
           >
             <svg className="w-3.5 h-3.5" viewBox="0 0 12 12" fill="none">
               <path
