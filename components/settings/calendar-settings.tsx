@@ -23,6 +23,30 @@ export function CalendarSettings() {
     setLastRefresh(getLastRefreshTime());
   }, []);
 
+  async function fetchWithProxies(url: string, label: string): Promise<string> {
+    const trimmed = url.trim();
+    const encoded = encodeURIComponent(trimmed);
+
+    const attempts: Array<{ name: string; url: string }> = [
+      { name: 'direct', url: trimmed },
+      { name: 'corsproxy.io', url: `https://corsproxy.io/?${encoded}` },
+      { name: 'allorigins', url: `https://api.allorigins.win/raw?url=${encoded}` },
+    ];
+
+    for (const attempt of attempts) {
+      try {
+        const res = await fetch(attempt.url);
+        if (!res.ok) throw new Error(`${res.status}`);
+        const text = await res.text();
+        if (text.includes('BEGIN:VCALENDAR')) return text;
+      } catch {
+        // try next proxy
+      }
+    }
+
+    throw new Error(`${label}: could not fetch calendar feed (all proxies failed)`);
+  }
+
   async function handleRefresh() {
     setIsRefreshing(true);
     setError(null);
@@ -31,22 +55,7 @@ export function CalendarSettings() {
       const allEvents = await Promise.all(
         sources.map(async (src) => {
           const label = src.name || 'Calendar';
-          let icsText: string;
-          try {
-            const directRes = await fetch(src.url.trim());
-            if (!directRes.ok) throw new Error('direct fetch failed');
-            icsText = await directRes.text();
-          } catch {
-            const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(src.url.trim())}`;
-            const proxyRes = await fetch(proxyUrl);
-            if (!proxyRes.ok) {
-              throw new Error(`${label}: could not fetch calendar feed`);
-            }
-            icsText = await proxyRes.text();
-          }
-          if (!icsText.includes('BEGIN:VCALENDAR')) {
-            throw new Error(`${label}: URL did not return a valid ICS feed`);
-          }
+          const icsText = await fetchWithProxies(src.url, label);
           return parseICS(icsText);
         })
       );
