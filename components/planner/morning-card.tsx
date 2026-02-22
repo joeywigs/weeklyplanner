@@ -52,10 +52,10 @@ export function MorningCard({ dateKey, dayData, isWeekend }: MorningCardProps) {
       <button
         type="button"
         onClick={cycleDropOff}
-        className={`relative w-full text-left text-[11px] rounded px-2 py-1.5 select-none transition-colors active:scale-[0.98] ${style.bg} border ${style.border} ${style.text}`}
+        className={`flex items-center justify-between w-full text-[11px] rounded px-2 py-1.5 select-none transition-colors active:scale-[0.98] ${style.bg} border ${style.border} ${style.text}`}
       >
         Drop Off
-        <span className={`absolute -bottom-1 -right-1 text-[8px] font-bold leading-none px-1 py-0.5 rounded ${style.badge}`}>
+        <span className={`text-[8px] font-bold leading-none px-1.5 py-0.5 rounded ${style.badge}`}>
           {LABEL[dropOff]}
         </span>
       </button>

@@ -51,7 +51,7 @@ export function PickupCard({ dateKey, dayData, isWeekend }: PickupCardProps) {
     <button
       type="button"
       onClick={cyclePickUp}
-      className={`relative w-full text-left text-[11px] rounded px-2 py-1.5 select-none transition-colors active:scale-[0.98] ${
+      className={`flex items-center justify-between w-full text-[11px] rounded px-2 py-1.5 select-none transition-colors active:scale-[0.98] ${
         style
           ? `${style.bg} border ${style.border} ${style.text}`
           : 'text-accent-600 bg-accent-50 border border-accent-200 hover:border-accent-300'
@@ -59,7 +59,7 @@ export function PickupCard({ dateKey, dayData, isWeekend }: PickupCardProps) {
     >
       Pick Up
       {pickUp && style && (
-        <span className={`absolute -bottom-1 -right-1 text-[8px] font-bold leading-none px-1 py-0.5 rounded ${style.badge}`}>
+        <span className={`text-[8px] font-bold leading-none px-1.5 py-0.5 rounded ${style.badge}`}>
           {LABEL[pickUp]}
         </span>
       )}
