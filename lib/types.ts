@@ -7,6 +7,7 @@ export interface DayData {
   hasSchool: boolean;
   eveningActivities: Activity[];
   calendarEventOwners: Record<string, 'C' | 'J' | 'CJ' | 'O'>;
+  hiddenCalendarEvents?: string[];
   dinner: string;
   cook: 'Carly' | 'Joey' | 'Both' | 'Other' | '';
   notes: string;

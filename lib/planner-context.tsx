@@ -106,6 +106,7 @@ interface PlannerContextValue {
   removeActivity: (dateKey: string, id: string) => void;
   setActivityOwner: (dateKey: string, id: string, owner: 'C' | 'J' | 'CJ' | 'O' | undefined) => void;
   setCalendarEventOwner: (dateKey: string, eventId: string, owner: 'C' | 'J' | 'CJ' | 'O' | undefined) => void;
+  hideCalendarEvent: (dateKey: string, eventId: string) => void;
   setDinner: (dateKey: string, value: string) => void;
   setCook: (dateKey: string, value: 'Carly' | 'Joey' | 'Both' | 'Other' | '') => void;
   getCalendarEventsForDay: (dateKey: string) => CalendarEvent[];
@@ -369,6 +370,20 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     [updateDay]
   );
 
+  const hideCalendarEvent = useCallback(
+    (dateKey: string, eventId: string) => {
+      const date = new Date(dateKey + 'T00:00:00');
+      updateDay(dateKey, date, (day) => {
+        const hidden = [...(day.hiddenCalendarEvents || [])];
+        if (!hidden.includes(eventId)) {
+          hidden.push(eventId);
+        }
+        return { ...day, hiddenCalendarEvents: hidden };
+      });
+    },
+    [updateDay]
+  );
+
   const setDinner = useCallback(
     (dateKey: string, value: string) => {
       const date = new Date(dateKey + 'T00:00:00');
@@ -395,8 +410,9 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
 
   const getCalendarEventsForDay = useCallback(
     (dateKey: string): CalendarEvent[] => {
+      const hidden = state.days[dateKey]?.hiddenCalendarEvents || [];
       return googleEvents
-        .filter((e) => dateKey >= e.startDate && dateKey <= e.endDate)
+        .filter((e) => dateKey >= e.startDate && dateKey <= e.endDate && !hidden.includes(e.id))
         .sort((a, b) => {
           // All-day events first, then by start time
           if (!a.startTime && !b.startTime) return 0;
@@ -405,7 +421,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
           return a.startTime.localeCompare(b.startTime);
         });
     },
-    [googleEvents]
+    [googleEvents, state.days]
   );
 
   const addGroceryItem = useCallback((name: string) => {
@@ -605,6 +621,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
         removeActivity,
         setActivityOwner,
         setCalendarEventOwner,
+        hideCalendarEvent,
         setDinner,
         setCook,
         setNotes,

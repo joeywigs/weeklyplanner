@@ -51,6 +51,7 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
     removeActivity,
     setActivityOwner,
     setCalendarEventOwner,
+    hideCalendarEvent,
     getCalendarEventsForDay,
     editMode,
   } = usePlanner();
@@ -187,6 +188,20 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
                     {OWNER_LABEL[owner]}
                   </span>
                 )}
+                <button
+                  type="button"
+                  onClick={() => hideCalendarEvent(dateKey, ev.id)}
+                  className="text-evening-300 hover:text-red-500 shrink-0"
+                >
+                  <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
+                    <path
+                      d="M3 3l6 6M9 3l-6 6"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </button>
               </div>
             );
           })}
