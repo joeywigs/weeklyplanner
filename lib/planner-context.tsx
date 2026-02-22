@@ -104,6 +104,7 @@ interface PlannerContextValue {
   getCalendarEventsForDay: (dateKey: string) => CalendarEvent[];
   addGroceryItem: (name: string) => void;
   removeGroceryItem: (id: string) => void;
+  clearGroceryItems: () => void;
   buildGroceryFromDinners: () => 'built' | 'already_built';
   addCaraNote: (text: string) => void;
   removeCaraNote: (id: string) => void;
@@ -367,6 +368,14 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     }));
   }, []);
 
+  const clearGroceryItems = useCallback(() => {
+    lastBuiltDinnerFingerprint.current = null;
+    setState((prev) => ({
+      ...prev,
+      groceryItems: [],
+    }));
+  }, []);
+
   const buildGroceryFromDinners = useCallback((): 'built' | 'already_built' => {
     const dinnerNames = Object.values(state.days)
       .map((d) => d.dinner)
@@ -532,6 +541,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
         getCalendarEventsForDay,
         addGroceryItem,
         removeGroceryItem,
+        clearGroceryItems,
         buildGroceryFromDinners,
         addCaraNote,
         removeCaraNote,

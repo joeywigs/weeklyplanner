@@ -3,11 +3,21 @@
 import { useState } from 'react';
 import { usePlanner } from '@/lib/planner-context';
 
+function walmartSearchUrl(item: string): string {
+  return `https://www.walmart.com/search?q=${encodeURIComponent(item)}`;
+}
+
 export function GroceryList() {
-  const { groceryItems, addGroceryItem, removeGroceryItem, buildGroceryFromDinners } =
-    usePlanner();
+  const {
+    groceryItems,
+    addGroceryItem,
+    removeGroceryItem,
+    clearGroceryItems,
+    buildGroceryFromDinners,
+  } = usePlanner();
   const [input, setInput] = useState('');
   const [showAlreadyBuilt, setShowAlreadyBuilt] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   function handleAdd() {
     const name = input.trim();
@@ -25,8 +35,16 @@ export function GroceryList() {
     }
   }
 
-  function handleConfirmRebuild() {
+  function handleClear() {
+    clearGroceryItems();
+    setShowClearConfirm(false);
     setShowAlreadyBuilt(false);
+  }
+
+  function handleAddToWalmart() {
+    for (const item of groceryItems) {
+      window.open(walmartSearchUrl(item.name), '_blank', 'noopener');
+    }
   }
 
   return (
@@ -52,10 +70,40 @@ export function GroceryList() {
               {groceryItems.length}
             </span>
           )}
+          {groceryItems.length > 0 && (
+            <button
+              onClick={() => setShowClearConfirm(true)}
+              className="ml-auto text-xs text-gray-400 hover:text-red-500 transition-colors"
+              title="Clear all items"
+            >
+              Clear all
+            </button>
+          )}
         </div>
       </div>
 
       <div className="p-3 space-y-3">
+        {/* Clear confirmation */}
+        {showClearConfirm && (
+          <div className="rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-xs text-red-800">
+            <p className="font-medium">Clear entire grocery list?</p>
+            <div className="flex gap-2 mt-1.5">
+              <button
+                onClick={handleClear}
+                className="px-2 py-1 rounded bg-red-600 text-white font-medium hover:bg-red-700 transition-colors"
+              >
+                Clear
+              </button>
+              <button
+                onClick={() => setShowClearConfirm(false)}
+                className="px-2 py-1 rounded bg-white border border-red-300 text-red-700 font-medium hover:bg-red-50 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Input row */}
         <div className="flex gap-2">
           <input
@@ -82,7 +130,7 @@ export function GroceryList() {
               The dinner plan hasn&apos;t changed since the last build.
             </p>
             <button
-              onClick={handleConfirmRebuild}
+              onClick={() => setShowAlreadyBuilt(false)}
               className="mt-1.5 text-amber-700 underline hover:text-amber-900 font-medium"
             >
               OK
@@ -105,6 +153,17 @@ export function GroceryList() {
                 key={item.id}
                 className="flex items-center gap-2 text-sm text-gray-800 bg-gray-50 rounded-lg px-3 py-2"
               >
+                <a
+                  href={walmartSearchUrl(item.name)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:text-blue-700 shrink-0"
+                  title="Search on Walmart"
+                >
+                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" strokeWidth={1.5} stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                  </svg>
+                </a>
                 <span className="flex-1">{item.name}</span>
                 <button
                   onClick={() => removeGroceryItem(item.id)}
@@ -126,6 +185,16 @@ export function GroceryList() {
           <p className="text-xs text-gray-400 text-center py-2 italic">
             No items yet
           </p>
+        )}
+
+        {/* Add to Walmart button */}
+        {groceryItems.length > 0 && (
+          <button
+            onClick={handleAddToWalmart}
+            className="w-full text-xs py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors font-medium"
+          >
+            Open all in Walmart ({groceryItems.length} items)
+          </button>
         )}
       </div>
     </div>
