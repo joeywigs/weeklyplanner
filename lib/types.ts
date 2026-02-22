@@ -24,6 +24,7 @@ export interface CalendarEvent {
   text: string;
   startDate: string;
   endDate: string;
+  startTime?: string; // "HH:MM" 24-hour format, absent for all-day events
 }
 
 export interface CalendarSource {

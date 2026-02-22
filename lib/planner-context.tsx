@@ -312,9 +312,15 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
 
   const getCalendarEventsForDay = useCallback(
     (dateKey: string): CalendarEvent[] => {
-      return googleEvents.filter(
-        (e) => dateKey >= e.startDate && dateKey <= e.endDate
-      );
+      return googleEvents
+        .filter((e) => dateKey >= e.startDate && dateKey <= e.endDate)
+        .sort((a, b) => {
+          // All-day events first, then by start time
+          if (!a.startTime && !b.startTime) return 0;
+          if (!a.startTime) return -1;
+          if (!b.startTime) return 1;
+          return a.startTime.localeCompare(b.startTime);
+        });
     },
     [googleEvents]
   );

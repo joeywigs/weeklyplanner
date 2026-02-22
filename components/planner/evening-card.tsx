@@ -2,7 +2,15 @@
 
 import { useState } from 'react';
 import { usePlanner } from '@/lib/planner-context';
-import type { DayData } from '@/lib/types';
+import type { DayData, CalendarEvent } from '@/lib/types';
+
+function formatTime(ev: CalendarEvent): string | null {
+  if (!ev.startTime) return null;
+  const [h, m] = ev.startTime.split(':').map(Number);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const hour = h % 12 || 12;
+  return `${hour}:${String(m).padStart(2, '0')} ${ampm}`;
+}
 
 interface EveningCardProps {
   dateKey: string;
@@ -41,7 +49,7 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
           <ul className="mt-1.5 space-y-0.5">
             {calendarEvents.map((ev) => (
               <li key={ev.id} className="text-[11px] text-evening-700 pl-3.5">
-                &bull; {ev.text}
+                &bull; {formatTime(ev) && <span className="font-medium">{formatTime(ev)} </span>}{ev.text}
               </li>
             ))}
             {dayData.eveningActivities.map((a) => (
@@ -62,7 +70,7 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
       <div className="flex items-center gap-1.5 mb-2">
         <div className="w-2 h-2 rounded-full bg-[var(--evening)]" />
         <span className="text-xs font-semibold text-evening-800">
-          Evening Activities
+          Activities
         </span>
       </div>
 
@@ -90,7 +98,7 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
               key={ev.id}
               className="text-xs text-evening-800 bg-evening-200 rounded px-1.5 py-1 break-words"
             >
-              {ev.text}
+              {formatTime(ev) && <span className="font-medium">{formatTime(ev)} </span>}{ev.text}
             </li>
           ))}
           {dayData.eveningActivities.map((a) => (
