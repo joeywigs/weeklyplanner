@@ -47,13 +47,17 @@ export default function PlannerPage() {
           ))}
         </div>
       ) : (
-        <div
-          className="grid grid-cols-3 gap-4 px-4"
-          style={{ zoom: 2.5 }}
-        >
-          {weekDates.map((date) => (
-            <DayCard key={date.toISOString()} date={date} />
-          ))}
+        <div className="overflow-x-auto snap-x snap-mandatory" style={{ zoom: 2.5 }}>
+          <div
+            className="flex gap-4 px-4"
+            style={{ width: `${(weekDates.length / 3) * 100}%` }}
+          >
+            {weekDates.map((date) => (
+              <div key={date.toISOString()} className="flex-1 min-w-0 snap-start">
+                <DayCard date={date} />
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
