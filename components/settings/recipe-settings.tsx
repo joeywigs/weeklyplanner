@@ -163,7 +163,7 @@ export function RecipeSettings() {
         <input
           ref={fileInputRef}
           type="file"
-          accept=".paprikarecipes,.paprikarecipe,.zip"
+          accept=".paprikarecipes,.paprikarecipe,.zip,.html,.htm"
           onChange={handleImport}
           className="hidden"
         />
