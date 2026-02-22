@@ -65,19 +65,20 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
           <span className="text-xs font-semibold text-evening-800">Evening</span>
         </div>
         {hasItems ? (
-          <ul className="mt-1.5 space-y-1">
+          <div className="mt-1.5 space-y-1">
             {calendarEvents.map((ev) => (
-              <li key={ev.id} className="text-[11px] text-evening-700 pl-3.5">
+              <div key={ev.id} className="text-[11px] text-evening-700 pl-3.5">
                 &bull; {formatTime(ev) && <span className="font-medium">{formatTime(ev)} </span>}{ev.text}
-              </li>
+              </div>
             ))}
             {dayData.eveningActivities.map((a) => {
               const style = a.owner ? OWNER_STYLES[a.owner] : null;
               return (
-                <li
+                <button
                   key={a.id}
+                  type="button"
                   onClick={() => setActivityOwner(dateKey, a.id, nextOwner(a.owner))}
-                  className={`relative text-[11px] rounded px-2 py-1 cursor-pointer select-none transition-colors ${
+                  className={`relative w-full text-left text-[11px] rounded px-2 py-1.5 select-none transition-colors active:scale-[0.98] ${
                     style
                       ? `${style.bg} border ${style.border} ${style.text}`
                       : 'text-evening-700 bg-evening-100 border border-transparent hover:border-evening-300'
@@ -89,10 +90,10 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
                       {a.owner === 'CJ' ? 'C+J' : a.owner}
                     </span>
                   )}
-                </li>
+                </button>
               );
             })}
-          </ul>
+          </div>
         ) : (
           <p className="text-[10px] text-evening-300 mt-1.5 italic">Free evening</p>
         )}
@@ -127,35 +128,41 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
       </div>
 
       {hasItems && (
-        <ul className="mt-1.5 space-y-1">
+        <div className="mt-1.5 space-y-1">
           {calendarEvents.map((ev) => (
-            <li
+            <div
               key={ev.id}
               className="text-xs text-evening-800 bg-evening-200 rounded px-1.5 py-1 break-words"
             >
               {formatTime(ev) && <span className="font-medium">{formatTime(ev)} </span>}{ev.text}
-            </li>
+            </div>
           ))}
           {dayData.eveningActivities.map((a) => {
             const style = a.owner ? OWNER_STYLES[a.owner] : null;
             return (
-              <li
+              <div
                 key={a.id}
-                className={`relative flex items-center gap-1 text-xs rounded px-1.5 py-1 cursor-pointer select-none transition-colors ${
+                className={`relative flex items-center gap-1 text-xs rounded px-1.5 py-1 transition-colors ${
                   style
                     ? `${style.bg} border ${style.border} ${style.text}`
-                    : 'text-evening-800 bg-evening-100 border border-transparent hover:border-evening-300'
+                    : 'text-evening-800 bg-evening-100 border border-transparent'
                 }`}
-                onClick={() => setActivityOwner(dateKey, a.id, nextOwner(a.owner))}
               >
-                <span className="flex-1 break-words">{a.text}</span>
+                <button
+                  type="button"
+                  onClick={() => setActivityOwner(dateKey, a.id, nextOwner(a.owner))}
+                  className="flex-1 text-left break-words select-none active:scale-[0.98] cursor-pointer"
+                >
+                  {a.text}
+                </button>
                 {a.owner && (
                   <span className={`text-[8px] font-bold leading-none px-1 py-0.5 rounded ${style!.badge}`}>
                     {a.owner === 'CJ' ? 'C+J' : a.owner}
                   </span>
                 )}
                 <button
-                  onClick={(e) => { e.stopPropagation(); removeActivity(dateKey, a.id); }}
+                  type="button"
+                  onClick={() => removeActivity(dateKey, a.id)}
                   className="text-evening-300 hover:text-red-500 shrink-0"
                 >
                   <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
@@ -167,10 +174,10 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
                     />
                   </svg>
                 </button>
-              </li>
+              </div>
             );
           })}
-        </ul>
+        </div>
       )}
 
       {!hasItems && (
