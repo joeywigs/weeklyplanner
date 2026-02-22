@@ -70,6 +70,13 @@ export interface Recipe {
   notes: string;
 }
 
+export interface Birthday {
+  id: string;
+  name: string;
+  month: number; // 1-12
+  day: number;   // 1-31
+}
+
 export interface WeekState {
   weekOffset: number;
   days: Record<string, DayData>;
