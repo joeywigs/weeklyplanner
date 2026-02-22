@@ -14,7 +14,7 @@ interface DayCardProps {
 }
 
 export function DayCard({ date }: DayCardProps) {
-  const { getDayData, getWeatherForDay, getCalendarEventsForDay, editMode } = usePlanner();
+  const { getDayData, getWeatherForDay, getCalendarEventsForDay, editMode, viewMode } = usePlanner();
   const dateKey = formatDateKey(date);
   const dayData = getDayData(dateKey, date);
   const today = isToday(date);
@@ -32,7 +32,7 @@ export function DayCard({ date }: DayCardProps) {
 
   return (
     <div
-      className={`flex-shrink-0 w-[280px] lg:w-auto rounded-xl border bg-white shadow-sm snap-start overflow-visible ${
+      className={`flex-shrink-0 ${viewMode === '3day' ? 'w-auto' : 'w-[280px] lg:w-auto'} rounded-xl border bg-white shadow-sm snap-start overflow-visible ${
         today ? 'border-accent-400 ring-2 ring-accent-100' : 'border-[var(--border)]'
       }`}
     >
