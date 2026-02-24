@@ -12,13 +12,13 @@ interface DinnerCardProps {
 
 type Cook = 'Carly' | 'Joey' | 'Both' | 'Other' | '';
 
-/** Cycle: unassigned → Carly → Joey → Both → unassigned */
+/** Cycle: unassigned → Carly → Joey → Both → Other → unassigned */
 function nextCook(current: string): Cook {
   switch (current) {
     case '': return 'Carly';
     case 'Carly': return 'Joey';
     case 'Joey': return 'Both';
-    case 'Both': return '';
+    case 'Both': return 'Other';
     case 'Other': return '';
     default: return 'Carly';
   }

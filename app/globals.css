@@ -38,7 +38,15 @@ body {
   scrollbar-width: none;
 }
 
-/* Zoom is now controlled via manual buttons in planner page */
+/* Zoom is now controlled via manual buttons in planner page — desktop only */
+.planner-zoom {
+  zoom: 1;
+}
+@media (min-width: 1024px) {
+  .planner-zoom {
+    zoom: var(--planner-zoom, 1);
+  }
+}
 
 @layer utilities {
   .safe-bottom {

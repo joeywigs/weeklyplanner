@@ -17,7 +17,57 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-[var(--border)]">
-      <div className="px-4 py-3">
+      {/* Mobile: single compact row */}
+      <div className="flex items-center justify-between px-3 py-2 lg:hidden">
+        <button
+          onClick={goToPrevWeek}
+          className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
+          aria-label="Previous week"
+        >
+          <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+          </svg>
+        </button>
+
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold text-[var(--foreground)]">
+            {formatWeekRange(weekDates)}
+          </span>
+          {weekOffset !== 0 && (
+            <button
+              onClick={goToCurrentWeek}
+              className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent-50 text-accent-600"
+            >
+              Today
+            </button>
+          )}
+        </div>
+
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={toggleEditMode}
+            className={`text-[10px] px-2 py-0.5 rounded-full font-semibold transition-colors ${
+              editMode
+                ? 'bg-accent-100 text-accent-700'
+                : 'bg-green-100 text-green-700'
+            }`}
+          >
+            {editMode ? 'Edit' : 'Live'}
+          </button>
+          <button
+            onClick={goToNextWeek}
+            className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
+            aria-label="Next week"
+          >
+            <svg className="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Desktop: full header */}
+      <div className="hidden lg:block px-4 py-3">
         <div className="flex items-baseline justify-between">
           <div>
             <h1 className="text-lg font-bold text-[var(--foreground)]">

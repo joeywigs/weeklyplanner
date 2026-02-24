@@ -104,6 +104,7 @@ interface PlannerContextValue {
   toggleSchool: (dateKey: string) => void;
   addActivity: (dateKey: string, text: string) => void;
   removeActivity: (dateKey: string, id: string) => void;
+  moveActivity: (dateKey: string, id: string, direction: 'up' | 'down') => void;
   setActivityOwner: (dateKey: string, id: string, owner: 'C' | 'J' | 'CJ' | 'O' | undefined) => void;
   setCalendarEventOwner: (dateKey: string, eventId: string, owner: 'C' | 'J' | 'CJ' | 'O' | undefined) => void;
   hideCalendarEvent: (dateKey: string, eventId: string) => void;
@@ -232,6 +233,28 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener('focus', pullFromCloud);
   }, [weekOffset]);
 
+  // Auto-add Cara note when "House Cleaning" activity appears anywhere this week
+  const houseCleaningNoteText = 'Leave a check for house cleaning';
+  useEffect(() => {
+    const hasHouseCleaning = Object.values(state.days).some((day) =>
+      day.eveningActivities.some((a) =>
+        a.text.toLowerCase().includes('house cleaning')
+      )
+    );
+    const alreadyHasNote = state.caraNotes.some(
+      (n) => n.text === houseCleaningNoteText
+    );
+    if (hasHouseCleaning && !alreadyHasNote) {
+      setState((prev) => ({
+        ...prev,
+        caraNotes: [
+          ...prev.caraNotes,
+          { id: generateId(), text: houseCleaningNoteText },
+        ],
+      }));
+    }
+  }, [state.days, state.caraNotes]);
+
   const getDayData = useCallback(
     (dateKey: string, date: Date): DayData => {
       return state.days[dateKey] ?? createDefaultDayData(date);
@@ -340,6 +363,22 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
         ...day,
         eveningActivities: day.eveningActivities.filter((a) => a.id !== id),
       }));
+    },
+    [updateDay]
+  );
+
+  const moveActivity = useCallback(
+    (dateKey: string, id: string, direction: 'up' | 'down') => {
+      const date = new Date(dateKey + 'T00:00:00');
+      updateDay(dateKey, date, (day) => {
+        const activities = [...day.eveningActivities];
+        const idx = activities.findIndex((a) => a.id === id);
+        if (idx === -1) return day;
+        const newIdx = direction === 'up' ? idx - 1 : idx + 1;
+        if (newIdx < 0 || newIdx >= activities.length) return day;
+        [activities[idx], activities[newIdx]] = [activities[newIdx]!, activities[idx]!];
+        return { ...day, eveningActivities: activities };
+      });
     },
     [updateDay]
   );
@@ -623,6 +662,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
         toggleSchool,
         addActivity,
         removeActivity,
+        moveActivity,
         setActivityOwner,
         setCalendarEventOwner,
         hideCalendarEvent,

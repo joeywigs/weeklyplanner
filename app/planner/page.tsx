@@ -16,9 +16,9 @@ export default function PlannerPage() {
   const zoom = ZOOM_STEPS[zoomIndex];
 
   return (
-    <div className="space-y-4 py-4" style={{ zoom }}>
-      {/* Zoom controls */}
-      <div className="fixed bottom-4 right-4 z-50 flex items-center gap-1 bg-white/90 backdrop-blur border border-gray-200 rounded-full shadow-lg px-1 py-1">
+    <div className="space-y-4 py-4 planner-zoom" style={{ '--planner-zoom': zoom } as React.CSSProperties}>
+      {/* Zoom controls — desktop only */}
+      <div className="hidden lg:flex fixed bottom-4 right-4 z-50 items-center gap-1 bg-white/90 backdrop-blur border border-gray-200 rounded-full shadow-lg px-1 py-1">
         <button
           type="button"
           onClick={() => setZoomIndex((i) => Math.max(0, i - 1))}
@@ -41,19 +41,34 @@ export default function PlannerPage() {
       </div>
       {/* Day cards */}
       {viewMode === 'week' ? (
-        <div className="flex gap-3 overflow-x-auto hide-scrollbar snap-x snap-mandatory px-4 lg:grid lg:grid-cols-7 lg:gap-2 lg:px-3">
-          {weekDates.map((date) => (
-            <DayCard key={date.toISOString()} date={date} />
-          ))}
-        </div>
+        <>
+          {/* Mobile: full-width single-day swipe */}
+          <div className="flex snap-x snap-mandatory overflow-x-auto hide-scrollbar lg:hidden">
+            {weekDates.map((date) => (
+              <div key={date.toISOString()} className="w-full flex-shrink-0 snap-start px-4">
+                <DayCard date={date} />
+              </div>
+            ))}
+          </div>
+          {/* Desktop: 7-column grid */}
+          <div className="hidden lg:grid lg:grid-cols-7 lg:gap-2 lg:px-3">
+            {weekDates.map((date) => (
+              <DayCard key={date.toISOString()} date={date} />
+            ))}
+          </div>
+        </>
       ) : (
-        <div
-          className="grid grid-cols-3 gap-4 px-4"
-          style={{ zoom: 2.5 }}
-        >
-          {weekDates.map((date) => (
-            <DayCard key={date.toISOString()} date={date} />
-          ))}
+        <div className="overflow-x-auto snap-x snap-mandatory" style={{ zoom: 2.5 }}>
+          <div
+            className="flex gap-4 px-4"
+            style={{ width: `${(weekDates.length / 3) * 100}%` }}
+          >
+            {weekDates.map((date) => (
+              <div key={date.toISOString()} className="flex-1 min-w-0 snap-start">
+                <DayCard date={date} />
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

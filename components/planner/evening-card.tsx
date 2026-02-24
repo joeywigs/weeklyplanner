@@ -49,6 +49,7 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
   const {
     addActivity,
     removeActivity,
+    moveActivity,
     setActivityOwner,
     setCalendarEventOwner,
     hideCalendarEvent,
@@ -205,8 +206,10 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
               </div>
             );
           })}
-          {dayData.eveningActivities.map((a) => {
+          {dayData.eveningActivities.map((a, idx) => {
             const style = a.owner ? OWNER_STYLES[a.owner] : null;
+            const isFirst = idx === 0;
+            const isLast = idx === dayData.eveningActivities.length - 1;
             return (
               <div
                 key={a.id}
@@ -216,6 +219,28 @@ export function EveningCard({ dateKey, dayData }: EveningCardProps) {
                     : 'text-evening-800 bg-evening-100 border border-transparent'
                 }`}
               >
+                <div className="flex flex-col shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => moveActivity(dateKey, a.id, 'up')}
+                    disabled={isFirst}
+                    className="text-evening-400 hover:text-evening-700 disabled:opacity-20 disabled:cursor-default"
+                  >
+                    <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
+                      <path d="M2 8l4-4 4 4" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveActivity(dateKey, a.id, 'down')}
+                    disabled={isLast}
+                    className="text-evening-400 hover:text-evening-700 disabled:opacity-20 disabled:cursor-default"
+                  >
+                    <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none">
+                      <path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                </div>
                 <button
                   type="button"
                   onClick={() => setActivityOwner(dateKey, a.id, nextOwner(a.owner))}
