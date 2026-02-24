@@ -128,6 +128,8 @@ interface PlannerContextValue {
   lastSaved: Date | null;
   viewMode: 'week' | '3day';
   toggleViewMode: () => void;
+  activeDayIndex: number;
+  setActiveDayIndex: (index: number) => void;
 }
 
 const PlannerContext = createContext<PlannerContextValue | null>(null);
@@ -138,6 +140,7 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
   const [googleEvents, setGoogleEvents] = useState<CalendarEvent[]>([]);
   const [editMode, setEditMode] = useState(true);
   const [viewMode, setViewMode] = useState<'week' | '3day'>('week');
+  const [activeDayIndex, setActiveDayIndex] = useState(0);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [weather, setWeather] = useState<
     Map<string, { code: number; high: number; low: number }>
@@ -686,6 +689,8 @@ export function PlannerProvider({ children }: { children: ReactNode }) {
         lastSaved,
         viewMode,
         toggleViewMode,
+        activeDayIndex,
+        setActiveDayIndex,
       }}
     >
       {children}
