@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { usePlanner } from '@/lib/planner-context';
 import { DayCard } from '@/components/planner/day-card';
 import { GroceryList } from '@/components/planner/grocery-list';
@@ -11,9 +11,17 @@ const ZOOM_STEPS = [0.75, 0.85, 1, 1.15, 1.3, 1.5];
 const DEFAULT_ZOOM_INDEX = 2; // 1x
 
 export default function PlannerPage() {
-  const { weekDates, viewMode } = usePlanner();
+  const { weekDates, viewMode, setActiveDayIndex } = usePlanner();
   const [zoomIndex, setZoomIndex] = useState(DEFAULT_ZOOM_INDEX);
   const zoom = ZOOM_STEPS[zoomIndex];
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el || el.scrollWidth <= el.clientWidth) return;
+    const index = Math.round(el.scrollLeft / el.clientWidth);
+    setActiveDayIndex(Math.min(index, 6));
+  }, [setActiveDayIndex]);
 
   return (
     <div className="space-y-4 py-4 planner-zoom" style={{ '--planner-zoom': zoom } as React.CSSProperties}>
@@ -43,7 +51,7 @@ export default function PlannerPage() {
       {viewMode === 'week' ? (
         <>
           {/* Mobile: full-width single-day swipe */}
-          <div className="flex snap-x snap-mandatory overflow-x-auto hide-scrollbar lg:hidden">
+          <div ref={scrollRef} onScroll={handleScroll} className="flex snap-x snap-mandatory overflow-x-auto hide-scrollbar lg:hidden">
             {weekDates.map((date) => (
               <div key={date.toISOString()} className="w-full flex-shrink-0 snap-start px-4">
                 <DayCard date={date} />

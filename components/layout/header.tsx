@@ -1,7 +1,7 @@
 'use client';
 
 import { usePlanner } from '@/lib/planner-context';
-import { formatWeekRange } from '@/lib/date-utils';
+import { formatWeekRange, getDayName, formatShortDate } from '@/lib/date-utils';
 
 function formatSavedTime(date: Date): string {
   const h = date.getHours();
@@ -12,8 +12,11 @@ function formatSavedTime(date: Date): string {
 }
 
 export function Header() {
-  const { weekDates, goToPrevWeek, goToNextWeek, goToCurrentWeek, weekOffset, editMode, toggleEditMode, lastSaved, viewMode, toggleViewMode } =
+  const { weekDates, goToPrevWeek, goToNextWeek, goToCurrentWeek, weekOffset, editMode, toggleEditMode, lastSaved, viewMode, toggleViewMode, activeDayIndex } =
     usePlanner();
+
+  const activeDate = weekDates[activeDayIndex] ?? weekDates[0]!;
+  const activeDayLabel = `${getDayName(activeDate)}, ${formatShortDate(activeDate)}`;
 
   return (
     <header className="sticky top-0 z-40 bg-white border-b border-[var(--border)]">
@@ -31,7 +34,7 @@ export function Header() {
 
         <div className="flex items-center gap-2">
           <span className="text-xs font-semibold text-[var(--foreground)]">
-            {formatWeekRange(weekDates)}
+            {activeDayLabel}
           </span>
           {weekOffset !== 0 && (
             <button
