@@ -16,9 +16,9 @@ export default function PlannerPage() {
   const zoom = ZOOM_STEPS[zoomIndex];
 
   return (
-    <div className="space-y-4 py-4" style={{ zoom }}>
-      {/* Zoom controls */}
-      <div className="fixed bottom-4 right-4 z-50 flex items-center gap-1 bg-white/90 backdrop-blur border border-gray-200 rounded-full shadow-lg px-1 py-1">
+    <div className="space-y-4 py-4 planner-zoom" style={{ '--planner-zoom': zoom } as React.CSSProperties}>
+      {/* Zoom controls — desktop only */}
+      <div className="hidden lg:flex fixed bottom-4 right-4 z-50 items-center gap-1 bg-white/90 backdrop-blur border border-gray-200 rounded-full shadow-lg px-1 py-1">
         <button
           type="button"
           onClick={() => setZoomIndex((i) => Math.max(0, i - 1))}
